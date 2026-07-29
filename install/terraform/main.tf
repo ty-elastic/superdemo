@@ -1,3 +1,17 @@
+provider "google" {
+  project = var.project
+  region  = var.region
+  zone    = var.zone
+}
+
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${google_container_cluster.primary.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+}
+
 locals {
   course = {
     test = "o11y--course--field--100-e2e--test"
@@ -149,23 +163,23 @@ resource "kubernetes_job_v1" "install" {
           }
           env {
             name  = "ELASTICSEARCH_URL"
-            value = var.elasticsearch_url
+            value = local.elasticsearch_url
           }
           env {
             name  = "ELASTICSEARCH_APIKEY"
-            value = var.elasticsearch_apikey
+            value = local.elasticsearch_apikey
           }
           env {
             name  = "FLEET_URL"
-            value = var.fleet_url
+            value = local.fleet_url
           }
           env {
             name  = "KIBANA_URL"
-            value = var.kibana_url
+            value = local.kibana_url
           }
           env {
             name  = "INGEST_URL"
-            value = var.ingest_url
+            value = local.ingest_url
           }
           env {
             name  = "WINDOWS_HOST_IP"
