@@ -16,19 +16,19 @@ A unified application and Elasticsearch environment for showcasing Elasticsearch
 Create a `terraform.tfvars` file in the `install/terraform` folder with the following variables filled in:
 
 ```
-project = ""
-region  = ""
-zone    = ""
+project = "<req>"
+region  = "<req>"
+zone    = "<req>"
 
-es_cloud_apikey = ""
+es_cloud_apikey = "<req>"
 es_cluster_type = "serverless" # or "hosted"
 
 labels = {
-  division   = ""
-  org        = ""
-  team       = ""
-  project    = ""
-  keep-until = ""
+  division   = "<req>"
+  org        = "<req>"
+  team       = "<req>"
+  project    = "<req>"
+  keep-until = "<req>"
 }
 ```
 
@@ -58,15 +58,15 @@ terraform output -json traefik_auth
 Create a `terraform.tfvars` file in the `install/terraform` folder with the following variables filled in:
 
 ```
-project = ""
-region  = ""
-zone    = ""
+project = "<req>"
+region  = "<req>"
+zone    = "<req>"
 
-elasticsearch_url    = ""
-elasticsearch_apikey = ""
-fleet_url            = ""
-kibana_url           = ""
-ingest_url           = "" # this needs to have a port (:443) at the end
+elasticsearch_url    = "<req>"
+elasticsearch_apikey = "<req>"
+fleet_url            = "<req>"
+kibana_url           = "<req>"
+ingest_url           = "<req>" # this needs to have a port (:443) at the end
 
 es_cluster_type = "" # leave blank
 

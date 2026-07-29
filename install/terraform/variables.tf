@@ -108,6 +108,18 @@ variable "elasticsearch_apikey" {
   default = ""
 }
 
+variable "elasticsearch_username" {
+  type        = string
+  sensitive   = true
+  default = ""
+}
+
+variable "elasticsearch_password" {
+  type        = string
+  sensitive   = true
+  default = ""
+}
+
 variable "fleet_url" {
   description = "Fleet Server URL for the o11y e2e serverless project, passed to the install container as FLEET_URL"
   type        = string

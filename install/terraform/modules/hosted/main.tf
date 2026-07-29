@@ -39,4 +39,3 @@ resource "ec_deployment" "es_cluster" {
       zone_count    = 1   
   }
 }
-
