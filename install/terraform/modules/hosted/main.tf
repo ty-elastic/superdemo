@@ -6,7 +6,7 @@ resource "ec_deployment" "es_cluster" {
   count = var.enable == true ? 1 : 0
 
   name                   = "${var.cluster_name}-${var.project}"
-  region                 = "${var.region}"
+  region                 = "gcp-${var.region}"
   version                = "${var.es_version}"
   deployment_template_id = "${var.deployment_template_id}"
   alias = "${var.cluster_name}-${var.project}"

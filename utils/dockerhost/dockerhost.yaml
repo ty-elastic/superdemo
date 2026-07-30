@@ -15,11 +15,22 @@ data:
     receivers:
       docker_stats:
         endpoint: tcp://127.0.0.1:2375
+      metrics:
+        container.cpu.usage.percpu:
+          enabled: true
 
     processors:
-      resourcedetection/system:
-        detectors:
-          - system
+      resourcedetection:
+        detectors: ["system"]
+        timeout: 2s
+        override: false
+      transform/ds:
+        metric_statements:
+          - context: datapoint
+            statements:
+              - set(attributes["data_stream.type"], "metrics")
+              - set(attributes["data_stream.dataset"], "dockerstatsreceiver")
+              - set(attributes["data_stream.namespace"], "default")
 
     exporters:
       debug:
@@ -33,7 +44,7 @@ data:
       pipelines:
         metrics:
           receivers: [docker_stats]
-          processors: [resourcedetection/system]
+          processors: [resourcedetection, transform/ds]
           exporters: [debug, otlp/gateway]
 ---
 apiVersion: v1
@@ -61,7 +72,7 @@ spec:
         periodSeconds: 10
   containers:
     - name: collector
-      image: otel/opentelemetry-collector-contrib:0.152.0
+      image: otel/opentelemetry-collector-contrib:0.157.0
       command:
         - "/otelcol-contrib"
         - "--config=/etc/otelcol-contrib/config.yaml"

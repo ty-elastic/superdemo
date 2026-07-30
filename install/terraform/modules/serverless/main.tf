@@ -7,7 +7,7 @@ resource "ec_observability_project" "es_cluster" {
   count = var.enable == true ? 1 : 0
 
   name        = "${var.cluster_name}-${var.project}"
-  region_id   = "${var.region}"
+  region_id   = "gcp-${var.region}"
 }
 
 resource "time_sleep" "wait" {

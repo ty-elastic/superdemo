@@ -4,7 +4,7 @@ module "es_serverless" {
 
   # Pass required variables into the module
   project = var.labels.project
-  region = "gcp-${var.region}"
+  region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = var.cluster_name
   enable = var.es_cluster_type == "serverless" ? true : false
@@ -15,7 +15,7 @@ module "es_hosted" {
 
   # Pass required variables into the module
   project = var.labels.project
-  region = "gcp-us-west2"
+  region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = var.cluster_name
   enable = var.es_cluster_type == "hosted" ? true : false
