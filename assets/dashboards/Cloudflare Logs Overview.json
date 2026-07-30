@@ -44,7 +44,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS total_requests = COUNT(*)"
+              "query": "FROM logs-cloudflare | STATS total_requests = COUNT(*)"
             },
             "type": "metric",
             "sampling": 1,
@@ -86,7 +86,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS total_bytes = SUM(EdgeResponseBytes)"
+              "query": "FROM logs-cloudflare | STATS total_bytes = SUM(EdgeResponseBytes)"
             },
             "type": "metric",
             "sampling": 1,
@@ -132,7 +132,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS avg_bot_score = AVG(BotScore)"
+              "query": "FROM logs-cloudflare | STATS avg_bot_score = AVG(BotScore)"
             },
             "type": "metric",
             "sampling": 1,
@@ -179,7 +179,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | WHERE EdgeResponseStatus >= 400 | STATS error_requests = COUNT(*)"
+              "query": "FROM logs-cloudflare | WHERE EdgeResponseStatus >= 400 | STATS error_requests = COUNT(*)"
             },
             "type": "metric",
             "sampling": 1,
@@ -221,7 +221,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | WHERE SecurityAction IS NOT NULL | STATS security_events = COUNT(*)"
+              "query": "FROM logs-cloudflare | WHERE SecurityAction IS NOT NULL | STATS security_events = COUNT(*)"
             },
             "type": "metric",
             "sampling": 1,
@@ -263,7 +263,7 @@
           "config": {
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | WHERE CacheCacheStatus == \"hit\" | STATS cache_hits = COUNT(*)"
+              "query": "FROM logs-cloudflare | WHERE CacheCacheStatus == \"hit\" | STATS cache_hits = COUNT(*)"
             },
             "type": "metric",
             "sampling": 1,
@@ -334,7 +334,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY ClientRequestMethod | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY ClientRequestMethod | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -386,7 +386,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY ClientRequestProtocol | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY ClientRequestProtocol | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -438,7 +438,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY EdgeResponseContentType | SORT request_count DESC | LIMIT 8"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY EdgeResponseContentType | SORT request_count DESC | LIMIT 8"
             },
             "legend": {
               "visibility": "visible",
@@ -490,7 +490,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY EdgeResponseStatus | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY EdgeResponseStatus | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -523,7 +523,7 @@
             "type": "data_table",
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*), total_bytes = SUM(EdgeResponseBytes) BY ClientRequestPath | SORT request_count DESC | LIMIT 10"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*), total_bytes = SUM(EdgeResponseBytes) BY ClientRequestPath | SORT request_count DESC | LIMIT 10"
             },
             "sampling": 1,
             "ignore_global_filters": false,
@@ -605,7 +605,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY CacheCacheStatus | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY CacheCacheStatus | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -641,7 +641,7 @@
                 "type": "bar",
                 "data_source": {
                   "type": "esql",
-                  "query": "FROM cloudflare_logs | STATS avg_bytes = AVG(EdgeResponseBytes), total_bytes = SUM(EdgeResponseBytes) BY CacheCacheStatus | SORT total_bytes DESC"
+                  "query": "FROM logs-cloudflare | STATS avg_bytes = AVG(EdgeResponseBytes), total_bytes = SUM(EdgeResponseBytes) BY CacheCacheStatus | SORT total_bytes DESC"
                 },
                 "sampling": 1,
                 "ignore_global_filters": false,
@@ -786,7 +786,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | EVAL bot_bucket = CASE(BotScore < 30, \"Low (0-29)\", BotScore < 70, \"Medium (30-69)\", \"High (70-100)\") | STATS request_count = COUNT(*) BY bot_bucket | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | EVAL bot_bucket = CASE(BotScore < 30, \"Low (0-29)\", BotScore < 70, \"Medium (30-69)\", \"High (70-100)\") | STATS request_count = COUNT(*) BY bot_bucket | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -837,7 +837,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY SecurityAction | WHERE SecurityAction IS NOT NULL | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY SecurityAction | WHERE SecurityAction IS NOT NULL | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -888,7 +888,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY SecuritySources | WHERE SecuritySources IS NOT NULL | SORT request_count DESC"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY SecuritySources | WHERE SecuritySources IS NOT NULL | SORT request_count DESC"
             },
             "legend": {
               "visibility": "visible",
@@ -925,7 +925,7 @@
                 "type": "bar",
                 "data_source": {
                   "type": "esql",
-                  "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY BotScore | SORT BotScore ASC"
+                  "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY BotScore | SORT BotScore ASC"
                 },
                 "sampling": 1,
                 "ignore_global_filters": false,
@@ -1027,7 +1027,7 @@
             "type": "data_table",
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*), avg_bot_score = AVG(BotScore) BY ClientIP | SORT request_count DESC | LIMIT 10"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*), avg_bot_score = AVG(BotScore) BY ClientIP | SORT request_count DESC | LIMIT 10"
             },
             "sampling": 1,
             "ignore_global_filters": false,
@@ -1133,7 +1133,7 @@
             "type": "data_table",
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*), total_bytes = SUM(EdgeResponseBytes) BY ClientCountry | SORT request_count DESC | LIMIT 15"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*), total_bytes = SUM(EdgeResponseBytes) BY ClientCountry | SORT request_count DESC | LIMIT 15"
             },
             "sampling": 1,
             "ignore_global_filters": false,
@@ -1209,7 +1209,7 @@
             ],
             "data_source": {
               "type": "esql",
-              "query": "FROM cloudflare_logs | STATS request_count = COUNT(*) BY EdgeColoCode | SORT request_count DESC | LIMIT 20"
+              "query": "FROM logs-cloudflare | STATS request_count = COUNT(*) BY EdgeColoCode | SORT request_count DESC | LIMIT 20"
             },
             "legend": {
               "visibility": "hidden"
@@ -1237,7 +1237,7 @@
         "ignore_validations": false,
         "values_source": "esql",
         "title": "Client Country",
-        "esql_query": "FROM cloudflare_logs | STATS BY ClientCountry",
+        "esql_query": "FROM logs-cloudflare | STATS BY ClientCountry",
         "exclude": false,
         "sort": {
           "by": "_key",
@@ -1260,7 +1260,7 @@
         "ignore_validations": false,
         "values_source": "esql",
         "title": "Request Method",
-        "esql_query": "FROM cloudflare_logs | STATS BY ClientRequestMethod",
+        "esql_query": "FROM logs-cloudflare | STATS BY ClientRequestMethod",
         "exclude": false,
         "sort": {
           "by": "_key",
@@ -1283,7 +1283,7 @@
         "ignore_validations": false,
         "values_source": "esql",
         "title": "Response Status",
-        "esql_query": "FROM cloudflare_logs | STATS BY EdgeResponseStatus",
+        "esql_query": "FROM logs-cloudflare | STATS BY EdgeResponseStatus",
         "exclude": false,
         "sort": {
           "by": "_key",
@@ -1306,7 +1306,7 @@
         "ignore_validations": false,
         "values_source": "esql",
         "title": "Cache Status",
-        "esql_query": "FROM cloudflare_logs | STATS BY CacheCacheStatus",
+        "esql_query": "FROM logs-cloudflare | STATS BY CacheCacheStatus",
         "exclude": false,
         "sort": {
           "by": "_key",
@@ -1329,7 +1329,7 @@
         "ignore_validations": false,
         "values_source": "esql",
         "title": "Edge Colo",
-        "esql_query": "FROM cloudflare_logs | STATS BY EdgeColoCode",
+        "esql_query": "FROM logs-cloudflare | STATS BY EdgeColoCode",
         "exclude": false,
         "sort": {
           "by": "_key",
