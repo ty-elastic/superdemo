@@ -25,12 +25,18 @@ resource "ec_deployment" "es_cluster" {
       autoscaling = {}
     }
     autoscale = false
+    config = {
+      "esql.federation.enabled" = true
+    }
   }
 
   kibana = {
       size          = "2g"
       size_resource = "memory"
       zone_count    = 1   
+      config = {
+        "xpack.dataFederation.enabled" = true
+    }
   }
 
   integrations_server = {
