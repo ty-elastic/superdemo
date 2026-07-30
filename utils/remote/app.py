@@ -61,6 +61,15 @@ def delete_deployment(namespace, name):
 def add_deployment(namespace, body):
     return apps_api.create_namespaced_deployment(body=body, namespace=namespace)
 
+def patch_configmap(namespace, deployment_name, configmap_name, patch):
+    core_api.patch_namespaced_config_map(
+            name=configmap_name,
+            namespace=namespace,
+            body=patch
+        )
+
+    return restart_deployment(namespace, deployment_name)
+
 def restart_deployment(namespace, name):
 
     # Get the current Deployment object

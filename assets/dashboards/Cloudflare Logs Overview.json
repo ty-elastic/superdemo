@@ -1,30 +1,11 @@
 {
   "description": "Key metrics and breakdowns from cloudflare logs",
-  "options": {
-    "auto_apply_filters": true,
-    "hide_panel_borders": false,
-    "hide_panel_titles": false,
-    "sync_colors": false,
-    "sync_cursor": true,
-    "sync_tooltips": false,
-    "use_margins": true
-  },
-  "refresh_interval": {
-    "pause": true,
-    "value": 0
-  },
   "tags": [],
   "time_range": {
     "from": "now-24h",
     "to": "now"
   },
   "title": "Cloudflare Logs Overview",
-  "filters": [],
-  "esql_approximation": false,
-  "query": {
-    "expression": "",
-    "language": "kql"
-  },
   "panels": [
     {
       "collapsed": false,

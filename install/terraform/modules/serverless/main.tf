@@ -10,9 +10,17 @@ resource "ec_observability_project" "es_cluster" {
   region_id   = "${var.region}"
 }
 
+resource "time_sleep" "wait" {
+  count = var.enable == true ? 1 : 0
+  depends_on      = [ec_observability_project.es_cluster]
+
+  create_duration = "1m"
+}
+
 # 1. Execute the REST API Call
 data "http" "get_fleet_endpoint" {
   count = var.enable == true ? 1 : 0
+  depends_on    = [time_sleep.wait]
 
   url    = "${ec_observability_project.es_cluster[0].endpoints.kibana}/api/fleet/fleet_server_hosts"
   method = "GET"

@@ -26,7 +26,9 @@ resource "ec_deployment" "es_cluster" {
     }
     autoscale = false
     config = {
-      "esql.federation.enabled" = true
+      user_settings_yaml = <<-EOT
+        esql.federation.enabled: true
+      EOT
     }
   }
 
@@ -35,7 +37,9 @@ resource "ec_deployment" "es_cluster" {
       size_resource = "memory"
       zone_count    = 1   
       config = {
-        "xpack.dataFederation.enabled" = true
+      user_settings_yaml = <<-EOT
+        xpack.dataFederation.enabled: true
+      EOT
     }
   }
 

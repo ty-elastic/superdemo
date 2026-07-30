@@ -31,13 +31,6 @@ locals {
   elasticsearch_password = coalesce(var.elasticsearch_password, module.es_hosted.elasticsearch_password, module.es_serverless.elasticsearch_password)
 }
 
-resource "time_sleep" "wait" {
-  count = var.es_cluster_type != "" ? 1 : 0
-  depends_on      = [local.elasticsearch_url]
-
-  create_duration = "1m"
-}
-
 provider "elasticstack" {
   elasticsearch {
     username  = local.elasticsearch_username
@@ -48,7 +41,6 @@ provider "elasticstack" {
 
 resource "elasticstack_elasticsearch_security_api_key" "project_api_key" {
   count = var.elasticsearch_apikey == "" ? 1 : 0
-  depends_on    = [time_sleep.wait]
 
   name = "superdemo"
 }

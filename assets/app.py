@@ -615,9 +615,9 @@ def load_dashboards(kibana_server, kibana_auth):
     #print("here")
 
     print("search dbs...")
-    resp = requests.get(f"{kibana_server}/api/dashboards?per_page=1000",
+    dashboards = requests.get(f"{kibana_server}/api/dashboards?per_page=1000",
                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-    #print(resp.json())
+    #print(dashboards.json())
 
 
     for root, dirs, files in os.walk(directory_path):
@@ -629,7 +629,7 @@ def load_dashboards(kibana_server, kibana_auth):
                     newdb = json.load(fileo)
 
                     created = False
-                    for db in resp.json()['dashboards']:
+                    for db in dashboards.json()['data']:
                         id = None
                         try:
                             #print(db)
@@ -649,9 +649,10 @@ def load_dashboards(kibana_server, kibana_auth):
                             print(f"updated {id}")
                             created = True
                     if created is False:
+                        print(newdb['title'])
                         resp = requests.post(f"{kibana_server}/api/dashboards",
                                             json=newdb,
-                                            headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                                            headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json"})
                         #print(resp.json())
                         print(f"new")
 
