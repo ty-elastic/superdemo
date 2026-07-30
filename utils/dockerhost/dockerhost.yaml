@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dockerhost-collector-config
+  namespace: infra
+data:
+  config.yaml: |-
+    receivers:
+      docker_stats:
+        endpoint: tcp://127.0.0.1:2375
+
+    processors:
+      resourcedetection/system:
+        detectors:
+          - system
+
+    exporters:
+      debug:
+        verbosity: detailed
+      otlp/gateway:
+        endpoint: "http://opentelemetry-kube-stack-daemon-collector.opentelemetry-operator-system.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [docker_stats]
+          processors: [resourcedetection/system]
+          exporters: [debug, otlp/gateway]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dockerhost
+  labels:
+    app: dockerhost
+  namespace: infra
+spec:
+  initContainers:
+    # 2. Sidecar Container (The Docker Daemon)
+    - name: dind-daemon
+      image: docker:27-dind  # Contains the actual Docker daemon
+      restartPolicy: Always # <-- CRITICAL: Tells K8s this is a native sidecar
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""  # Disables TLS for simpler localhost-only setups
+      securityContext:
+        privileged: true  # CRITICAL: DinD requires root-level host privileges
+      readinessProbe:
+        exec:
+          command: ["docker", "info"]
+        initialDelaySeconds: 15
+        periodSeconds: 10
+  containers:
+    - name: collector
+      image: otel/opentelemetry-collector-contrib:0.152.0
+      command:
+        - "/otelcol-contrib"
+        - "--config=/etc/otelcol-contrib/config.yaml"
+      volumeMounts:
+        - mountPath: /etc/otelcol-contrib/config.yaml
+          name: data
+          subPath: config.yaml
+          readOnly: true
+
+    - name: docker-cli
+      image: docker:27-cli  # Contains only the Docker CLI tool
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          echo "Waiting for Docker daemon..."
+          until docker info >/dev/null 2>&1; do sleep 1; done
+          echo "Docker Daemon is ready!"
+          docker run -d -e SERVICE=service1 -e PEER=http://127.0.0.1:9393/ -p 9394:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
+          docker run -d -e SERVICE=service2 -e PEER=http://127.0.0.1:9394/ -p 9393:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
+          sleep infinity
+      env:
+        - name: DOCKER_HOST
+          value: tcp://127.0.0.1:2375  # Communicates with the sidecar over localhost
+  volumes:
+    - name: data
+      configMap:
+        name: dockerhost-collector-config

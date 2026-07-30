@@ -1343,8 +1343,5 @@
       },
       "type": "options_list_control"
     }
-  ],
-  "access_control": {
-    "access_mode": "default"
-  }
+  ]
 }

@@ -13,6 +13,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
 from dotenv import dotenv_values
 from io import StringIO
+import hashlib
 
 class MyYAML(YAML):
     def dump(self, data, stream=None, **kw):
@@ -612,14 +613,6 @@ def load_dashboards(kibana_server, kibana_auth):
     directory_path = "dashboards"
     target_extension = ".json"
 
-    #print("here")
-
-    print("search dbs...")
-    dashboards = requests.get(f"{kibana_server}/api/dashboards?per_page=1000",
-                        headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-    #print(dashboards.json())
-
-
     for root, dirs, files in os.walk(directory_path):
         for file in files:
             if file.endswith(target_extension):
@@ -628,33 +621,13 @@ def load_dashboards(kibana_server, kibana_auth):
 
                     newdb = json.load(fileo)
 
-                    created = False
-                    for db in dashboards.json()['data']:
-                        id = None
-                        try:
-                            #print(db)
-                            #print(db['data']['title'])
-                            if db['data']['title'] == newdb['title']:
-                                id = db['id']
-                                print(f"found {id}")
-                        except Exception as e:
-                            print("exception")
-                            #print(e)  
-
-                        if id is not None:
-                            resp = requests.put(f"{kibana_server}/api/dashboards/{id}",
-                                                json=newdb,
-                                                headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-                            #print(resp.json())
-                            print(f"updated {id}")
-                            created = True
-                    if created is False:
-                        print(newdb['title'])
-                        resp = requests.post(f"{kibana_server}/api/dashboards",
-                                            json=newdb,
-                                            headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json"})
-                        #print(resp.json())
-                        print(f"new")
+                    print(newdb['title'])
+                    id = hashlib.sha256(newdb['title'].encode('utf-8')).hexdigest()
+                    resp = requests.put(f"{kibana_server}/api/dashboards/{id}",
+                                        json=newdb,
+                                        headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                    print(resp.json())
+                    print(f"new")
 
 def delete_existing_skill(kibana_server, kibana_auth, skill_id):
 

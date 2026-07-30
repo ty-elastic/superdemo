@@ -201,6 +201,10 @@ if [ "$build_infra" = "true" ]; then
   cd ./utils/semantic-code-search
   ./build.sh -c $course
   cd ../..
+
+  cd ./utils/dockerhost
+  ./build.sh -c $course
+  cd ../..
 fi
 
 if [ "$build_service" = "true" ]; then
@@ -401,6 +405,21 @@ if [ "$ramen" = "true"  ]; then
     source $PWD/assets/scripts/ramen.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint 
 
     printf "deploying ramen...SUCCESS\n"
+fi
+
+if [ "$ramen" = "true"  ]; then
+    printf "deploying dockerhost...\n"
+
+    cd utils/dockerhost
+
+    export COURSE=$COURSE
+    export REPO=$REPO
+
+    envsubst '$COURSE,$REPO' < dockerhost.yaml  | kubectl apply -f -
+    
+    cd ../..
+
+    printf "deploying dockerhost...SUCCESS\n"
 fi
 
 if [ "$assets" = "true" ]; then
