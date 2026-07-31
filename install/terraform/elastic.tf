@@ -18,6 +18,7 @@ module "es_hosted" {
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = var.cluster_name
+  es_version = var.es_cluster_hosted_version
   enable = var.es_cluster_type == "hosted" ? true : false
 }
 

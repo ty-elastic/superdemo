@@ -90,6 +90,10 @@ variable "es_cloud_apikey" {
   type = string
 }
 
+variable "es_cluster_hosted_version" {
+  type = string
+}
+
 variable "es_cluster_type" {
   type = string
   default = "serverless"
