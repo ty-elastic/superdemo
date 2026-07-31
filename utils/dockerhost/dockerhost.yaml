@@ -15,9 +15,6 @@ data:
     receivers:
       docker_stats:
         endpoint: tcp://127.0.0.1:2375
-      metrics:
-        container.cpu.usage.percpu:
-          enabled: true
 
     processors:
       resourcedetection:
