@@ -24,7 +24,6 @@ variable "cloud_apikey" {
 
 variable "es_version" {
   type = string
-  default = "9.5.0-SNAPSHOT"
 }
 
 variable "deployment_template_id" {

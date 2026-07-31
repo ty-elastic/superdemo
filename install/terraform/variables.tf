@@ -92,6 +92,7 @@ variable "es_cloud_apikey" {
 
 variable "es_cluster_hosted_version" {
   type = string
+  default = "9.5.0-SNAPSHOT"
 }
 
 variable "es_cluster_type" {
