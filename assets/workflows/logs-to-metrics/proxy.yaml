@@ -1,0 +1,48 @@
+name: metrics-from-logs
+enabled: true
+triggers:
+  - type: scheduled
+    with:
+      every: 15m
+consts:
+  lookback_mins: "15m" 
+steps:
+  - name: query
+    type: elasticsearch.esql.query
+    with:
+      query: |
+        FROM logs.otel
+        | WHERE service.name == "proxy"
+        | WHERE @timestamp >= NOW()-{{ consts.lookback_mins }} AND @timestamp <= NOW()
+        | DISSECT body.text "%{client_ip} - - [%{timestamp}] \"%{request_method} %{request_path} HTTP/%{http_version}\" %{status_code} %{response_bytes} %{response_time} \"%{referrer}\" \"%{user_agent}\""
+        | USER_AGENT ua = `user_agent`
+        | WHERE ua.os.full IS NOT NULL
+        | STATS COUNT() BY ua.os.full
+      format: json
+
+  - name: build_docs
+    type: foreach
+    foreach: "{{ steps.query.output.values }}"
+    steps:
+      - name: store
+        type: elasticsearch.index
+        with:
+          index: "metrics-logs.otel-default"
+          document:
+            "@timestamp": "{{ 'now' | date: '%s' | times: 1000 }}"
+            "start_timestamp": "{{ 'now' | date: '%s' | times: 1000 }}"
+            "data_stream":
+              "dataset": "logs.otel"
+              "namespace": "default"
+              "type": "metrics"
+            "attributes":
+              "measurement": "ua.os.full"
+              "ua.os.full": "{{ foreach.item[1] }}"
+            "resource":
+              "attributes":
+                "service.name": "proxy"
+              "schema_url": "https://opentelemetry.io/schemas/1.18.0"
+            "metrics":
+              "count": "${{foreach.item[0]}}"
+
+

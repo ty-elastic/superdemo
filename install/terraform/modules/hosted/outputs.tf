@@ -7,11 +7,11 @@ output "kibana_url" {
 }
 
 output "ingest_url" {
-  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.cluster_name}-${var.project}.ingest.${var.region}.gcp.elastic-cloud.com" : null
+  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.alias}.ingest.${var.region}.gcp.elastic-cloud.com" : null
 }
 
 output "fleet_url" {
-  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.cluster_name}-${var.project}.fleet.${var.region}.gcp.elastic-cloud.com" : null
+  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.alias}-${var.project}.fleet.${var.region}.gcp.elastic-cloud.com" : null
 }
 
 output "elasticsearch_username" {
