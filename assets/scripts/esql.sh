@@ -33,7 +33,6 @@ config_esql_df_source() {
    printf "$FUNCNAME $1...SUCCESS\n"
    return 0
 }
-config_esql_df_source logs s3 eu-west-3
 
 config_esql_df_set() {
    printf "$FUNCNAME $1...\n"
@@ -56,6 +55,8 @@ config_esql_df_set() {
    printf "$FUNCNAME $1...SUCCESS\n"
    return 0
 }
+
+config_esql_df_source logs s3 eu-west-3
 config_esql_df_set logs-cloudflare logs "s3://datasets-documentation/clickstack-integrations/cloudflare/*.json" ndjson
 
 

@@ -13,7 +13,7 @@ module "es_serverless" {
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = var.cluster_name
-  alias = "${var.cluster_name}-${var.project}-${random_string.alias_id.result}"
+  alias = "${var.cluster_name}-${random_string.alias_id.result}"
   enable = var.es_cluster_type == "serverless" ? true : false
 }
 
@@ -21,7 +21,7 @@ module "es_hosted" {
   source = "./modules/hosted" # Relative path to your module
 
   # Pass required variables into the module
-  alias = "${var.cluster_name}-${var.project}-${random_string.alias_id.result}"
+  alias = "${var.cluster_name}-${random_string.alias_id.result}"
   project = var.labels.project
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
