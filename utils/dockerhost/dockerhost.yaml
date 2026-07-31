@@ -87,8 +87,8 @@ spec:
           echo "Waiting for Docker daemon..."
           until docker info >/dev/null 2>&1; do sleep 1; done
           echo "Docker Daemon is ready!"
-          docker run -d -e SERVICE=service1 -e PEER=http://127.0.0.1:9393/ -p 9394:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
-          docker run -d -e SERVICE=service2 -e PEER=http://127.0.0.1:9394/ -p 9393:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
+          docker run --name service1 -d -e SERVICE=service1 -e PEER=http://127.0.0.1:9393/ -p 9394:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
+          docker run --name service2 -d -e SERVICE=service2 -e PEER=http://127.0.0.1:9394/ -p 9393:80 us-central1-docker.pkg.dev/elastic-sa/tbekiares/dockerhost:$COURSE
           sleep infinity
       env:
         - name: DOCKER_HOST
