@@ -21,3 +21,7 @@ variable "cloud_apikey" {
   description = "Elastic cloud apikey for creating elastic cloud projects"
   type        = string
 }
+
+variable "alias" {
+  type = string
+}

@@ -31,3 +31,7 @@ variable "deployment_template_id" {
   type = string
   default = "gcp-cpu-optimized"
 }
+
+variable "alias" {
+  type = string
+}

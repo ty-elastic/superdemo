@@ -9,7 +9,7 @@ resource "ec_deployment" "es_cluster" {
   region                 = "gcp-${var.region}"
   version                = "${var.es_version}"
   deployment_template_id = "${var.deployment_template_id}"
-  alias = "${var.cluster_name}-${var.project}"
+  alias = var.alias
 
   elasticsearch = {
     hot = {

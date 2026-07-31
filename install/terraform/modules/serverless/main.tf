@@ -8,6 +8,7 @@ resource "ec_observability_project" "es_cluster" {
 
   name        = "${var.cluster_name}-${var.project}"
   region_id   = "gcp-${var.region}"
+  alias = var.alias
 }
 
 resource "time_sleep" "wait" {
