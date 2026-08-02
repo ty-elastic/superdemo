@@ -1,0 +1,51 @@
+version: "1"
+name: metrics-from-logs-scheduler
+enabled: true
+consts:
+  window: 1m
+triggers:
+  - type: scheduled
+    with:
+      every: 5m
+steps:
+  - name: check_last_snapshot
+    type: elasticsearch.search
+    with:
+      size: 1
+      sort:
+        - "@timestamp":
+            order: desc
+      _source:
+        - "@timestamp"
+      index: metrics-logs.otel-default
+  - name: calculate_window_start
+    type: data.set
+    with:
+      window_ms: '{%- assign window_num = consts.window | split: "m" | first | plus: 0 -%} {{ window_num | times: 60000 }}'
+      last_ts_ms: '{%- assign last_ts = steps.check_last_snapshot.output.hits.hits[0]._source["@timestamp"] -%} {{ last_ts | date: "%s" | times: 1000 }}'
+      window_start_ms: '{%- assign window_num = consts.window | split: "m" | first | plus: 0 -%} {%- assign w_ms = window_num | times: 60000 -%} {%- assign last_ts = steps.check_last_snapshot.output.hits.hits[0]._source["@timestamp"] -%} {%- assign l_ms = last_ts | date: "%s" | times: 1000 -%} {%- assign numerator = l_ms | plus: w_ms | minus: 1 -%} {{ numerator | divided_by: w_ms | floor | times: w_ms }}'
+      now_ms: '{{ "now" | date: "%s" | times: 1000 }}'
+  - name: calculate_num_windows
+    type: data.set
+    with:
+      elapsed_ms: "{{ steps.calculate_window_start.output.now_ms | minus: steps.calculate_window_start.output.window_start_ms }}"
+      num_windows: "{%- assign elapsed = steps.calculate_window_start.output.now_ms | minus: steps.calculate_window_start.output.window_start_ms -%} {{ elapsed | divided_by: steps.calculate_window_start.output.window_ms | floor }}"
+  - name: build_window_list
+    type: data.set
+    with:
+      window_index_array: "{%- assign n = steps.calculate_num_windows.output.num_windows | minus: 1 -%} {%- assign arr = (0..n) -%} {{ arr | json }}"
+  - name: process_windows_if_needed
+    type: if
+    condition: steps.calculate_num_windows.output.num_windows > 0
+    steps:
+      - name: process_windows
+        type: foreach
+        foreach: "{{ steps.build_window_list.output.window_index_array }}"
+        steps:
+          - name: execute_metrics_from_logs
+            type: workflow.execute
+            with:
+              workflow-id: metrics-from-logs-proxy
+              inputs:
+                start_timestamp: '{%- assign w_ms  = steps.calculate_window_start.output.window_ms -%} {%- assign ws_ms = steps.calculate_window_start.output.window_start_ms -%} {%- assign offset = foreach.item | times: w_ms -%} {%- assign start_ms = ws_ms | plus: offset -%} {%- assign start_s  = start_ms | divided_by: 1000 -%} {{ start_s | date: "%Y-%m-%dT%H:%M:%S.000Z" }}'
+                end_timestamp: '{%- assign w_ms  = steps.calculate_window_start.output.window_ms -%} {%- assign ws_ms = steps.calculate_window_start.output.window_start_ms -%} {%- assign offset = foreach.item | plus: 1 | times: w_ms -%} {%- assign end_ms = ws_ms | plus: offset | minus: 1 -%} {%- assign end_s   = end_ms | divided_by: 1000 -%} {{ end_s | date: "%Y-%m-%dT%H:%M:%S.999Z" }}'

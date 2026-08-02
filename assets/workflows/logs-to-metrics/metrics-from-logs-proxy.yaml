@@ -1,29 +1,20 @@
-name: logs-to-metrics
+name: metrics-from-logs-proxy
 enabled: true
 triggers:
-  - type: scheduled
-    with:
-      every: 5m
-consts:
-  lookback_mins: "5" 
+  - type: manual
+    inputs:
+      - name: start_timestamp
+        type: string
+      - name: end_timestamp
+        type: string
 steps:
-  - name: variables1
-    type: data.set
-    with:
-      lookback_secs: "${{ consts.lookback_mins | to_integer | times: 60 }}"
-      now_secs: "${{ 'now' | date: '%s' | to_integer }}"
-  - name: variables2
-    type: data.set
-    with:
-      start_timestamp_ms: "${{ variables.now_secs | minus: variables.lookback_secs | times: 1000 }}"
-      end_timestamp_ms: "${{ variables.now_secs | times: 1000 }}"
   - name: query
     type: elasticsearch.esql.query
     with:
       query: |
         FROM logs.otel
         | WHERE service.name == "proxy"
-        | WHERE @timestamp >= TO_DATETIME({{ variables.start_timestamp_ms}}) AND @timestamp <= TO_DATETIME({{ variables.end_timestamp_ms }})
+        | WHERE @timestamp >= TO_DATETIME("{{ inputs.start_timestamp}}") AND @timestamp <= TO_DATETIME("{{ inputs.end_timestamp }}")
         | DISSECT body.text "%{client_ip} - - [%{timestamp}] \"%{request_method} %{request_path} HTTP/%{http_version}\" %{status_code} %{response_bytes} %{response_time} \"%{referrer}\" \"%{user_agent}\""
         | USER_AGENT ua = `user_agent`
         | WHERE ua.os.full IS NOT NULL
@@ -42,8 +33,8 @@ steps:
             - create:
                 dynamic_templates:
                   "metrics.count": "counter_long"
-            - "@timestamp": "{{ variables.end_timestamp_ms }}"
-              "start_timestamp": "{{ variables.start_timestamp_ms }}"
+            - "@timestamp": "{{ inputs.end_timestamp }}"
+              "start_timestamp": "{{ inputs.start_timestamp }}"
               "resource":
                 "attributes":
                   "service.name": "proxy"
@@ -52,3 +43,4 @@ steps:
                 "ua.os.full": "{{ foreach.item[1] }}"
               "metrics":
                 "count": "${{ foreach.item[0] }}"
+        
