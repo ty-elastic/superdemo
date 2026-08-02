@@ -1,0 +1,15 @@
+{
+      "type": "http",
+      "name": "/monkey/state",
+      "tags": [
+        "trader"
+      ],
+      "private_locations": ["host-1"],
+      "schedule": {
+        "number": "3",
+        "unit": "m"
+      },
+      "service.name": "monkey",
+      "check.request.method": "GET",
+      "url": "http://proxy.trading-emea.svc.cluster.local:9090/monkey/state"
+}
