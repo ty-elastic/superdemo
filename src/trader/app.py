@@ -94,6 +94,16 @@ def decode_common_args():
         raise Exception("malformed customer_id", request.remote_addr)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
 
+
+    if flags is not None and "HASHNEWALG" in flags:
+        app.logger.info(f"hashing with scrypt")
+        hashed_customer_id_obj = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
+    else:
+        app.logger.info(f"hashing with sha256")
+        hashed_customer_id_obj = hashlib.sha256(customer_id.encode('utf-8'))
+    hashed_customer_id = hashed_customer_id_obj.hex()
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.hashed_customer_id", hashed_customer_id)
+
     subscription = params.get('subscription', None)
     if subscription is not None:
         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.subscription", subscription)
@@ -126,10 +136,10 @@ def decode_common_args():
     
     skew_market_factor = params.get('skew_market_factor', 0)
 
-    return trade_id, customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags
+    return trade_id, customer_id, hashed_customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags
 
 @tracer.start_as_current_span("trade")
-def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, action, error_db, data_source, classification, error_db_service=None, flags):
+def trade(*, trade_id, customer_id, hashed_customer_id, symbol, day_of_week, shares, share_price, action, error_db, data_source, classification, error_db_service=None, flags):
 
     app.logger.info(f"trade requested for {symbol} on day {day_of_week}")
 
@@ -156,20 +166,11 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ac
     }
     share_price_gauge.set(share_price, attributes)
 
-    if flags is not None and "HASHNEWALG" in flags:
-        app.logger.info(f"hashing with scrypt")
-        hashed_customer_id = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
-        obfuscated_customer_id = hashed_customer_id.hex()
-    else:
-        app.logger.info(f"hashing with sha256")
-        hashed_customer_id = hashlib.sha256(customer_id.encode('utf-8'))
-        obfuscated_customer_id = hashed_customer_id.hexdigest()
-
     response = {}
     response['id'] = trade_id
     response['symbol']= symbol
     
-    params={'customer_id': obfuscated_customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
+    params={'customer_id': hashed_customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
     #print(params)
     if error_db is True:
         params['share_price'] = -share_price
@@ -186,29 +187,29 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ac
     response['share_price']= share_price
     response['action']= action
     
-    app.logger.info(f"traded {symbol} on day {day_of_week} for {obfuscated_customer_id}, email:{customer_id}@email.co")
+    app.logger.info(f"traded {symbol} on day {day_of_week} for {hashed_customer_id}, email:{customer_id}@email.co")
     
     return response
     
 @app.post('/trade/force')
 def trade_force():
-    trade_id, customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
+    trade_id, customer_id, hashed_customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
 
     params = request.get_json()
     action = params.get('action')
     shares = params.get('shares')
     share_price = params.get('share_price')
 
-    return trade (data_source=data_source, classification=classification, trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, action=action, error_db=False, flags=flags)
+    return trade (data_source=data_source, classification=classification, trade_id=trade_id, symbol=symbol, customer_id=customer_id, hashed_customer_id=hashed_customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, action=action, error_db=False, flags=flags)
 
 @app.post('/trade/request')
 def trade_request():
-    trade_id, customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
+    trade_id, customer_id, hashed_customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
     
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
     
-    return trade (data_source=data_source, classification=classification, trade_id=trade_id, symbol=symbol, customer_id=customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, action=action, error_db=error_db, error_db_service=error_db_service, flags=flags)
+    return trade (data_source=data_source, classification=classification, trade_id=trade_id, symbol=symbol, customer_id=customer_id, hashed_customer_id=hashed_customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, action=action, error_db=error_db, error_db_service=error_db_service, flags=flags)
 
 @tracer.start_as_current_span("run_model")
 def run_model(*, trade_id, customer_id, day_of_week, symbol, error=False, latency_amount=0.0, latency_action=None, skew_market_factor=0):

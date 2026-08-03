@@ -1,0 +1,36 @@
+{
+    "ingest": {
+        "lifecycle": {
+            "inherit": {}
+        },
+        "processing": {
+            "steps": [
+                {
+                    "action": "redact",
+                    "from": "body.text",
+                    "patterns": [
+                        "%{EMAILADDRESS:email}"
+                    ],
+                    "ignore_failure": true,
+                    "ignore_missing": true,
+                    "where": {
+                        "field": "resource.attributes.service.name",
+                        "eq": "trader"
+                    }
+                }
+            ]
+        },
+        "settings": {},
+        "failure_store": {
+            "inherit": {}
+        },
+        "classic": {
+            "field_overrides": {
+                "body.text": {
+                    "type": "text",
+                    "description": "A value containing the body of the log record (text format)."
+                }
+            }
+        }
+    }
+}

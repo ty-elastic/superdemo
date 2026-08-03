@@ -22,6 +22,7 @@ COPY objects objects
 COPY skills skills
 COPY slos slos
 COPY dashboards dashboards
+COPY streams streams
 
 ENV PYTHONUNBUFFERED=1
 

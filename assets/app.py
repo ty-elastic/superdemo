@@ -132,6 +132,26 @@ def backup_workflows(kibana_server, kibana_auth):
             #yaml.dump(parsed)
             yaml.dump(parsed, yaml_file)
   
+
+  
+def load_streams(kibana_server, kibana_auth):
+    
+    directory_path = "streams"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                parent_dir_name = os.path.basename(root)
+                full_path = os.path.join(root, file)
+                with open(full_path, 'r') as fileo:
+
+                    proc = json.load(fileo)
+
+                    resp = requests.put(f"{kibana_server}/api/streams/{parent_dir_name}/_ingest",
+                                        json=proc,
+                                        headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json"})
+                    print(resp.json())   
   
 def delete_existing_workflow(kibana_server, kibana_auth, es_host, workflow_name):
     
@@ -883,6 +903,10 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_dashboards(kibana_host, auth)
         print('done')
 
+    elif action == 'load_streams':
+        load_streams(kibana_host, auth)
+        print('done')
+
     elif action == 'load':
         load_workflows(kibana_host, auth, es_host, remote_host)
         #load_new_knowledge(es_host, auth)
@@ -899,8 +923,10 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
 
         load_objects(kibana_host, auth)
         load_dashboards(kibana_host, auth)
-
         load_slos(kibana_host, auth, services_split)
+        
+        load_streams(kibana_host, auth)
+
         print('done')
 
     elif action == 'backup':
