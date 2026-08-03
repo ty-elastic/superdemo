@@ -259,9 +259,10 @@ def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
                                 synthetic = json.load(fileo)
                                 print(f'namespace={namespace}')
                                 synthetic['name'] = synthetic['name'].replace('$NAMESPACE', namespace)
-                                synthetic['inline_script'] = synthetic['inline_script'].replace('$NAMESPACE', namespace)
                                 port = port+1
-                                synthetic['inline_script'] = synthetic['inline_script'].replace('$PORT', str(port))
+                                if 'inline_script' in synthetic:
+                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$NAMESPACE', namespace)
+                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$PORT', str(port))
 
                                 delete_synthetic(kibana_server, kibana_auth, synthetic['name'])
 
