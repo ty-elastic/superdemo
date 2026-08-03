@@ -275,16 +275,14 @@ def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
                         with open(full_path, 'r') as fileo:
                             synthetic = json.load(fileo)
 
-                            if '$IIS_ENDPOINT' in synthetic['inline_script']:
-                                if iis_endpoint is None:
-                                    print("iis_endpoint is None")
-                                    continue
-
-                            print(f"iis_endpoint is {iis_endpoint}")
-                                
-                            synthetic['inline_script'] = synthetic['inline_script'].replace('$IIS_ENDPOINT', iis_endpoint)
-                            #print(synthetic)
-
+                            if 'inline_script' in synthetic:
+                                if '$IIS_ENDPOINT' in synthetic['inline_script']:
+                                    if iis_endpoint is None:
+                                        print("iis_endpoint is None")
+                                        continue
+                                    print(f"iis_endpoint is {iis_endpoint}")
+                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$IIS_ENDPOINT', iis_endpoint)
+   
                             delete_synthetic(kibana_server, kibana_auth, synthetic['name'])
 
                             resp = requests.post(f"{kibana_server}/api/synthetics/monitors",
