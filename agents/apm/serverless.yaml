@@ -958,15 +958,15 @@ collectors:
           metrics/telemetry:
             receivers: [otlp/telemetry]
             processors: []
-            exporters: [debug, otlp/ingest_metrics_traces]
+            exporters: [debug, otlp_grpc/ingest_metrics_traces]
           logs/telemetry:
             receivers: [otlp/telemetry]
             processors: []
-            exporters: [debug, otlp/ingest_logs]
+            exporters: [debug, otlp_grpc/ingest_logs]
           traces/telemetry:
             receivers: [otlp/telemetry]
             processors: []
-            exporters: [debug, otlp/ingest_metrics_traces]
+            exporters: [debug, otlp_grpc/ingest_metrics_traces]
 
           metrics:
             receivers: [otlp]

@@ -2,25 +2,29 @@ version: "1"
 name: metrics-from-logs-scheduler
 enabled: true
 consts:
-  window_mins: 1
   summarization_workflows:
-    - workflow_id: metrics-from-logs-proxy
+    - workflow_id: signal-to-metrics-proxy
       datastream: metrics-logs.otel-default
+      window_mins: 1
 triggers:
   - type: scheduled
     with:
       every: 5m
 steps:
-  - name: convert_units
+  - name: now
     type: data.set
     with:
-      window_ms: "{{ consts.window_mins | times: 60000 }}"
       now_ms: "{{ 'now' | date: '%s' | times: 1000 }}"
 
   - name: foreach_workflow
     type: foreach
     foreach: "{{ consts.summarization_workflows }}"
     steps:
+      - name: convert_units
+        type: data.set
+        with:
+          window_ms: "{{ steps.foreach_workflow.item.window_mins | times: 60000 }}"
+
       - name: check_last_snapshot
         type: elasticsearch.search
         with:
