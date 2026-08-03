@@ -159,17 +159,17 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ac
     if flags is not None and "HASHNEWALG" in flags:
         app.logger.info(f"hashing with scrypt")
         hashed_customer_id = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
-        customer_id = hashed_customer_id.hex()
+        obfuscated_customer_id = hashed_customer_id.hex()
     else:
         app.logger.info(f"hashing with sha256")
         hashed_customer_id = hashlib.sha256(customer_id.encode('utf-8'))
-        customer_id = hashed_customer_id.hexdigest()
+        obfuscated_customer_id = hashed_customer_id.hexdigest()
 
     response = {}
     response['id'] = trade_id
     response['symbol']= symbol
     
-    params={'customer_id': customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
+    params={'customer_id': obfuscated_customer_id, 'trade_id': trade_id, 'symbol': symbol, 'shares': shares, 'share_price': share_price, 'action': action}
     #print(params)
     if error_db is True:
         params['share_price'] = -share_price
@@ -186,7 +186,7 @@ def trade(*, trade_id, customer_id, symbol, day_of_week, shares, share_price, ac
     response['share_price']= share_price
     response['action']= action
     
-    app.logger.info(f"traded {symbol} on day {day_of_week} for {customer_id}@email.co")
+    app.logger.info(f"traded {symbol} on day {day_of_week} for {obfuscated_customer_id}, email:{customer_id}@email.co")
     
     return response
     

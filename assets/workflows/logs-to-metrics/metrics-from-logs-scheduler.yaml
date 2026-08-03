@@ -24,6 +24,10 @@ steps:
       - name: check_last_snapshot
         type: elasticsearch.search
         with:
+          query:
+            term:
+              resource.attributes.workflow_id:
+                value: "{{ steps.foreach_workflow.item.workflow_id }}"
           size: 1
           sort:
             - "@timestamp":
@@ -35,7 +39,7 @@ steps:
           continue: true
       - name: resolve_last_ts
         type: if
-        condition: 'steps.check_last_snapshot.output : *'
+        condition: steps.check_last_snapshot.output.hits.total.value > 0
         steps:
           - name: real_last_ts
             type: data.set

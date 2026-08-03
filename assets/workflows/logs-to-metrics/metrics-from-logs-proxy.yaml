@@ -30,18 +30,17 @@ steps:
   - name: store
     type: elasticsearch.bulk
     with:
-      index: "{{ inputs.datastream }}"
+      index: metrics-logs.otel-default
       operations:
       - create:
           dynamic_templates:
-            metrics.count: counter_long
+            ua.os.count: counter_long
       - '@timestamp': '{{ inputs.end_timestamp }}'
         start_timestamp: '{{ inputs.start_timestamp }}'
         resource:
           attributes:
-            service.name: proxy
+            workflow_id: '{{ workflow.id }}'
         attributes:
-          measurement: ua.os.full
           ua.os.full: '{{ foreach.item[1] }}'
         metrics:
-          count: ${{ foreach.item[0] }}
+          ua.os.count: ${{ foreach.item[0] }}
