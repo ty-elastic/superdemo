@@ -1,46 +1,47 @@
 name: metrics-from-logs-proxy
 enabled: true
 triggers:
-  - type: manual
-    inputs:
-      - name: start_timestamp
-        type: string
-      - name: end_timestamp
-        type: string
+- type: manual
+  inputs:
+  - name: start_timestamp
+    type: string
+  - name: end_timestamp
+    type: string
+  - name: datastream
+    type: string
 steps:
-  - name: query
-    type: elasticsearch.esql.query
-    with:
-      query: |
-        FROM logs.otel
-        | WHERE service.name == "proxy"
-        | WHERE @timestamp >= TO_DATETIME("{{ inputs.start_timestamp}}") AND @timestamp <= TO_DATETIME("{{ inputs.end_timestamp }}")
-        | DISSECT body.text "%{client_ip} - - [%{timestamp}] \"%{request_method} %{request_path} HTTP/%{http_version}\" %{status_code} %{response_bytes} %{response_time} \"%{referrer}\" \"%{user_agent}\""
-        | USER_AGENT ua = `user_agent`
-        | WHERE ua.os.full IS NOT NULL
-        | STATS COUNT() BY ua.os.full
-      format: json
+- name: query
+  type: elasticsearch.esql.query
+  with:
+    query: |
+      FROM logs.otel
+      | WHERE service.name == "proxy"
+      | WHERE @timestamp >= TO_DATETIME("{{ inputs.start_timestamp}}") AND @timestamp <= TO_DATETIME("{{ inputs.end_timestamp }}")
+      | DISSECT body.text "%{client_ip} - - [%{timestamp}] \"%{request_method} %{request_path} HTTP/%{http_version}\" %{status_code} %{response_bytes} %{response_time} \"%{referrer}\" \"%{user_agent}\""
+      | USER_AGENT ua = `user_agent`
+      | WHERE ua.os.full IS NOT NULL
+      | STATS COUNT() BY ua.os.full
+    format: json
 
-  - name: build_docs
-    type: foreach
-    foreach: "{{ steps.query.output.values }}"
-    steps:
-      - name: store
-        type: elasticsearch.bulk
-        with:
-          index: "metrics-logs.otel-default"
-          operations:
-            - create:
-                dynamic_templates:
-                  "metrics.count": "counter_long"
-            - "@timestamp": "{{ inputs.end_timestamp }}"
-              "start_timestamp": "{{ inputs.start_timestamp }}"
-              "resource":
-                "attributes":
-                  "service.name": "proxy"
-              "attributes":
-                "measurement": "ua.os.full"
-                "ua.os.full": "{{ foreach.item[1] }}"
-              "metrics":
-                "count": "${{ foreach.item[0] }}"
-        
+- name: build_docs
+  type: foreach
+  foreach: '{{ steps.query.output.values }}'
+  steps:
+  - name: store
+    type: elasticsearch.bulk
+    with:
+      index: "{{ inputs.datastream }}"
+      operations:
+      - create:
+          dynamic_templates:
+            metrics.count: counter_long
+      - '@timestamp': '{{ inputs.end_timestamp }}'
+        start_timestamp: '{{ inputs.start_timestamp }}'
+        resource:
+          attributes:
+            service.name: proxy
+        attributes:
+          measurement: ua.os.full
+          ua.os.full: '{{ foreach.item[1] }}'
+        metrics:
+          count: ${{ foreach.item[0] }}

@@ -32,6 +32,8 @@ spec:
           name: superdemo-install
           imagePullPolicy: Always
           env:
+            - name: K3S
+              value: "$K3S"
             - name: COURSE
               value: "$COURSE"
             - name: ELASTICSEARCH_URL

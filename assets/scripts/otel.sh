@@ -2,8 +2,10 @@
 
 source $PWD/assets/scripts/retry.sh
 
+k3s=false
+
 OPTIND=1
-while getopts "h:i:j:k:f:o:t:" opt
+while getopts "h:i:j:k:f:o:t:9:" opt
 do
    case "$opt" in
       h ) elasticsearch_kibana_endpoint="$OPTARG" ;;
@@ -12,8 +14,10 @@ do
       k ) elasticsearch_otlp_endpoint="$OPTARG" ;;
       t ) elasticsearch_fleet_endpoint="$OPTARG" ;;
 
-      f) force="$OPTARG" ;;
-      o) deploy_otel="$OPTARG" ;;
+      f ) force="$OPTARG" ;;
+      o ) deploy_otel="$OPTARG" ;;
+
+      9 ) k3s="$OPTARG" ;;
    esac
 done
 
@@ -118,11 +122,19 @@ deploy_otel() {
         --from-literal=elastic_api_key="$elasticsearch_api_key"
 
     cd agents/apm
-    helm upgrade --install opentelemetry-kube-stack open-telemetry/opentelemetry-kube-stack \
-        --namespace opentelemetry-operator-system \
-        --values "$deploy_otel.yaml" \
-        --version '0.12.4' \
-        --set clusterName=superdemo
+
+    if [ "$k3s" = "true" ]; then
+        helm upgrade --install opentelemetry-kube-stack open-telemetry/opentelemetry-kube-stack \
+            --namespace opentelemetry-operator-system \
+            --values "$deploy_otel.yaml" \
+            --version '0.12.4' \
+            --set clusterName=superdemo
+    else
+        helm upgrade --install opentelemetry-kube-stack open-telemetry/opentelemetry-kube-stack \
+            --namespace opentelemetry-operator-system \
+            --values "$deploy_otel.yaml" \
+            --version '0.12.4'
+    fi
     cd ../..
 
     cd agents/tbs

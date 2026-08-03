@@ -51,6 +51,7 @@ remote=false
 ramen=false
 windows=false
 http_auth=true
+k3s=false
 
 elasticsearch_es_endpoint="na"
 elasticsearch_kibana_endpoint="na"
@@ -69,7 +70,7 @@ case "${unameOut}" in
 esac
 
 OPTIND=1
-while getopts "a:c:s:l:b:x:o:d:r:v:g:h:i:j:k:w:y:p:e:m:f:n:z:u:t:1:q:2:3:4:5:6:7:" opt
+while getopts "a:c:s:l:b:x:o:d:r:v:g:h:i:j:k:w:y:p:e:m:f:n:z:u:t:1:q:2:3:4:5:6:7:9:" opt
 do
    case "$opt" in 
       1 ) prereq="$OPTARG" ;;
@@ -80,6 +81,8 @@ do
       5 ) windows_username="$OPTARG" ;;
       6 ) windows_password="$OPTARG" ;;  
       7 ) http_auth="$OPTARG" ;;  
+
+      9 ) k3s="$OPTARG" ;;
 
       a ) arch="$OPTARG" ;;
       c ) course="$OPTARG" ;;
@@ -232,7 +235,7 @@ if [ "$deploy_otel" != "false" ]; then
         deploy_otel="stack"
     fi
 
-    source $PWD/assets/scripts/otel.sh -t $elasticsearch_fleet_endpoint -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint -o $deploy_otel
+    source $PWD/assets/scripts/otel.sh -9 $k3s -t $elasticsearch_fleet_endpoint -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint -o $deploy_otel
 fi
 
 if [ "$features" = "true" ]; then

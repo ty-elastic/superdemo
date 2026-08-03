@@ -13,7 +13,11 @@ fi
 ./build.sh -t $FLEET_URL -c $COURSE -1 true -7 $HTTP_AUTH -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL 
 
 # services
-./build.sh -o serverless -t $FLEET_URL -c $COURSE -d true -n false -b false -s all -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL
+if [[ -n "$K3S" ]]; then
+    ./build.sh -9 $K3S -o serverless -t $FLEET_URL -c $COURSE -d true -n false -b false -s all -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL
+else
+    ./build.sh -o serverless -t $FLEET_URL -c $COURSE -d true -n false -b false -s all -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL
+fi
 
 # synthetics, profiling
 ./build.sh -o false -t $FLEET_URL -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -p true -m true
