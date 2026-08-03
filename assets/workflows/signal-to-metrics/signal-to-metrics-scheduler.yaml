@@ -1,5 +1,5 @@
 version: "1"
-name: metrics-from-logs-scheduler
+name: signal-to-metrics-scheduler
 enabled: true
 consts:
   summarization_workflows:

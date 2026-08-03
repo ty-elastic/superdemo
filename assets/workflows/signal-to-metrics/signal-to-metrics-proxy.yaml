@@ -1,4 +1,4 @@
-name: metrics-from-logs-proxy
+name: signal-to-metrics-proxy
 enabled: true
 triggers:
 - type: manual
@@ -30,7 +30,7 @@ steps:
   - name: store
     type: elasticsearch.bulk
     with:
-      index: metrics-logs.otel-default
+      index: {{ inputs.datastream }}
       operations:
       - create:
           dynamic_templates:

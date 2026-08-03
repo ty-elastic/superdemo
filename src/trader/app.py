@@ -94,16 +94,6 @@ def decode_common_args():
         raise Exception("malformed customer_id", request.remote_addr)
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.customer_id", customer_id)
 
-
-    if flags is not None and "HASHNEWALG" in flags:
-        app.logger.info(f"hashing with scrypt")
-        hashed_customer_id_obj = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
-    else:
-        app.logger.info(f"hashing with sha256")
-        hashed_customer_id_obj = hashlib.sha256(customer_id.encode('utf-8'))
-    hashed_customer_id = hashed_customer_id_obj.hex()
-    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.hashed_customer_id", hashed_customer_id)
-
     subscription = params.get('subscription', None)
     if subscription is not None:
         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.subscription", subscription)
@@ -126,6 +116,15 @@ def decode_common_args():
     flags = params.get('flags', None)
     # if flags is not None:
     #     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.flags", flags)
+
+    if flags is not None and "HASHNEWALG" in flags:
+        app.logger.info(f"hashing with scrypt")
+        hashed_customer_id_obj = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
+    else:
+        app.logger.info(f"hashing with sha256")
+        hashed_customer_id_obj = hashlib.sha256(customer_id.encode('utf-8'))
+    hashed_customer_id = hashed_customer_id_obj.hex()
+    set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.hashed_customer_id", hashed_customer_id)
 
     # forced errors
     latency_amount = params.get('latency_amount', 0)
