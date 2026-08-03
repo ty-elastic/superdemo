@@ -56,3 +56,114 @@ hide_announcements() {
    return 0
 }
 hide_announcements
+
+
+
+
+
+# cat <<EOF >> rbac.json
+# {
+#   "cluster": [],
+#   "indices": [
+#     {
+#       "names": [
+#         "logs-proxy.otel-default"
+#       ],
+#       "privileges": [
+#         "read",
+#         "view_index_metadata"
+#       ],
+#       "field_security": {
+#         "grant": [
+#           "*"
+#         ],
+#         "except": [
+#           "attributes.client.ip","body.text"
+#         ]
+#       },
+#       "allow_restricted_indices": false
+#     },
+#     {
+#       "names": [
+#         ".slo-observability.*"
+#       ],
+#       "privileges": [
+#         "read",
+#         "view_index_metadata"
+#       ],
+#       "allow_restricted_indices": false
+#     },
+#     {
+#       "names": [
+#         ".siem-signals*",
+#         ".lists-*",
+#         ".items-*",
+#         ".reindexed-v8-siem-signals*",
+#         ".reindexed-v8-lists-*",
+#         ".reindexed-v8-items-*"
+#       ],
+#       "privileges": [
+#         "read",
+#         "view_index_metadata"
+#       ],
+#       "allow_restricted_indices": false
+#     },
+#     {
+#       "names": [
+#         ".alerts*",
+#         ".preview.alerts*",
+#         ".adhoc.alerts*"
+#       ],
+#       "privileges": [
+#         "read",
+#         "view_index_metadata"
+#       ],
+#       "allow_restricted_indices": false
+#     },
+#     {
+#       "names": [
+#         "profiling-*",
+#         ".profiling-*"
+#       ],
+#       "privileges": [
+#         "read",
+#         "view_index_metadata"
+#       ],
+#       "allow_restricted_indices": false
+#     }
+#   ],
+#   "applications": [
+#     {
+#       "application": "kibana-.kibana",
+#       "privileges": [
+#         "read"
+#       ],
+#       "resources": [
+#         "*"
+#       ]
+#     }
+#   ],
+#   "run_as": [],
+#   "description": "Grants read-only access to all features in Kibana (including Solutions) and to data indices."
+# }
+# EOF
+
+# curl -X POST "$ELASTICSEARCH_URL/_security/role/limited_viewer" \
+#     --header 'Content-Type: application/json' \
+#     --header "Authorization: Basic $ELASTICSEARCH_AUTH_BASE64" \
+#     -d @rbac.json
+
+# curl -X PUT "$ELASTICSEARCH_URL/_security/user/limited_user" \
+#     --header 'Content-Type: application/json' \
+#     --header "Authorization: Basic $ELASTICSEARCH_AUTH_BASE64" \
+#     -d'
+#     {
+#         "password": "elastic",
+#         "roles": [
+#           "limited_viewer"
+#         ],
+#         "full_name": "",
+#         "email": "",
+#         "metadata": {},
+#         "enabled": true
+#     }'
