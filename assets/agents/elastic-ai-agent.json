@@ -5,24 +5,22 @@
         "tools": [
             {
                 "tool_ids": [
-                    "scs.discover_directories",
-                    "scs.find_introducing_commit",
-                    "scs.get_cochanges",
-                    "scs.get_commit",
-                    "scs.get_file_authors",
-                    "scs.get_file_history",
-                    "scs.list_repos",
-                    "scs.map_symbols",
-                    "scs.read_file_from_chunks",
-                    "scs.search_commit_messages",
-                    "scs.semantic_search",
-                    "scs.symbol_analysis"
+                    "sourcerer.code.grep",
+                    "sourcerer.code.search",
+                    "sourcerer.files.cat",
+                    "sourcerer.files.head",
+                    "sourcerer.files.ls",
+                    "sourcerer.files.read_lines",
+                    "sourcerer.files.tail",
+                    "sourcerer.refs.list"
                 ]
             }
         ],
         "skill_ids": [
-            "scs-code-history-files",
-            "scs-code-history-search"
+            "sourcerer-code-citations",
+            "sourcerer-code-search",
+            "sourcerer-ref-resolution",
+            "sourcerer-repo-discovery"
         ]
     }
 }

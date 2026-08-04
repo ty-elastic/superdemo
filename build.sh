@@ -201,9 +201,9 @@ if [ "$build_infra" = "true" ]; then
   ./build.sh -c $course
   cd ../../..
 
-  cd ./utils/semantic-code-search
-  ./build.sh -c $course
-  cd ../..
+#   cd ./utils/semantic-code-search
+#   ./build.sh -c $course
+#   cd ../..
 
   cd ./utils/sourcerer
   ./build.sh -c $course
@@ -271,9 +271,6 @@ if [ "$prereq" == "true" ]; then
         --from-literal=elastic_kibana_endpoint="$elasticsearch_kibana_endpoint" \
         --from-literal=elastic_fleet_opamp_api_key="$OPAMP_API_KEY" \
         --from-literal=elastic_api_key="$elasticsearch_api_key"
-
-    kubectl apply -f utils/semantic-code-search/indexer.yaml
-    kubectl -n infra wait --for=condition=complete job/code-setup --timeout=5m
 
     kubectl apply -f utils/sourcerer/setup.yaml
     kubectl -n infra wait --for=condition=complete job/src-code-setup --timeout=5m
