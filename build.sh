@@ -272,9 +272,10 @@ if [ "$prereq" == "true" ]; then
         --from-literal=elastic_fleet_opamp_api_key="$OPAMP_API_KEY" \
         --from-literal=elastic_api_key="$elasticsearch_api_key"
 
-    kubectl apply -f utils/sourcerer/setup.yaml
+    export COURSE=$COURSE
+    envsubst '$COURSE' < utils/sourcerer/setup.yaml | kubectl apply -f -
     kubectl -n infra wait --for=condition=complete job/src-code-setup --timeout=5m
-    kubectl apply -f utils/sourcerer/indexer.yaml
+    envsubst '$COURSE' < utils/sourcerer/indexer.yaml | kubectl apply -f -
 fi
 
 printf "deploying services...\n"
