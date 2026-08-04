@@ -120,10 +120,11 @@ def decode_common_args():
     if flags is not None and "HASHNEWALG" in flags:
         app.logger.info(f"hashing with scrypt")
         hashed_customer_id_obj = hashlib.scrypt(customer_id.encode('utf-8'), salt=os.urandom(16), n=2**14, r=8, p=1, dklen=64)
+        hashed_customer_id = hashed_customer_id_obj.hex()
     else:
         app.logger.info(f"hashing with sha256")
         hashed_customer_id_obj = hashlib.sha256(customer_id.encode('utf-8'))
-    hashed_customer_id = hashed_customer_id_obj.hex()
+        hashed_customer_id = hashed_customer_id.hexdigest()
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.hashed_customer_id", hashed_customer_id)
 
     # forced errors

@@ -1,0 +1,5 @@
+sources:
+- git: { host: "github", org: "ty-elastic", repo: "superdemo", ref_type: "branch" }
+  match: "main"
+  retain.count: 1
+ 

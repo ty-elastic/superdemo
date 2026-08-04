@@ -271,6 +271,9 @@ if [ "$prereq" == "true" ]; then
     kubectl apply -f utils/semantic-code-search/indexer.yaml
     kubectl -n infra wait --for=condition=complete job/code-setup --timeout=5m
 
+    kubectl apply -f utils/sourcerer/setup.yaml
+    kubectl -n infra wait --for=condition=complete job/src-code-setup --timeout=5m
+    kubectl apply -f utils/sourcerer/indexer.yaml
 fi
 
 printf "deploying services...\n"

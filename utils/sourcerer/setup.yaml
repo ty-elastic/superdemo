@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: src-code-setup
+  namespace: infra
+spec:
+  backoffLimit: 0 
+  template:
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/sourcerer:$COURSE
+          name: src-code-setup
+          imagePullPolicy: Always
+          env:
+            - name: ELASTICSEARCH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_endpoint
+            - name: KIBANA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_kibana_endpoint
+            - name : ELASTICSEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_api_key
+          command: ["/root/.local/bin/sourcerer"]
+          args:
+            - "setup"
+            - "--config"
+            - "sourcerer.yml"
+      restartPolicy: Never
+---
