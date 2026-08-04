@@ -16,7 +16,7 @@ do
    esac
 done
 
-export AGENT_VERSION=9.4.3
+export AGENT_VERSION=9.5.0
 
 config_profiling_agent() {
     printf "$FUNCNAME...\n"

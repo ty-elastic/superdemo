@@ -26,7 +26,7 @@ if [[ ! "$elasticsearch_otlp_endpoint" =~ :[0-9]+($|/) ]]; then
     printf "appending port to ingest url: $elasticsearch_otlp_endpoint\n"
 fi
 
-export AGENT_VERSION=9.4.3
+export AGENT_VERSION=9.5.0
 
 check_otel() {
     kubectl wait --for=condition=Ready pods --all -n opentelemetry-operator-system --timeout=5m

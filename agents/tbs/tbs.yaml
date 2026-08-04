@@ -337,7 +337,7 @@ spec:
     spec:
       containers:
         - name: collector
-          image: docker.elastic.co/elastic-agent/elastic-agent:9.4.0-SNAPSHOT
+          image: docker.elastic.co/elastic-agent/elastic-agent:9.5.0
           command:
             - "elastic-agent"
             - "otel"

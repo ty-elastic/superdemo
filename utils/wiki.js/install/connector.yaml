@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: connector
-          image: docker.elastic.co/integrations/elastic-connectors:9.4.2
+          image: docker.elastic.co/integrations/elastic-connectors:9.5.0
           command:
             - "/app/bin/elastic-ingest"
             - "-c"

@@ -11,7 +11,7 @@ output "ingest_url" {
 }
 
 output "fleet_url" {
-  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.alias}-${var.project}.fleet.${var.region}.gcp.elastic-cloud.com" : null
+  value       = length(ec_deployment.es_cluster) > 0 ? "https://${var.alias}.fleet.${var.region}.gcp.elastic-cloud.com" : null
 }
 
 output "elasticsearch_username" {
