@@ -205,6 +205,10 @@ if [ "$build_infra" = "true" ]; then
   ./build.sh -c $course
   cd ../..
 
+  cd ./utils/sourcerer
+  ./build.sh -c $course
+  cd ../..
+
   cd ./utils/dockerhost
   ./build.sh -c $course
   cd ../..
