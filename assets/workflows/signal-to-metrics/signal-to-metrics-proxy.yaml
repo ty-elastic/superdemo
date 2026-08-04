@@ -30,7 +30,7 @@ steps:
   - name: store
     type: elasticsearch.bulk
     with:
-      index: {{ inputs.datastream }}
+      index: "{{ inputs.datastream }}"
       operations:
       - create:
           dynamic_templates:

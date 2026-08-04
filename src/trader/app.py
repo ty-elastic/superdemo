@@ -124,7 +124,7 @@ def decode_common_args():
     else:
         app.logger.info(f"hashing with sha256")
         hashed_customer_id_obj = hashlib.sha256(customer_id.encode('utf-8'))
-        hashed_customer_id = hashed_customer_id.hexdigest()
+        hashed_customer_id = hashed_customer_id_obj.hexdigest()
     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.hashed_customer_id", hashed_customer_id)
 
     # forced errors
