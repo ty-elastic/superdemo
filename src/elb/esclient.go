@@ -45,22 +45,43 @@ type bulkItemOp struct {
 	} `json:"error"`
 }
 
+// BulkDoc pairs a pre-marshaled JSON document body with optional dynamic_templates
+// that are included in the bulk action line (e.g. to route OTel metric fields to
+// the correct Elasticsearch mapping template).
+type BulkDoc struct {
+	Body             []byte
+	DynamicTemplates map[string]string // field path → template name; nil = omit
+}
+
 // Bulk indexes the given pre-marshaled JSON docs into index using the create bulk action.
 // The create action is required for Elasticsearch data streams (they reject index).
 // No _id is included — Elasticsearch auto-generates one.
-func (c *ESClient) Bulk(index string, docs [][]byte) error {
+func (c *ESClient) Bulk(index string, docs []BulkDoc) error {
 	if len(docs) == 0 {
 		return nil
 	}
 
+	// plainAction is reused for documents with no dynamic_templates.
+	plainAction := fmt.Sprintf("{\"create\":{\"_index\":%q}}", index)
+
 	// Build NDJSON: action line + doc line for each document.
-	// The action JSON string is built once and reused.
-	action := fmt.Sprintf("{\"create\":{\"_index\":%q}}\n", index)
 	var buf bytes.Buffer
-	buf.Grow(len(action)*len(docs) + sumLen(docs))
+	buf.Grow(len(plainAction)*len(docs) + sumLen(docs))
 	for _, doc := range docs {
-		buf.WriteString(action)
-		buf.Write(doc)
+		if len(doc.DynamicTemplates) == 0 {
+			buf.WriteString(plainAction)
+		} else {
+			type createAction struct {
+				Index            string            `json:"_index"`
+				DynamicTemplates map[string]string `json:"dynamic_templates"`
+			}
+			action, _ := json.Marshal(map[string]createAction{
+				"create": {Index: index, DynamicTemplates: doc.DynamicTemplates},
+			})
+			buf.Write(action)
+		}
+		buf.WriteByte('\n')
+		buf.Write(doc.Body)
 		buf.WriteByte('\n')
 	}
 
@@ -118,10 +139,10 @@ func (c *ESClient) CloseIdleConnections() {
 	c.http.CloseIdleConnections()
 }
 
-func sumLen(docs [][]byte) int {
+func sumLen(docs []BulkDoc) int {
 	n := 0
 	for _, d := range docs {
-		n += len(d) + 1
+		n += len(d.Body) + 1
 	}
 	return n
 }

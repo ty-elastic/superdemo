@@ -173,8 +173,9 @@ type MetricDocParams struct {
 }
 
 // BuildMetricDoc marshals a metric document shaped after the reference
-// src/elb/reference/metrics/aws/elb/*.json.
-func BuildMetricDoc(p MetricDocParams) ([]byte, error) {
+// src/elb/reference/metrics/aws/elb/*.json and returns a BulkDoc whose
+// DynamicTemplates maps the metric field to the appropriate OTel type.
+func BuildMetricDoc(p MetricDocParams) (BulkDoc, error) {
 	startTS := p.Now.Add(-p.WindowDuration)
 	metricKey := "amazonaws.com/AWS/ApplicationELB/" + p.Def.Name
 
@@ -197,9 +198,9 @@ func BuildMetricDoc(p MetricDocParams) ([]byte, error) {
 	}
 
 	doc := map[string]interface{}{
-		"@timestamp": formatTS(p.Now),
+		"@timestamp":         formatTS(p.Now),
 		"_metric_names_hash": strconv.FormatUint(hasher.Sum64(), 16),
-		"attributes": attrs,
+		"attributes":         attrs,
 		"data_stream": map[string]string{
 			"dataset":   "aws.elb.otel",
 			"namespace": "default",
@@ -223,5 +224,12 @@ func BuildMetricDoc(p MetricDocParams) ([]byte, error) {
 		},
 		"start_timestamp": formatTS(startTS),
 	}
-	return json.Marshal(doc)
+	body, err := json.Marshal(doc)
+	if err != nil {
+		return BulkDoc{}, err
+	}
+	return BulkDoc{
+		Body:             body,
+		DynamicTemplates: map[string]string{"metrics." + metricKey: p.Def.OTelType},
+	}, nil
 }

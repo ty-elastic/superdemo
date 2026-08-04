@@ -29,9 +29,11 @@ func RunLogFlusher(ctx context.Context, wg *sync.WaitGroup, lbs []*LoadBalancer,
 }
 
 func flushLogs(lbs []*LoadBalancer, es *ESClient, datastream string) {
-	var all [][]byte
+	var all []BulkDoc
 	for _, lb := range lbs {
-		all = append(all, lb.logBuf.Drain()...)
+		for _, body := range lb.logBuf.Drain() {
+			all = append(all, BulkDoc{Body: body})
+		}
 	}
 	if len(all) == 0 {
 		return
@@ -62,7 +64,7 @@ func RunMetricFlusher(ctx context.Context, wg *sync.WaitGroup, lbs []*LoadBalanc
 
 func flushMetrics(lbs []*LoadBalancer, es *ESClient, datastream string, cfg *Config, hostName string) {
 	now := time.Now().UTC()
-	var all [][]byte
+	var all []BulkDoc
 	for _, lb := range lbs {
 		all = append(all, buildMetricDocs(lb, now, cfg, hostName)...)
 	}
@@ -80,7 +82,7 @@ func flushMetrics(lbs []*LoadBalancer, es *ESClient, datastream string, cfg *Con
 // Each metric is emitted once per dimension set defined on it; sets that include
 // AvailabilityZone are further fanned out once per configured AZ.
 // RequestCountPerTarget is additionally fanned out per backend.
-func buildMetricDocs(lb *LoadBalancer, now time.Time, cfg *Config, hostName string) [][]byte {
+func buildMetricDocs(lb *LoadBalancer, now time.Time, cfg *Config, hostName string) []BulkDoc {
 	snap := lb.agg.Snapshot(lb.pool)
 
 	azs := cfg.Resource.AvailabilityZones
@@ -88,7 +90,7 @@ func buildMetricDocs(lb *LoadBalancer, now time.Time, cfg *Config, hostName stri
 		azs = []string{""} // emit once without an AZ dimension
 	}
 
-	var docs [][]byte
+	var docs []BulkDoc
 	for _, def := range metricDefs {
 		for _, dims := range def.DimSets {
 			azList := []string{""}
