@@ -68,13 +68,13 @@ config_o11y_ai_docs() {
    printf "$FUNCNAME...\n"
 
    output=$(curl -s -X POST "$elasticsearch_kibana_endpoint/internal/product_doc_base/install" \
-      -m 0.5 \
+      -m 5 \
       -w "\n%{http_code}" \
       -H 'kbn-xsrf: true' \
       -H 'x-elastic-internal-origin: Kibana' \
       -H "Authorization: ApiKey ${elasticsearch_api_key}" \
       -H 'Content-Type: application/json' \
-      -d '{"inferenceId":".elser-2-elasticsearch","resourceType":"product_doc"}')
+      -d '{"inferenceId":".jina-embeddings-v5-text-small","resourceType":"product_doc"}')
 
    # Extract HTTP status code
    http_code=$(echo "$output" | tail -n1)
