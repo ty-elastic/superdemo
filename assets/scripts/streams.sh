@@ -24,7 +24,7 @@ config_streams_sigevents() {
       -H 'x-elastic-internal-origin: Kibana' \
       -H "Authorization: ApiKey ${elasticsearch_api_key}" \
       -H 'Content-Type: application/json' \
-      -d '{"changes":{"observability:streamsEnableSignificantEvents":true}}')
+      -d '{"changes":{"observability:streamsEnableSignificantEvents":true,"observability:streamsEnableSignificantEventsDiscovery": true}}')
 
    # Extract HTTP status code
    http_code=$(echo "$output" | tail -n1)
