@@ -34,7 +34,7 @@ steps:
       operations:
       - create:
           dynamic_templates:
-            metrics.ua.os.count: counter_long
+            metrics.ua.count: counter_long
       - '@timestamp': '{{ inputs.end_timestamp }}'
         start_timestamp: '{{ inputs.start_timestamp }}'
         resource:
@@ -43,4 +43,4 @@ steps:
         attributes:
           ua.os.full: '{{ foreach.item[1] }}'
         metrics:
-          ua.os.count: ${{ foreach.item[0] }}
+          ua.count: ${{ foreach.item[0] }}
