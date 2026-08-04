@@ -41,6 +41,29 @@ config_o11y_ai_assistant() {
 }
 config_o11y_ai_assistant
 
+config_tracing_dashboard() {
+   printf "$FUNCNAME...\n"
+
+   output=$(curl -s -X POST "$elasticsearch_kibana_endpoint/internal/gen_ai_settings/agent_builder/tracing_dashboard" \
+      -w "\n%{http_code}" \
+      -H 'kbn-xsrf: true' \
+      -H 'x-elastic-internal-origin: Kibana' \
+      -H "Authorization: ApiKey ${elasticsearch_api_key}" \
+      -H 'Content-Type: application/json' \
+      -d '{"enabled":true}')
+
+   # Extract HTTP status code
+   http_code=$(echo "$output" | tail -n1)
+   http_response=$(echo "$output" | sed '$d')
+   if [ "$http_code" != "200" ]; then
+      printf "$FUNCNAME...ERROR $http_code: $http_response\n"
+      return 1
+   fi
+   printf "$FUNCNAME...SUCCESS\n"
+   return 0
+}
+config_tracing_dashboard
+
 config_o11y_ai_docs() {
    printf "$FUNCNAME...\n"
 
