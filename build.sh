@@ -53,7 +53,7 @@ windows=false
 http_auth=true
 k3s=false
 
-elasticsearch_limited_password=limited_user
+access_password="changeme"
 elasticsearch_es_endpoint="na"
 elasticsearch_kibana_endpoint="na"
 elasticsearch_api_key="na"
@@ -112,7 +112,7 @@ do
       j ) elasticsearch_es_endpoint="$OPTARG" ;;
       k ) elasticsearch_otlp_endpoint="$OPTARG" ;;
       t ) elasticsearch_fleet_endpoint="$OPTARG" ;;
-      8 ) elasticsearch_limited_password="$OPTARG" ;;
+      8 ) access_password="$OPTARG" ;;
 
       m ) synthetics="$OPTARG" ;;
 
@@ -232,7 +232,7 @@ fi
 if [ "$prereq" == "true" ]; then
     source $PWD/utils/ksm/ksm.sh
 
-    source $PWD/utils/traefik/install.sh -s $PWD -7 $http_auth
+    source $PWD/utils/traefik/install.sh -s $PWD -7 $http_auth -8 $access_password
 fi
 
 if [ "$deploy_otel" != "false" ]; then
@@ -251,7 +251,7 @@ if [ "$features" = "true" ]; then
     retry_command_lin check_http $elasticsearch_otlp_endpoint
     retry_command_lin check_http $elasticsearch_fleet_endpoint
 
-    source $PWD/assets/scripts/features_es.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint -8 $elasticsearch_limited_password
+    source $PWD/assets/scripts/features_es.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint -8 $access_password
     source $PWD/assets/scripts/snowem.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -e https://snowem-v2-voldmqr2bq-uc.a.run.app
 fi
 

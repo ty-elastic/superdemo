@@ -32,6 +32,11 @@ output "traefik_auth" {
   sensitive   = true
 }
 
+output "access_password" {
+  value     = random_bytes.access_password.base64
+  sensitive = true
+}
+
 output "wiki_url" {
   value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9010"
 }

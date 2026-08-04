@@ -29,6 +29,10 @@ locals {
   cluster_name = "${var.cluster_name}-${var.labels.project}"
 }
 
+resource "random_bytes" "access_password" {
+  length = 12
+}
+
 # Windows username: "win" prefix + 8 lowercase letters (max 20 chars, no special chars)
 resource "random_string" "windows_username" {
   length  = 11
@@ -170,8 +174,8 @@ resource "kubernetes_job_v1" "install" {
             value = local.elasticsearch_apikey
           }
           env {
-            name  = "ELASTICSEARCH_LIMITED_PASSWORD"
-            value = "elastic"
+            name  = "ACCESS_PASSWORD"
+            value = random_bytes.access_password.base64
           }
           env {
             name  = "FLEET_URL"

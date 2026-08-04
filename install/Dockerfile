@@ -13,7 +13,7 @@ ENV INGEST_URL=""
 ENV HTTP_AUTH=true
 ENV REMOTE_ENDPOINT=true
 ENV K3S=false
-ENV ELASTICSEARCH_LIMITED_PASSWORD="limited_user"
+ENV ACCESS_PASSWORD="changeme"
 
 # 4. Install required tools and dependencies cleanly
 RUN apt-get update && apt-get install -y --no-install-recommends \
