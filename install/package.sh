@@ -10,7 +10,7 @@ fi
 ./build.sh -o false -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -8 $ACCESS_PASSWORD -k $INGEST_URL -t $FLEET_URL -f true
 
 # infra
-./build.sh -t $FLEET_URL -c $COURSE -1 true -7 $HTTP_AUTH -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL 
+./build.sh -t $FLEET_URL -c $COURSE -1 true -7 $HTTP_AUTH -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -8 $ACCESS_PASSWORD
 
 # services
 if [[ -n "$K3S" ]]; then
