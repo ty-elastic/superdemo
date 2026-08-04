@@ -2,13 +2,16 @@
 
 source $PWD/assets/scripts/retry.sh
 
+elasticsearch_limited_password=limited_user
+
 OPTIND=1
-while getopts "h:i:j:" opt
+while getopts "h:i:j:8:" opt
 do
    case "$opt" in
       h ) elasticsearch_kibana_endpoint="$OPTARG" ;;
       i ) elasticsearch_api_key="$OPTARG" ;;
       j ) elasticsearch_es_endpoint="$OPTARG" ;;
+      8 ) elasticsearch_limited_password="$OPTARG" ;;
    esac
 done
 
@@ -180,7 +183,7 @@ curl -X PUT "$elasticsearch_es_endpoint/_security/user/limited_user" \
     --header "Authorization: ApiKey ${elasticsearch_api_key}" \
     -d'
     {
-        "password": "elastic",
+        "password": "'"$elasticsearch_limited_password"'",
         "roles": [
           "limited_viewer"
         ],

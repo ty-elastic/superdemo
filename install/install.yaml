@@ -40,6 +40,8 @@ spec:
               value: "$ELASTICSEARCH_URL"
             - name: ELASTICSEARCH_APIKEY
               value: "$ELASTICSEARCH_APIKEY"
+            - name: ELASTICSEARCH_LIMITED_PASSWORD
+              value: "$ELASTICSEARCH_LIMITED_PASSWORD"
             - name: FLEET_URL
               value: "$FLEET_URL"
             - name: KIBANA_URL

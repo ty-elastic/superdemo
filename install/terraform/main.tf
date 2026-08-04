@@ -170,6 +170,10 @@ resource "kubernetes_job_v1" "install" {
             value = local.elasticsearch_apikey
           }
           env {
+            name  = "ELASTICSEARCH_LIMITED_PASSWORD"
+            value = "elastic"
+          }
+          env {
             name  = "FLEET_URL"
             value = local.fleet_url
           }

@@ -53,6 +53,7 @@ windows=false
 http_auth=true
 k3s=false
 
+elasticsearch_limited_password=limited_user
 elasticsearch_es_endpoint="na"
 elasticsearch_kibana_endpoint="na"
 elasticsearch_api_key="na"
@@ -70,7 +71,7 @@ case "${unameOut}" in
 esac
 
 OPTIND=1
-while getopts "a:c:s:l:b:x:o:d:r:v:g:h:i:j:k:w:y:p:e:m:f:n:z:u:t:1:q:2:3:4:5:6:7:9:" opt
+while getopts "a:c:s:l:b:x:o:d:r:v:g:h:i:j:k:w:y:p:e:m:f:n:z:u:t:1:q:2:3:4:5:6:7:9:8:" opt
 do
    case "$opt" in 
       1 ) prereq="$OPTARG" ;;
@@ -111,6 +112,7 @@ do
       j ) elasticsearch_es_endpoint="$OPTARG" ;;
       k ) elasticsearch_otlp_endpoint="$OPTARG" ;;
       t ) elasticsearch_fleet_endpoint="$OPTARG" ;;
+      8 ) elasticsearch_limited_password="$OPTARG" ;;
 
       m ) synthetics="$OPTARG" ;;
 
@@ -249,7 +251,7 @@ if [ "$features" = "true" ]; then
     retry_command_lin check_http $elasticsearch_otlp_endpoint
     retry_command_lin check_http $elasticsearch_fleet_endpoint
 
-    source $PWD/assets/scripts/features_es.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint
+    source $PWD/assets/scripts/features_es.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint -8 $elasticsearch_limited_password
     source $PWD/assets/scripts/snowem.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -e https://snowem-v2-voldmqr2bq-uc.a.run.app
 fi
 
