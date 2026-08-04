@@ -91,6 +91,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           image: $REPO/elb:$COURSE
+          imagePullPolicy: Always
       volumes:
         - name: config-volume
           configMap:
