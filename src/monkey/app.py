@@ -8,6 +8,8 @@ import os
 from threading import Thread
 import concurrent.futures
 import ipaddress
+import logging
+from pythonjsonlogger.json import JsonFormatter
 
 import ua_generator
 from ua_generator.options import Options
@@ -17,18 +19,21 @@ from faker import Faker
 from opentelemetry import trace, baggage, context
 
 app = Flask(__name__)
-app.logger.setLevel(logging.INFO)
 
 ATTRIBUTE_PREFIX = "com.example"
 
-def init_otel(): 
-    if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
-        print("enable otel logging")      
-        root_logger = logging.getLogger()
-        for handler in root_logger.handlers:
-            if isinstance(handler, logging.StreamHandler):
-                root_logger.removeHandler(handler)
+json_handler = logging.StreamHandler()
+# explicitly configure the fields you want to see in the JSON output
+json_handler.setFormatter(JsonFormatter("%(asctime)s %(levelname)s %(message)s"))
 
+app.logger.setLevel(logging.INFO)
+app.logger.addHandler(json_handler)
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
+# logger.addHandler(json_handler)
+
+def init_otel(): 
     tracer = trace.get_tracer(__name__)
     return tracer
 tracer = init_otel()
@@ -160,9 +165,9 @@ def bump_version_up_per_browser(*, browser, region):
         customers = get_customers()
     for customer in customers:
         if USERAGENTS_PER_USER[customer].browser == browser:
-            print(f'new ua for {browser}')
             new_ua = ua_generator.generate(browser=browser, options=ua_generator_options)
             USERAGENTS_PER_USER[customer] = new_ua
+            app.logger.info(f'new ua for {browser}: {new_ua}')
 
 def conform_request_bool(value):
     return value.lower() == 'true'

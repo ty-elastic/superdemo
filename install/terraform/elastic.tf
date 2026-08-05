@@ -21,12 +21,12 @@ module "es_hosted" {
   source = "./modules/hosted" # Relative path to your module
 
   # Pass required variables into the module
-  alias = "${var.cluster_name}-${random_string.alias_id.result}"
   project = var.labels.project
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = var.cluster_name
   es_version = var.es_cluster_hosted_version
+  alias = "${var.cluster_name}-${random_string.alias_id.result}"
   enable = var.es_cluster_type == "hosted" ? true : false
 }
 
