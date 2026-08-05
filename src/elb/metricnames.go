@@ -50,7 +50,7 @@ type metricDef struct {
 	DimSets  []DimSet   // dimension combinations to emit; AZ-bearing sets fan out per configured AZ
 	Float    bool       // whether the metric value is float64 (TargetResponseTime)
 	Source   sourceKind // how the value is derived
-	OTelType string     // Elasticsearch OTel dynamic template name (e.g. "counter_long", "gauge_double")
+	OTelType string     // Elasticsearch OTel dynamic template name (e.g. "gauge_long", "gauge_double")
 }
 
 // metricDefs enumerates all AWS ApplicationELB metrics we emit, with the
@@ -75,56 +75,56 @@ var metricDefs = []metricDef{
 		Stat:     "Average",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcConstZero,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_ELB_3XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcELB3XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_ELB_4XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcELB4XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_ELB_503_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcELB503,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_ELB_5XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcELB5XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_Target_2XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ, dimLBTG, dimLBAZTG},
 		Source:   srcTgt2XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_Target_3XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ, dimLBTG, dimLBAZTG},
 		Source:   srcTgt3XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HTTPCode_Target_4XX_Count",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ, dimLBTG, dimLBAZTG},
 		Source:   srcTgt4XX,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "HealthyHostCount",
@@ -166,14 +166,14 @@ var metricDefs = []metricDef{
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ},
 		Source:   srcProcessedBytes,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "RequestCount",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB, dimLBAZ, dimLBTG, dimLBAZTG},
 		Source:   srcRequestCount,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		// Dimension sets without LoadBalancer ({TG} and {TG,AZ}) are also required per AWS docs.
@@ -181,14 +181,14 @@ var metricDefs = []metricDef{
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimTG, dimTGAZ, dimLBTG, dimLBAZTG},
 		Source:   srcRequestCountPerTarget,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "RuleEvaluations",
 		Stat:     "Sum",
 		DimSets:  []DimSet{dimLB},
 		Source:   srcConstZero,
-		OTelType: "counter_long",
+		OTelType: "gauge_long",
 	},
 	{
 		Name:     "TargetResponseTime",
