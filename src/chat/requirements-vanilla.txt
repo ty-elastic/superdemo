@@ -1,0 +1,18 @@
+# ── App ───────────────────────────────────────────────────────────────────────
+openai>=1.60.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
+pydantic-settings>=2.3.0
+
+# ── OpenTelemetry vanilla upstream ────────────────────────────────────────────
+# opentelemetry-distro provides the `opentelemetry-instrument` CLI entry-point
+# and bootstrap tooling.
+opentelemetry-distro>=0.60b0
+# OTLP exporter (http/protobuf)
+opentelemetry-exporter-otlp-proto-http>=1.39.0
+# GenAI semantic-convention instrumentation for OpenAI Chat Completions
+# Emits gen_ai.* spans with model, token usage, prompt/response events.
+opentelemetry-instrumentation-openai-v2>=2.4b0
+# HTTP server spans for FastAPI (traces each /api/chat request)
+opentelemetry-instrumentation-fastapi>=0.60b0

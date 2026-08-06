@@ -159,30 +159,31 @@ data:
         expected_new_traces_per_sec: 100
 
         policies:
-          # keep recorder-go path
-          - name: keep-recorder-go
-            type: string_attribute
-            string_attribute:
-              key: service.name
-              values:
-                - recorder-go
-          # keep user initiated path
-          - name: keep-user
-            type: string_attribute
-            string_attribute:
-              key: service.name
-              values:
-                - trader-app-web
           # keep any trace that has an error
           - name: keep-errors
             type: status_code
             status_code:
               status_codes: [ERROR]
-          # keep 25% of everything else
-          - name: keep-sample-percentage
-            type: probabilistic
-            probabilistic:
-              sampling_percentage: 25
+
+          # only 25% of automated trades
+          - name: partial-probabilistic
+            type: and
+            and:
+              and_sub_policy:
+                - name: target-services
+                  type: string_attribute
+                  string_attribute:
+                    key: service.name
+                    values: monkey
+                - name: probabilistic-rate
+                  type: probabilistic
+                  probabilistic:
+                    sampling_percentage: 25.0
+
+          # keep 100% of user spans
+          - name: keep-all-other-services
+            type: always_sample
+
     extensions:
       opamp:
         server:

@@ -198,6 +198,7 @@ data:
           - router.trading-na.svc.cluster.local:9000
           - router.trading-emea.svc.cluster.local:9000
           - redis-service.infra.svc.cluster.local:9000
+          - litellm-service.infra.svc.cluster.local:4000
           labels:
             namespace: 'infra'
     remote_write:

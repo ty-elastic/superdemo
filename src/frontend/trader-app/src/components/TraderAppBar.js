@@ -13,7 +13,7 @@ import Savings from '@mui/icons-material/Savings';
 
 import { NavLink } from "react-router-dom";
 
-const pages = [{ label: 'Trade', nav: '/' }, { label: 'Market', nav: '/market' }, { label: 'Error', nav: '/error' }, { label: 'Test', nav: '/test' }, { label: 'Train', nav: '/train' }];
+const pages = [{ label: 'Trade', nav: '/' }, { label: 'Market', nav: '/market' }, { label: 'Error', nav: '/error' }, { label: 'Test', nav: '/test' }, { label: 'Train', nav: '/train' }, { label: 'Chat', nav: '/chat' }];
 
 function TraderAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);

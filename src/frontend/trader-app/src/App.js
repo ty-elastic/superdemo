@@ -4,6 +4,7 @@ import Trade from './components/Trade'
 import Error from './components/Error'
 import Test from './components/Test'
 import Train from './components/Train'
+import Chat from './components/Chat'
 
 import TraderAppBar from './components/TraderAppBar'
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/error" element={<Error />} />
             <Route path="/test" element={<Test />} />
             <Route path="/train" element={<Train />} />
+            <Route path="/chat" element={<Chat />} />
           </Routes>
         </div>
       </div>

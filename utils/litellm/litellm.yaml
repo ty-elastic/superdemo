@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config-file
+  namespace: infra
+data:
+  config.yaml: |
+    model_list:
+      - model_name: elasticsearch
+        litellm_params:
+          model: "elasticsearch/anthropic-claude-4.6-sonnet"
+          api_base: "$elasticsearch_es_endpoint"
+          api_key: "$elasticsearch_api_key" 
+
+    general_settings: 
+      master_key: "sk-1234"
+
+    litellm_settings:
+      require_auth_for_metrics_endpoint: false
+      callbacks:
+        - prometheus
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-deployment
+  namespace: infra
+  labels:
+    app: litellm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm
+  template:
+    metadata:
+      labels:
+        app: litellm
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+          - containerPort: 5432
+        env:
+          - name: POSTGRES_DB
+            value: "litellm"
+          - name: POSTGRES_PASSWORD
+            value: "$POSTGRESQL_PASSWORD"
+          - name: POSTGRES_USER
+            value: "$POSTGRESQL_USER"
+      - name: litellm
+        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/litellm:latest
+        args:
+          - "--config"
+          - "/app/proxy_server_config.yaml"
+        ports:
+        - containerPort: 4000
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/proxy_server_config.yaml
+          subPath: config.yaml
+        env:
+          - name: DATABASE_URL
+            value: "postgresql://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@127.0.0.1:5432/litellm"
+        livenessProbe:
+          httpGet:
+            path: /health/liveliness
+            port: 4000
+          initialDelaySeconds: 120
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 4000
+          initialDelaySeconds: 120
+          periodSeconds: 15
+      volumes:
+        - name: config-volume
+          configMap:
+            name: litellm-config-file
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: litellm
+  name: litellm-service
+  namespace: infra
+spec:
+  ports:
+    - name: litellm
+      port: 4000
+      targetPort: 4000
+  type: ClusterIP
+  selector:
+    app: litellm
