@@ -185,7 +185,7 @@ def generate_chat_request(*, customer_id):
             "messages": [
                 {
                     "role": "user",
-                    "content": "what is the best style of pizza? give a short answer."
+                    "content": "Count words: Hi."
                 }
             ]
         }
