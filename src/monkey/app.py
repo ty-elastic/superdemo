@@ -29,6 +29,8 @@ json_handler.setFormatter(JsonFormatter("%(asctime)s %(levelname)s %(message)s")
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(json_handler)
 
+app.run(debug=False) # Keep debug False in production to avoid plain-text debugger logs
+
 # logger = logging.getLogger()
 # logger.setLevel(logging.INFO)
 # logger.addHandler(json_handler)
