@@ -172,6 +172,30 @@ def bump_version_up_per_browser(*, browser, region):
 def conform_request_bool(value):
     return value.lower() == 'true'
 
+@tracer.start_as_current_span("generate_chat_request")
+def generate_chat_request(*, customer_id):
+    
+    set_attribute_and_baggage('session.id', SESSION_ID_PER_USER[customer_id])
+
+    try:
+        chat_request = {
+            "model": "elasticsearch",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "what is the best style of pizza? give a short answer."
+                }
+            ]
+        }
+
+        chat_response = requests.post(f"http://{os.environ['CHAT_SERVICE']}/api/chat", 
+                                       json=chat_request,
+                                       timeout=30)
+        chat_response.raise_for_status()
+        app.logger.info(f"send chat request for {customer_id}")
+    except Exception as inst:
+        print(inst)
+
 @tracer.start_as_current_span("generate_trade_request")
 def generate_trade_request(*, subscription, customer_id, symbol, day_of_week, region, latency_amount, latency_action, error_model, error_db, error_db_service, error_request, skew_market_factor, classification=None, flags, data_source):
     
@@ -216,6 +240,16 @@ def generate_trade_request(*, subscription, customer_id, symbol, day_of_week, re
         trade_response.raise_for_status()
     except Exception as inst:
         print(inst)
+
+def generate_chat_requests():
+    while True:
+        region = random.choice(list(CUSTOMERS_PER_REGION.keys()))
+        customer_id = random.choice(CUSTOMERS_PER_REGION[region])
+
+        generate_chat_request(customer_id=customer_id)
+
+
+        time.sleep(5)
 
 def generate_trade_requests():
     idx_of_week = 0
@@ -384,6 +418,7 @@ def simulation_start():
     if simulation_started is False:
         simulation_started = True
         Thread(target=generate_trade_requests, daemon=False).start()
+        Thread(target=generate_chat_requests, daemon=False).start()
     return "OK"
 
 

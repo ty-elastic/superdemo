@@ -51,7 +51,6 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[Message]
-    model: str | None = None   # overrides OPENAI_MODEL when provided
 
 
 # ── SSE helpers ───────────────────────────────────────────────────────────────
@@ -86,7 +85,7 @@ async def chat(body: ChatRequest) -> StreamingResponse:
     if not body.messages:
         raise HTTPException(status_code=422, detail="messages must not be empty")
 
-    model = body.model or config.openai_model
+    model = config.openai_model
     log.info("Chat request: model=%s, turns=%d", model, len(body.messages))
 
     return StreamingResponse(

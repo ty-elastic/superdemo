@@ -30,7 +30,7 @@ spec:
             - name: OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
               value: "SPAN_AND_EVENT"
             - name: OPENAI_MODEL
-              value: "elasticsearch"
+              value: "anthropic-claude-4.5-haiku"
             - name: OPENAI_API_KEY
               value: "sk-1234"   
             - name: OPENAI_BASE_URL

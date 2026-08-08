@@ -24,7 +24,6 @@
  */
 export function streamChat(
   messages,
-  model,
   callbacks,
 ) {
   const controller = new AbortController();
@@ -35,7 +34,7 @@ export function streamChat(
       response = await fetch("/chat/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages, model }),
+        body: JSON.stringify({ messages }),
         signal: controller.signal,
       });
     } catch (err) {

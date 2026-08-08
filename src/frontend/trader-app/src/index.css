@@ -15,7 +15,7 @@ code {
 
 /* ── Reset / base ─────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-/* 
+
 :root {
   --bg:           #0f1117;
   --surface:      #1a1d27;
@@ -39,7 +39,7 @@ html, body, #root {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
-} */
+}
 
 /* ── Layout ───────────────────────────────────────────────────────────────── */
 .chat-container {

@@ -13,9 +13,9 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: elasticsearch
+      - model_name: anthropic-claude-4.5-haiku
         litellm_params:
-          model: "elasticsearch/anthropic-claude-4.6-sonnet"
+          model: "elasticsearch/anthropic-claude-4.5-haiku"
           api_base: "$elasticsearch_es_endpoint"
           api_key: "$elasticsearch_api_key" 
 
@@ -43,6 +43,8 @@ spec:
     metadata:
       labels:
         app: litellm
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
     spec:
       containers:
       - name: postgres
@@ -68,8 +70,20 @@ spec:
           mountPath: /app/proxy_server_config.yaml
           subPath: config.yaml
         env:
+          - name: OTEL_PYTHON_DISABLED_INSTRUMENTATIONS
+            value: "psycopg2,psycopg"
           - name: DATABASE_URL
             value: "postgresql://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@127.0.0.1:5432/litellm"
+          - name: LITELLM_OTEL_V2
+            value: "true"
+          - name: LITELLM_OTEL_INTEGRATION_ENABLE_METRICS
+            value: "true"
+          - name: OTEL_EXPORTER
+            value: "otlp_grpc"
+          - name: OTEL_ENDPOINT
+            value: "http://opentelemetry-kube-stack-daemon-collector.opentelemetry-operator-system.svc.cluster.local:4317"
+          - name: OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+            value: "span_and_event"
         livenessProbe:
           httpGet:
             path: /health/liveliness

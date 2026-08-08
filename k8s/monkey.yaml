@@ -46,6 +46,8 @@ spec:
               value: "false"
             - name: TRADER_SERVICE
               value: proxy:9090/trader
+            - name: CHAT_SERVICE
+              value: proxy:9090/chat
             - name: REGION
               valueFrom:
                 fieldRef:
