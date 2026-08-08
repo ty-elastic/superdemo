@@ -249,9 +249,7 @@ def generate_chat_requests():
         customer_id = random.choice(CUSTOMERS_PER_REGION[region])
 
         generate_chat_request(customer_id=customer_id)
-
-
-        time.sleep(5)
+        time.sleep(60)
 
 def generate_trade_requests():
     idx_of_week = 0
