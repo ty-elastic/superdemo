@@ -203,9 +203,9 @@ if [ "$build_infra" = "true" ]; then
   ./build.sh -c $course
   cd ../../..
 
-#   cd ./utils/semantic-code-search
-#   ./build.sh -c $course
-#   cd ../..
+  cd ./utils/litellm
+  ./build.sh -c $course
+  cd ../..
 
   cd ./utils/sourcerer
   ./build.sh -c $course
@@ -278,6 +278,9 @@ if [ "$prereq" == "true" ]; then
     envsubst '$COURSE' < utils/sourcerer/setup.yaml | kubectl apply -f -
     kubectl -n infra wait --for=condition=complete job/src-code-setup --timeout=5m
     envsubst '$COURSE' < utils/sourcerer/indexer.yaml | kubectl apply -f -
+
+
+    envsubst '$COURSE,$POSTGRESQL_USER,$POSTGRESQL_PASSWORD,$elasticsearch_es_endpoint,$elasticsearch_api_key' < utils/litellm/litellm.yaml | kubectl apply -f -
 fi
 
 printf "deploying services...\n"
