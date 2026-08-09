@@ -181,11 +181,11 @@ def generate_chat_request(*, customer_id):
 
     try:
         chat_request = {
-            "model": "elasticsearch",
+            "model": os.environ['CHAT_MODEL'],
             "messages": [
                 {
                     "role": "user",
-                    "content": "Count words: Hi."
+                    "content": "Hello!"
                 }
             ]
         }
@@ -249,7 +249,7 @@ def generate_chat_requests():
         customer_id = random.choice(CUSTOMERS_PER_REGION[region])
 
         generate_chat_request(customer_id=customer_id)
-        time.sleep(60)
+        time.sleep(10)
 
 def generate_trade_requests():
     idx_of_week = 0

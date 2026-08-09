@@ -48,6 +48,8 @@ spec:
               value: proxy:9090/trader
             - name: CHAT_SERVICE
               value: proxy:9090/chat
+            - name: CHAT_MODEL
+              value: "mock-openai"
             - name: REGION
               valueFrom:
                 fieldRef:

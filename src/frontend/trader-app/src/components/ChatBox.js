@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { streamChat } from "../chatapi";
 
+const DEFAULT_MODEL = "anthropic-claude-4.5-haiku";
+
 let nextId = 1;
 
 class ChatBox extends React.Component {
@@ -9,6 +11,7 @@ class ChatBox extends React.Component {
         this.state = {
             messages: [],
             input: "",
+            model: DEFAULT_MODEL,
             loading: false,
             error: null,
         };
@@ -55,7 +58,7 @@ class ChatBox extends React.Component {
             loading: true,
         }));
 
-        this.abortController = streamChat(history, {
+        this.abortController = streamChat(history, this.state.model, {
             onToken: (token) => {
                 this.setState((prev) => ({
                     messages: prev.messages.map((m) =>
@@ -102,7 +105,7 @@ class ChatBox extends React.Component {
     }
 
     render() {
-        const { messages, input, loading, error } = this.state;
+        const { messages, input, model, loading, error } = this.state;
 
         return (
             <div className="chat-container">

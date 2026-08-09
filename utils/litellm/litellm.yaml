@@ -19,6 +19,12 @@ data:
           api_base: "$elasticsearch_es_endpoint"
           api_key: "$elasticsearch_api_key" 
 
+      - model_name: "mock-openai"
+        litellm_params:
+          model: openai/any
+          api_base: https://exampleopenaiendpoint-production.up.railway.app/  # or your self-hosted endpoint
+          api_key: "test"
+
     general_settings: 
       master_key: "sk-1234"
 
