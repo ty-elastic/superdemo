@@ -53,19 +53,34 @@ class ChatRequest(BaseModel):
     messages: list[Message]
     model: str | None = None   # overrides OPENAI_MODEL when provided
 
+    subscription: str | None = None
+    customer_id: str | None = None
+    region: str | None = None
+    data_source: str | None = None
 
 # ── SSE helpers ───────────────────────────────────────────────────────────────
 
-async def _stream_chat(messages: list[Message], model: str) -> AsyncGenerator[str, None]:
+
+async def _stream_chat(messages: list[Message], model: str, customer_id: str) -> AsyncGenerator[str, None]:
     """Yield SSE-formatted chunks from the OpenAI streaming response."""
     openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
     try:
+        if customer_id is not None:
+            extra_body={
+                "metadata": {
+                    "trace_user_id": customer_id
+                }
+            }
+        else:
+            extra_body=None
+
         stream = client.chat.completions.create(
             model=model,
             messages=openai_messages,  # type: ignore[arg-type]
             stream=True,
             stream_options={"include_usage": True},  # gives gen_ai.usage.* in OTel span
+            extra_body=extra_body
         )
         for chunk in stream:
             log.info(chunk)
@@ -89,8 +104,10 @@ async def chat(body: ChatRequest) -> StreamingResponse:
     model = body.model or config.openai_model
     log.info("Chat request: model=%s, turns=%d", model, len(body.messages))
 
+    customer_id = body.customer_id or None
+
     return StreamingResponse(
-        _stream_chat(body.messages, model),
+        _stream_chat(body.messages, model, customer_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

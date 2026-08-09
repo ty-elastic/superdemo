@@ -175,11 +175,12 @@ def conform_request_bool(value):
     return value.lower() == 'true'
 
 @tracer.start_as_current_span("generate_chat_request")
-def generate_chat_request(*, customer_id):
+def generate_chat_request(*, subscription, customer_id, region, data_source):
     
     set_attribute_and_baggage('session.id', SESSION_ID_PER_USER[customer_id])
 
     try:
+
         chat_request = {
             "model": os.environ['CHAT_MODEL'],
             "messages": [
@@ -187,7 +188,11 @@ def generate_chat_request(*, customer_id):
                     "role": "user",
                     "content": "Hello!"
                 }
-            ]
+            ],
+            'subscription': subscription,
+            'customer_id': customer_id, 
+            'region': region,
+            'data_source': data_source
         }
 
         chat_response = requests.post(f"http://{os.environ['CHAT_SERVICE']}/api/chat", 
@@ -247,8 +252,10 @@ def generate_chat_requests():
     while True:
         region = random.choice(list(CUSTOMERS_PER_REGION.keys()))
         customer_id = random.choice(CUSTOMERS_PER_REGION[region])
+        subscription = SUBSCRIPTION_PER_USER[customer_id]
+        data_source='monkey'
 
-        generate_chat_request(customer_id=customer_id)
+        generate_chat_request(customer_id=customer_id, region=region, subscription=subscription, data_source=data_source)
         time.sleep(10)
 
 def generate_trade_requests():

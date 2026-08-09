@@ -9,9 +9,8 @@ pydantic-settings>=2.3.0
 # elastic-opentelemetry bundles the OTel SDK, OTLP exporter, and common
 # instrumentations with Elastic-tuned defaults for richer Kibana APM data.
 elastic-opentelemetry>=1.11.0
-
 # OpenAI / GenAI instrumentation — not bundled in elastic-opentelemetry,
 # must be added explicitly. Emits gen_ai.* semantic-convention spans.
 opentelemetry-instrumentation-openai-v2>=2.4b0
-
 opentelemetry-propagator-b3
+opentelemetry-processor-baggage
