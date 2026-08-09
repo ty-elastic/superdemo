@@ -23,7 +23,7 @@ data:
         litellm_params:
           model: openai/gpt-3.5-turbo
           api_key: fake-key
-          api_base: https://exampleopenaiendpoint-production.up.railway.app/
+          api_base: http://mock-openai/
 
     general_settings: 
       master_key: "sk-1234"
@@ -64,8 +64,11 @@ spec:
             value: "$POSTGRESQL_PASSWORD"
           - name: POSTGRES_USER
             value: "$POSTGRESQL_USER"
+      containers:
+      - name: mock-openai
+        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/mock-openai:$COURSE
       - name: litellm
-        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/litellm:latest
+        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/litellm:$COURSE
         args:
           - "--config"
           - "/app/proxy_server_config.yaml"

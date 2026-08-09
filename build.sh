@@ -203,7 +203,7 @@ if [ "$build_infra" = "true" ]; then
   ./build.sh -c $course
   cd ../../..
 
-  cd ./utils/litellm
+  cd ./utils/llm
   ./build.sh -c $course
   cd ../..
 
@@ -279,8 +279,7 @@ if [ "$prereq" == "true" ]; then
     kubectl -n infra wait --for=condition=complete job/src-code-setup --timeout=5m
     envsubst '$COURSE' < utils/sourcerer/indexer.yaml | kubectl apply -f -
 
-
-    envsubst '$COURSE,$POSTGRESQL_USER,$POSTGRESQL_PASSWORD,$elasticsearch_es_endpoint,$elasticsearch_api_key' < utils/litellm/litellm.yaml | kubectl apply -f -
+    envsubst '$COURSE,$POSTGRESQL_USER,$POSTGRESQL_PASSWORD,$elasticsearch_es_endpoint,$elasticsearch_api_key' < utils/llm/litellm.yaml | kubectl apply -f -
 fi
 
 printf "deploying services...\n"
