@@ -21,9 +21,9 @@ data:
 
       - model_name: "mock-openai"
         litellm_params:
-          model: openai/any
-          api_base: https://exampleopenaiendpoint-production.up.railway.app/  # or your self-hosted endpoint
-          api_key: "test"
+          model: openai/gpt-3.5-turbo
+          api_key: fake-key
+          api_base: https://exampleopenaiendpoint-production.up.railway.app/
 
     general_settings: 
       master_key: "sk-1234"
