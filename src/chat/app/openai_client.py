@@ -45,7 +45,7 @@ def make_client(user_id, team_id) -> openai.OpenAI:
     }
 
     # Send the request to create the virtual key
-    response = requests.post(proxy_url, json=payload, headers=headers)
+    response = requests.post(f"{proxy_url}/key/generate", json=payload, headers=headers)
     response.raise_for_status()
     
     # Parse and display the response JSON data
