@@ -24,7 +24,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from .config import config
-from .openai_client import client
+from .openai_client import get_client
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -61,26 +61,16 @@ class ChatRequest(BaseModel):
 # ── SSE helpers ───────────────────────────────────────────────────────────────
 
 
-async def _stream_chat(messages: list[Message], model: str, customer_id: str) -> AsyncGenerator[str, None]:
+async def _stream_chat(messages: list[Message], model: str, customer_id: str = None, region: str = None) -> AsyncGenerator[str, None]:
     """Yield SSE-formatted chunks from the OpenAI streaming response."""
     openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
     try:
-        if customer_id is not None:
-            extra_body={
-                "metadata": {
-                    "trace_user_id": customer_id
-                }
-            }
-        else:
-            extra_body=None
-
-        stream = client.chat.completions.create(
+        stream = get_client(customer_id, region).chat.completions.create(
             model=model,
             messages=openai_messages,  # type: ignore[arg-type]
             stream=True,
             stream_options={"include_usage": True},  # gives gen_ai.usage.* in OTel span
-            extra_body=extra_body
         )
         for chunk in stream:
             log.info(chunk)
@@ -105,9 +95,10 @@ async def chat(body: ChatRequest) -> StreamingResponse:
     log.info("Chat request: model=%s, turns=%d", model, len(body.messages))
 
     customer_id = body.customer_id or None
+    region = body.region or None
 
     return StreamingResponse(
-        _stream_chat(body.messages, model, customer_id),
+        _stream_chat(body.messages, model, customer_id, region),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
