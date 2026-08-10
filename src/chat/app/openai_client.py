@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import openai
 import requests
+import logging
 
 from .config import config
 
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 _DEFAULT_BASE_URL = "https://api.openai.com/v1"
 
@@ -33,7 +36,6 @@ def make_client(user_id, team_id) -> openai.OpenAI:
     # Define properties and access limits for the new virtual key
     payload = {
         "models": ["anthropic-claude-4.5-haiku", "mock-openai"],
-        "key_alias": user_id,
         "user_id": user_id,
         "team_id": team_id
     }
@@ -45,15 +47,16 @@ def make_client(user_id, team_id) -> openai.OpenAI:
     }
 
     # Send the request to create the virtual key
+    #log.info(f"calling {proxy_url}/key/generate w: {payload}, {proxy_api_key}")
+    
     response = requests.post(f"{proxy_url}/key/generate", json=payload, headers=headers)
+    #log.warn(response.text)
     response.raise_for_status()
     
     # Parse and display the response JSON data
     key_data = response.json()
 
-    print("Virtual Key Created Successfully!")
-    print(f"Generated Key: {key_data.get('key')}")
-    print(f"Expires: {key_data.get('expires')}")
+    log.info(f"Virtual Key Created for {user_id}")
 
     return openai.OpenAI(
         api_key=key_data.get('key'),
@@ -73,6 +76,7 @@ def get_client(customer_id, region):
         region = 'admin'
 
     if customer_id not in clients:
+        log.info(clients)
         clients[customer_id] = make_client(customer_id, region)
     return clients[customer_id]
 

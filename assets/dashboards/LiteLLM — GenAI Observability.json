@@ -27,8 +27,8 @@
   },
   "panels": [
     {
-      "collapsed": false,
       "title": "Overview",
+      "collapsed": false,
       "grid": {
         "y": 0
       },
@@ -36,10 +36,10 @@
       "panels": [
         {
           "grid": {
-            "y": 0,
-            "x": 0,
             "w": 8,
-            "h": 5
+            "x": 0,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -78,10 +78,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 8,
             "w": 8,
-            "h": 5
+            "x": 8,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -120,10 +120,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 16,
             "w": 8,
-            "h": 5
+            "x": 16,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -162,10 +162,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 24,
             "w": 8,
-            "h": 5
+            "x": 24,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -204,10 +204,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 32,
             "w": 8,
-            "h": 5
+            "x": 32,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -252,10 +252,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 40,
             "w": 8,
-            "h": 5
+            "x": 40,
+            "h": 5,
+            "y": 0
           },
           "config": {
             "data_source": {
@@ -295,8 +295,8 @@
       ]
     },
     {
-      "collapsed": false,
       "title": "Token Usage",
+      "collapsed": false,
       "grid": {
         "y": 1
       },
@@ -304,10 +304,10 @@
       "panels": [
         {
           "grid": {
-            "y": 0,
-            "x": 0,
             "w": 48,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 0
           },
           "config": {
             "title": "Token Usage Over Time (1-Minute Buckets) — litellm",
@@ -406,10 +406,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 0,
             "w": 24,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Input vs Output Token Usage Over Time by Token Type (1-min buckets)",
@@ -514,10 +514,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Token Usage Over Time by Model",
@@ -621,10 +621,10 @@
         },
         {
           "grid": {
-            "y": 20,
-            "x": 0,
             "w": 12,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 20
           },
           "config": {
             "type": "pie",
@@ -672,10 +672,10 @@
         },
         {
           "grid": {
-            "y": 20,
-            "x": 12,
             "w": 12,
-            "h": 10
+            "x": 12,
+            "h": 10,
+            "y": 20
           },
           "config": {
             "type": "pie",
@@ -724,10 +724,10 @@
         },
         {
           "grid": {
-            "y": 20,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 20
           },
           "config": {
             "title": "LLM Cost Over Time (per Minute)",
@@ -823,12 +823,220 @@
           },
           "id": "be157ab0-eb75-45a1-bbff-688226bda659",
           "type": "vis"
+        },
+        {
+          "grid": {
+            "w": 24,
+            "x": 0,
+            "h": 10,
+            "y": 30
+          },
+          "config": {
+            "title": "Total Token Usage by Top 10 Users",
+            "type": "xy",
+            "layers": [
+              {
+                "type": "bar_horizontal",
+                "data_source": {
+                  "type": "esql",
+                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Total Token Usage` = SUM(SUM_OVER_TIME(gen_ai.client.token.usage)) BY `metadata.user_api_key_user_id`\n| SORT `Total Token Usage` DESC\n| LIMIT 10"
+                },
+                "sampling": 1,
+                "ignore_global_filters": false,
+                "x": {
+                  "column": "metadata.user_api_key_user_id"
+                },
+                "y": [
+                  {
+                    "column": "Total Token Usage",
+                    "color": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              }
+            ],
+            "axis": {
+              "x": {
+                "title": {
+                  "visible": false
+                },
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "fit",
+                  "rounding": false
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                },
+                "scale": "ordinal"
+              },
+              "y": {
+                "title": {
+                  "visible": false
+                },
+                "scale": "linear",
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "full",
+                  "rounding": true
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                }
+              }
+            },
+            "styling": {
+              "overlays": {
+                "partial_buckets": {
+                  "visible": false
+                },
+                "current_time_marker": {
+                  "visible": false
+                }
+              },
+              "bars": {
+                "minimum_height": 1,
+                "data_labels": {
+                  "visible": false
+                }
+              }
+            },
+            "legend": {
+              "placement": "outside",
+              "position": "bottom",
+              "layout": {
+                "type": "grid",
+                "truncate": {
+                  "max_lines": 1
+                }
+              },
+              "visibility": "hidden"
+            }
+          },
+          "id": "8cef8792-a51a-4ba4-9365-1795df009f8a",
+          "type": "vis"
+        },
+        {
+          "grid": {
+            "w": 24,
+            "x": 24,
+            "h": 10,
+            "y": 30
+          },
+          "config": {
+            "title": "Total Token Usage by Team",
+            "type": "xy",
+            "layers": [
+              {
+                "type": "bar_horizontal",
+                "data_source": {
+                  "type": "esql",
+                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Total Token Usage` = SUM(SUM_OVER_TIME(gen_ai.client.token.usage)) BY `metadata.user_api_key_team_id`\n| SORT `Total Token Usage` DESC\n| LIMIT 100"
+                },
+                "sampling": 1,
+                "ignore_global_filters": false,
+                "x": {
+                  "column": "metadata.user_api_key_team_id",
+                  "label": "Team ID"
+                },
+                "y": [
+                  {
+                    "column": "Total Token Usage",
+                    "label": "Total Token Usage",
+                    "color": {
+                      "type": "auto"
+                    }
+                  }
+                ]
+              }
+            ],
+            "axis": {
+              "x": {
+                "title": {
+                  "visible": false
+                },
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "fit",
+                  "rounding": false
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                },
+                "scale": "ordinal"
+              },
+              "y": {
+                "title": {
+                  "visible": false
+                },
+                "scale": "linear",
+                "ticks": {
+                  "visible": true
+                },
+                "grid": {
+                  "visible": true
+                },
+                "domain": {
+                  "type": "full",
+                  "rounding": true
+                },
+                "labels": {
+                  "orientation": "horizontal"
+                }
+              }
+            },
+            "styling": {
+              "overlays": {
+                "partial_buckets": {
+                  "visible": false
+                },
+                "current_time_marker": {
+                  "visible": false
+                }
+              },
+              "bars": {
+                "minimum_height": 1,
+                "data_labels": {
+                  "visible": false
+                }
+              }
+            },
+            "legend": {
+              "placement": "outside",
+              "position": "bottom",
+              "layout": {
+                "type": "grid",
+                "truncate": {
+                  "max_lines": 1
+                }
+              },
+              "visibility": "hidden"
+            }
+          },
+          "id": "001d90e0-92fe-4009-8f34-1631bff78252",
+          "type": "vis"
         }
       ]
     },
     {
-      "collapsed": false,
       "title": "Latency",
+      "collapsed": false,
       "grid": {
         "y": 2
       },
@@ -836,10 +1044,10 @@
       "panels": [
         {
           "grid": {
-            "y": 0,
-            "x": 0,
             "w": 24,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 0
           },
           "config": {
             "title": "Average Response Duration Over Time – LiteLLM (1-minute buckets)",
@@ -942,10 +1150,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 0
           },
           "config": {
             "title": "Average Time to First Token Over Time — litellm",
@@ -1048,10 +1256,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 0,
             "w": 24,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Average Time Per Output Token Over Time (litellm)",
@@ -1150,10 +1358,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Average Response Duration by Model (per minute) — LiteLLM",
@@ -1264,8 +1472,8 @@
       ]
     },
     {
-      "collapsed": false,
       "title": "HTTP Server",
+      "collapsed": false,
       "grid": {
         "y": 3
       },
@@ -1273,10 +1481,10 @@
       "panels": [
         {
           "grid": {
-            "y": 0,
-            "x": 0,
             "w": 24,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 0
           },
           "config": {
             "title": "Average Active HTTP Server Requests Over Time — litellm (1-min buckets)",
@@ -1375,10 +1583,10 @@
         },
         {
           "grid": {
-            "y": 0,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 0
           },
           "config": {
             "title": "Average HTTP Server Duration Over Time (litellm)",
@@ -1482,10 +1690,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 0,
             "w": 24,
-            "h": 10
+            "x": 0,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Average HTTP Server Request Size Over Time — litellm",
@@ -1588,10 +1796,10 @@
         },
         {
           "grid": {
-            "y": 10,
-            "x": 24,
             "w": 24,
-            "h": 10
+            "x": 24,
+            "h": 10,
+            "y": 10
           },
           "config": {
             "title": "Top Models by Total Token Usage — LiteLLM",

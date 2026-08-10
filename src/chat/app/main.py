@@ -66,14 +66,15 @@ async def _stream_chat(messages: list[Message], model: str, customer_id: str = N
     openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
     try:
-        stream = get_client(customer_id, region).chat.completions.create(
+        client = get_client(customer_id, region)
+        stream = client.chat.completions.create(
             model=model,
             messages=openai_messages,  # type: ignore[arg-type]
             stream=True,
             stream_options={"include_usage": True},  # gives gen_ai.usage.* in OTel span
         )
         for chunk in stream:
-            log.info(chunk)
+            #log.info(chunk)
             if chunk.choices and chunk.choices[0].delta.content:
                 yield f"data: {json.dumps({'content': chunk.choices[0].delta.content})}\n\n"
     except Exception as exc:
@@ -92,10 +93,10 @@ async def chat(body: ChatRequest) -> StreamingResponse:
         raise HTTPException(status_code=422, detail="messages must not be empty")
 
     model = body.model or config.openai_model
-    log.info("Chat request: model=%s, turns=%d", model, len(body.messages))
-
     customer_id = body.customer_id or None
     region = body.region or None
+
+    log.info("Chat request: model=%s, customer_id=%s, region=%s", model, customer_id, region)
 
     return StreamingResponse(
         _stream_chat(body.messages, model, customer_id, region),
