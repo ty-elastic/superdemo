@@ -1,0 +1,21 @@
+{
+  "actions": [
+    {
+      "add": {
+        "index": "logs-generic.otel-*",
+        "alias": "logs-trader",
+        "filter": {
+          "bool": {
+            "filter": [
+              {
+                "term": {
+                  "service.name": "trader"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

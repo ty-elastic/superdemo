@@ -1,0 +1,7 @@
+{
+    "data_view": {
+      "name": "logs-trader",
+      "title": "logs-trader",
+      "timeFieldName": "@timestamp"
+    }
+}

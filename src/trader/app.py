@@ -28,6 +28,9 @@ TRADE_TIMEOUT = 5
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
+access_logs = logging.getLogger('werkzeug')
+access_logs.setLevel(logging.ERROR)
+
  # Apply ProxyFix to correctly handle X-Forwarded-For
 # x_for=1 indicates that one proxy is setting the X-Forwarded-For header
 # Adjust x_for based on the number of proxies in front of your Flask app

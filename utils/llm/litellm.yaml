@@ -51,9 +51,10 @@ spec:
         app: litellm
       annotations:
         io.opentelemetry.discovery.logs/enabled: "true"
+        instrumentation.opentelemetry.io/inject-sdk: "opentelemetry-operator-system/elastic-instrumentation"
     spec:
       containers:
-      - name: postgres
+      - name: postgres-litellm
         image: postgres:16-alpine
         ports:
           - containerPort: 5432
@@ -80,8 +81,6 @@ spec:
           mountPath: /app/proxy_server_config.yaml
           subPath: config.yaml
         env:
-          - name: OTEL_PYTHON_DISABLED_INSTRUMENTATIONS
-            value: "psycopg2,psycopg"
           - name: DATABASE_URL
             value: "postgresql://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@127.0.0.1:5432/litellm"
           - name: LITELLM_OTEL_V2

@@ -26,10 +26,10 @@ json_handler = logging.StreamHandler()
 # explicitly configure the fields you want to see in the JSON output
 json_handler.setFormatter(JsonFormatter("%(asctime)s %(levelname)s %(message)s"))
 
+app.logger.handlers.clear()
+app.logger.propagate = False
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(json_handler)
-
-app.run(debug=False) # Keep debug False in production to avoid plain-text debugger logs
 
 # logger = logging.getLogger()
 # logger.setLevel(logging.INFO)
