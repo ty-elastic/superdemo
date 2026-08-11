@@ -28,8 +28,14 @@ resource "ec_deployment" "es_cluster" {
     config = {
       user_settings_yaml = <<-EOT
         esql.federation.enabled: true
+        xpack.security.audit.logfile.events.emit_request_body: true
+        xpack.security.audit.enabled: true
       EOT
     }
+  }
+
+  observability = {
+    deployment_id = "self"
   }
 
   kibana = {
@@ -39,6 +45,7 @@ resource "ec_deployment" "es_cluster" {
       config = {
       user_settings_yaml = <<-EOT
         xpack.dataFederation.enabled: true
+        xpack.security.audit.enabled: true
       EOT
     }
   }

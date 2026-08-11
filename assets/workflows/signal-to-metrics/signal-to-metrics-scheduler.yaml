@@ -1,93 +1,92 @@
-version: "1"
+version: '1'
 name: signal-to-metrics-scheduler
 enabled: true
 consts:
   summarization_workflows:
-    - workflow_id: signal-to-metrics-proxy
-      datastream: metrics-logs.otel-default
-      window_mins: 1
+  - workflow_id: signal-to-metrics-proxy
+    datastream: metrics-logs.otel-default
+    bucket_size_mins: 1
 triggers:
-  - type: scheduled
-    with:
-      every: 5m
+- type: scheduled
+  with:
+    every: 5m
 steps:
-  - name: now
+- name: now
+  type: data.set
+  with:
+    now_ms: "{{ 'now' | date: '%s' | times: 1000 }}"
+
+- name: foreach_workflow
+  type: foreach
+  foreach: '{{ consts.summarization_workflows }}'
+  steps:
+  - name: convert_units
     type: data.set
     with:
-      now_ms: "{{ 'now' | date: '%s' | times: 1000 }}"
+      window_ms: '{{ steps.foreach_workflow.item.bucket_size_mins | times: 60000 }}'
 
-  - name: foreach_workflow
-    type: foreach
-    foreach: "{{ consts.summarization_workflows }}"
+  - name: check_last_snapshot
+    type: elasticsearch.search
+    with:
+      query:
+        term:
+          resource.attributes.workflow_id:
+            value: '{{ steps.foreach_workflow.item.workflow_id }}'
+      size: 1
+      sort:
+      - '@timestamp':
+          order: desc
+      _source:
+      - '@timestamp'
+      index: '{{ steps.foreach_workflow.item.datastream }}'
+    on-failure:
+      continue: true
+  - name: resolve_last_ts
+    type: if
+    condition: steps.check_last_snapshot.output.hits.total.value > 0
     steps:
-      - name: convert_units
-        type: data.set
-        with:
-          window_ms: "{{ steps.foreach_workflow.item.window_mins | times: 60000 }}"
+    - name: real_last_ts
+      type: data.set
+      with:
+        last_ts: "{{ steps.check_last_snapshot.output.hits.hits[0]._source['@timestamp'] }}"
+    else:
+    - name: synthetic_last_ts
+      type: data.set
+      with:
+        last_ts: "{{ variables.now_ms | minus: variables.window_ms | minus: variables.window_ms | divided_by: 1000 | date: '%Y-%m-%dT%H:%M:%S.999Z' }}"
+  - name: calculate_window_start
+    type: data.set
+    with:
+      window_start_ms: '{%- assign last_ms = variables.last_ts | date: "%s" | times: 1000 -%}{%- assign numerator = last_ms | plus: variables.window_ms | minus: 1 -%}{{ numerator | divided_by: variables.window_ms | floor | times: variables.window_ms }}'
 
-      - name: check_last_snapshot
-        type: elasticsearch.search
-        with:
-          query:
-            term:
-              resource.attributes.workflow_id:
-                value: "{{ steps.foreach_workflow.item.workflow_id }}"
-          size: 1
-          sort:
-            - "@timestamp":
-                order: desc
-          _source:
-            - "@timestamp"
-          index: "{{ steps.foreach_workflow.item.datastream }}"
-        on-failure:
-          continue: true
-      - name: resolve_last_ts
-        type: if
-        condition: steps.check_last_snapshot.output.hits.total.value > 0
-        steps:
-          - name: real_last_ts
-            type: data.set
-            with:
-              last_ts: "{{ steps.check_last_snapshot.output.hits.hits[0]._source['@timestamp'] }}"
-        else:
-          - name: synthetic_last_ts
-            type: data.set
-            with:
-              last_ts: "{{ variables.now_ms | minus: variables.window_ms | minus: variables.window_ms | divided_by: 1000 | date: '%Y-%m-%dT%H:%M:%S.999Z' }}"
-        
-      - name: calculate_window_start
-        type: data.set
-        with:
-          window_start_ms: '{%- assign last_ms = variables.last_ts | date: "%s" | times: 1000 -%}{%- assign numerator = last_ms | plus: variables.window_ms | minus: 1 -%}{{ numerator | divided_by: variables.window_ms | floor | times: variables.window_ms }}'
+  - name: debug
+    type: console
+    with:
+      message: |
+        window_start= {{ variables.window_start_ms | divided_by: 1000 | date: '%Y-%m-%dT%H:%M:%S.000Z' }}
+        elapsed_ms= {{ variables.now_ms | minus: variables.window_start_ms }}
 
-      - name: debug
-        type: console
+  - name: calculate_missed_windows
+    type: data.set
+    with:
+      num_windows: '{%- assign elapsed_ms = variables.now_ms | minus: variables.window_start_ms -%} {{ elapsed_ms | divided_by: variables.window_ms | floor }}'
+  - name: process_windows_if_needed
+    type: if
+    condition: variables.num_windows > 0
+    steps:
+    - name: build_window_list
+      type: data.set
+      with:
+        window_index_array: '{%- assign n = variables.num_windows | minus: 1 -%} {%- assign arr = (0..n) -%} {{ arr | json }}'
+    - name: process_windows
+      type: foreach
+      foreach: '{{ steps.build_window_list.output.window_index_array }}'
+      steps:
+      - name: execute_metrics_from_logs
+        type: workflow.execute
         with:
-          message: |
-            window_start= {{ variables.window_start_ms | divided_by: 1000 | date: '%Y-%m-%dT%H:%M:%S.000Z' }}
-            elapsed_ms= {{ variables.now_ms | minus: variables.window_start_ms }}
-            
-      - name: calculate_missed_windows
-        type: data.set
-        with:
-          num_windows: "{%- assign elapsed_ms = variables.now_ms | minus: variables.window_start_ms -%} {{ elapsed_ms | divided_by: variables.window_ms | floor }}"
-      - name: process_windows_if_needed
-        type: if
-        condition: variables.num_windows > 0
-        steps:
-          - name: build_window_list
-            type: data.set
-            with:
-              window_index_array: "{%- assign n = variables.num_windows | minus: 1 -%} {%- assign arr = (0..n) -%} {{ arr | json }}"
-          - name: process_windows
-            type: foreach
-            foreach: "{{ steps.build_window_list.output.window_index_array }}"
-            steps:
-              - name: execute_metrics_from_logs
-                type: workflow.execute
-                with:
-                  workflow-id: "{{ steps.foreach_workflow.item.workflow_id }}"
-                  inputs:
-                    datastream: "{{ steps.foreach_workflow.item.datastream }}"
-                    start_timestamp: '{%- assign offset = foreach.item | times: variables.window_ms -%} {%- assign start_ms = variables.window_start_ms | plus: offset -%} {{ start_ms | divided_by: 1000 | date: "%Y-%m-%dT%H:%M:%S.000Z" }}'
-                    end_timestamp: '{%- assign offset = foreach.item | plus: 1 | times: variables.window_ms -%} {%- assign end_ms = variables.window_start_ms | plus: offset | minus: 1 -%} {{ end_ms | divided_by: 1000 | date: "%Y-%m-%dT%H:%M:%S.999Z" }}'
+          workflow-id: '{{ steps.foreach_workflow.item.workflow_id }}'
+          inputs:
+            datastream: '{{ steps.foreach_workflow.item.datastream }}'
+            start_timestamp: '{%- assign offset = foreach.item | times: variables.window_ms -%} {%- assign start_ms = variables.window_start_ms | plus: offset -%} {{ start_ms | divided_by: 1000 | date: "%Y-%m-%dT%H:%M:%S.000Z" }}'
+            end_timestamp: '{%- assign offset = foreach.item | plus: 1 | times: variables.window_ms -%} {%- assign end_ms = variables.window_start_ms | plus: offset | minus: 1 -%} {{ end_ms | divided_by: 1000 | date: "%Y-%m-%dT%H:%M:%S.999Z" }}'

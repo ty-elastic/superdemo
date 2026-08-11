@@ -26,6 +26,7 @@ json_handler = logging.StreamHandler()
 # explicitly configure the fields you want to see in the JSON output
 json_handler.setFormatter(JsonFormatter("%(asctime)s %(levelname)s %(message)s"))
 
+logging.getLogger().handlers = []
 app.logger.handlers.clear()
 app.logger.propagate = False
 app.logger.setLevel(logging.INFO)
