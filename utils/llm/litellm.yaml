@@ -32,6 +32,7 @@ data:
       require_auth_for_metrics_endpoint: false
       callbacks:
         - prometheus
+      drop_params: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -71,6 +72,7 @@ spec:
           - containerPort: 8090
       - name: litellm
         image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/litellm:$COURSE
+        imagePullPolicy: Always
         args:
           - "--config"
           - "/app/proxy_server_config.yaml"
