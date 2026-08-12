@@ -30,6 +30,7 @@ resource "ec_deployment" "es_cluster" {
         esql.federation.enabled: true
         xpack.security.audit.logfile.events.emit_request_body: true
         xpack.security.audit.enabled: true
+        xpack.security.audit.logfile.events.include: _all
       EOT
     }
   }
