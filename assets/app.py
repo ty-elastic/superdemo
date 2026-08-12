@@ -14,6 +14,8 @@ from ruamel.yaml.compat import StringIO
 from dotenv import dotenv_values
 from io import StringIO
 import hashlib
+from pathlib import Path
+import json5
 
 class MyYAML(YAML):
     def dump(self, data, stream=None, **kw):
@@ -312,6 +314,24 @@ def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
                             print(resp.json())            
  
 
+def load_esql_views(es_host, kibana_auth):
+
+    directory_path = "esql_views"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, 'r') as fileo:
+                    
+                    dataview = json5.load(fileo)
+                    print(filename_no_ext)
+                    resp = requests.put(f"{es_host}/_query/view/{filename_no_ext}",
+                                        json=dataview,
+                                        headers={f"Authorization": kibana_auth, "Content-Type": "application/json"})
+                    print(resp.json())
 
 def load_dataviews(kibana_server, kibana_auth):
 
@@ -907,6 +927,10 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_streams(kibana_host, auth)
         print('done')
 
+    elif action == 'load_esql_views':
+        load_esql_views(es_host, auth)
+        print('done')
+
     elif action == 'load':
         load_workflows(kibana_host, auth, es_host, remote_host)
         #load_new_knowledge(es_host, auth)
@@ -926,6 +950,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_slos(kibana_host, auth, services_split)
         
         load_streams(kibana_host, auth)
+        load_esql_views(es_host, auth)
 
         print('done')
 
