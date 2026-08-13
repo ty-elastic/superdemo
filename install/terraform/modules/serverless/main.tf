@@ -2,6 +2,8 @@ provider "ec" {
   apikey = var.cloud_apikey
 }
 
+provider "http-full" { }
+
 # Create an Elastic Cloud Serverless Project
 resource "ec_observability_project" "es_cluster" {
   count = var.enable == true ? 1 : 0
@@ -28,6 +30,41 @@ data "http" "get_fleet_endpoint" {
 
   request_headers = {
     Accept        = "application/json"
+    Authorization = "Basic ${base64encode("${ec_observability_project.es_cluster[0].credentials.username}:${ec_observability_project.es_cluster[0].credentials.password}")}"
+  }
+
+  # Configure the retry behavior
+  retry {
+    attempts     = 5
+    min_delay_ms = 5000
+    max_delay_ms = 5000
+  }
+}
+
+data "http" "turn_on_o11y" {
+  count = var.enable == true ? 1 : 0
+
+  url    = "https://cloud.elastic.co/api/v1/serverless/projects/observability/${ec_observability_project.es_cluster[0].id}"
+  method = "PATCH"
+
+  request_body = jsonencode({
+    monitoring = {
+      logging = {
+        audit = {
+          destination = {
+            project_id = "${ec_observability_project.es_cluster[0].id}"
+            project_type = "observability"
+            enabled = true
+            ignore_filters = []
+          }
+        }
+      }
+    }
+  })
+
+  request_headers = {
+    Accept        = "application/json"
+    Content-Type = "application/json"
     Authorization = "Basic ${base64encode("${ec_observability_project.es_cluster[0].credentials.username}:${ec_observability_project.es_cluster[0].credentials.password}")}"
   }
 

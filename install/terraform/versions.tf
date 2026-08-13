@@ -17,5 +17,8 @@ terraform {
     elasticstack = {
       source  = "elastic/elasticstack"
     }
+    http-full = {
+      source = "salrashid123/http-full"
+    }
   }
 }

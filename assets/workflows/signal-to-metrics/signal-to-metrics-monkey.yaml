@@ -1,0 +1,40 @@
+name: signal-to-metrics-monkey
+enabled: true
+triggers:
+- type: manual
+  inputs:
+  - name: start_timestamp
+    type: string
+  - name: end_timestamp
+    type: string
+  - name: datastream
+    type: string
+steps:
+- name: query
+  type: elasticsearch.esql.query
+  with:
+    query: |
+      FROM logs* | WHERE service.name == "monkey" | WHERE message LIKE "{*" | EVAL msg_asctime = JSON_EXTRACT(message, "asctime"), msg_message = JSON_EXTRACT(message, "message") | WHERE msg_message IS NOT NULL | EVAL log_timestamp = DATE_PARSE("yyyy-MM-dd HH:mm:ss,SSS", msg_asctime) | DISSECT msg_message "trading %{symbol} for %{username} on %{}" | KEEP log_timestamp, symbol, username, msg_message | STATS trades = COUNT() BY symbol
+    format: json
+
+- name: build_docs
+  type: foreach
+  foreach: '{{ steps.query.output.values }}'
+  steps:
+  - name: store
+    type: elasticsearch.bulk
+    with:
+      index: '{{ inputs.datastream }}'
+      operations:
+      - create:
+          dynamic_templates:
+            metrics.trades.count: counter_long
+      - '@timestamp': '{{ inputs.end_timestamp }}'
+        start_timestamp: '{{ inputs.start_timestamp }}'
+        resource:
+          attributes:
+            workflow_id: '{{ workflow.id }}'
+        attributes:
+          symbol: '{{ foreach.item[1] }}'
+        metrics:
+          trades.count: ${{ foreach.item[0] }}

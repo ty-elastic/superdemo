@@ -1,0 +1,692 @@
+{
+  "description": "",
+  "options": {
+    "auto_apply_filters": true,
+    "hide_panel_borders": false,
+    "hide_panel_titles": false,
+    "sync_colors": false,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "use_margins": true
+  },
+  "tags": [],
+  "title": "Trader Service",
+  "filters": [],
+  "esql_approximation": false,
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "panels": [
+    {
+      "grid": {
+        "y": 0,
+        "x": 0,
+        "w": 45,
+        "h": 2
+      },
+      "config": {
+        "layout": "horizontal",
+        "links": [
+          {
+            "label": "Service",
+            "type": "externalLink",
+            "destination": "/app/apm/services/trader/overview?anomalyThreshold=major&comparisonEnabled=true&environment=ENVIRONMENT_ALL&kuery=&latencyAggregationType=avg&offset=1d&rangeFrom=now-15m&rangeTo=now&serviceGroup=&transactionType=request",
+            "options": {
+              "open_in_new_tab": true,
+              "encode_url": true
+            }
+          }
+        ]
+      },
+      "id": "7a8d91c0-d245-4d64-969d-350f64fb6943",
+      "type": "links"
+    },
+    {
+      "grid": {
+        "y": 2,
+        "x": 0,
+        "w": 11,
+        "h": 10
+      },
+      "config": {
+        "title": "Latency",
+        "type": "xy",
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "SET unmapped_fields=\"NULLIFY\"; FROM traces-apm*, apm-*, traces-*.otel-* | WHERE `service.name` == \"trader\" | WHERE `transaction.type` == \"request\" | WHERE TO_STRING(processor.event) == \"transaction\" OR TO_STRING(processor.event) == \"span\" OR processor.event IS NULL | EVAL duration_ms_ecs = CASE(transaction.duration.us IS NOT NULL, TO_DOUBLE(transaction.duration.us) / 1000, span.duration.us IS NOT NULL, TO_DOUBLE(span.duration.us) / 1000, NULL) | EVAL duration_ms_otel = ROUND(duration) / 1000 / 1000 | EVAL duration_ms = COALESCE(TO_LONG(duration_ms_ecs), TO_LONG(duration_ms_otel)) | STATS AVG(duration_ms) BY TBUCKET(100), resource.attributes.cloud.region"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "x": {
+              "column": "TBUCKET(100)"
+            },
+            "y": [
+              {
+                "column": "AVG(duration_ms)",
+                "format": {
+                  "type": "duration",
+                  "from": "ms",
+                  "to": "auto"
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "resource.attributes.cloud.region",
+              "color": {
+                "mode": "categorical",
+                "palette": "elastic_line_optimized",
+                "mapping": []
+              }
+            }
+          }
+        ],
+        "axis": {
+          "x": {
+            "title": {
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal"
+          },
+          "y": {
+            "title": {
+              "visible": false
+            },
+            "scale": "linear",
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "full",
+              "rounding": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "fitting": {
+            "type": "linear",
+            "emphasize": true
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "legend": {
+          "placement": "outside",
+          "position": "right",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "visibility": "visible"
+        }
+      },
+      "id": "ca585440-f991-456f-abc1-010d8190e2d2",
+      "type": "vis"
+    },
+    {
+      "grid": {
+        "y": 12,
+        "x": 0,
+        "w": 18,
+        "h": 12
+      },
+      "config": {
+        "title": "Shares Traded Per Symbol",
+        "type": "xy",
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-trader\n  | STATS avg_shares_traded = AVG(metrics.shares_traded_per_customer) BY BUCKET(@timestamp, 100, ?_tstart, ?_tend), symbol"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "x": {
+              "column": "BUCKET(@timestamp, 100, ?_tstart, ?_tend)"
+            },
+            "y": [
+              {
+                "column": "avg_shares_traded"
+              }
+            ],
+            "breakdown_by": {
+              "column": "symbol",
+              "color": {
+                "mode": "categorical",
+                "palette": "elastic_line_optimized",
+                "mapping": []
+              }
+            }
+          }
+        ],
+        "axis": {
+          "x": {
+            "title": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal"
+          },
+          "y": {
+            "title": {
+              "visible": true
+            },
+            "scale": "linear",
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "full",
+              "rounding": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "fitting": {
+            "type": "linear"
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "legend": {
+          "placement": "outside",
+          "position": "bottom",
+          "layout": {
+            "type": "list"
+          },
+          "visibility": "visible"
+        }
+      },
+      "id": "362d4da1-b303-418b-b742-4bc473680265",
+      "type": "vis"
+    },
+    {
+      "grid": {
+        "y": 2,
+        "x": 11,
+        "w": 12,
+        "h": 10
+      },
+      "config": {
+        "title": "Error Rate",
+        "type": "xy",
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "SET unmapped_fields=\"NULLIFY\"; FROM traces-apm*, apm-*, traces-*.otel-* | WHERE `service.name` == \"trader\" | WHERE `transaction.type` == \"request\" | WHERE TO_STRING(processor.event) == \"transaction\" OR TO_STRING(processor.event) == \"span\" OR processor.event IS NULL | STATS failure = COUNT(*) WHERE TO_STRING(event.outcome) == \"failure\" OR TO_STRING(status.code) == \"Error\", all = COUNT(*) BY timestamp = TBUCKET(100), resource.attributes.cloud.region | EVAL error_rate = TO_DOUBLE(failure) / all | KEEP timestamp, error_rate, resource.attributes.cloud.region | SORT timestamp"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "x": {
+              "column": "timestamp"
+            },
+            "y": [
+              {
+                "column": "error_rate",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1,
+                  "compact": true
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "resource.attributes.cloud.region",
+              "color": {
+                "mode": "categorical",
+                "palette": "elastic_line_optimized",
+                "mapping": []
+              }
+            }
+          }
+        ],
+        "axis": {
+          "x": {
+            "title": {
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal"
+          },
+          "y": {
+            "title": {
+              "visible": false
+            },
+            "scale": "linear",
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "custom",
+              "min": 0,
+              "max": 1,
+              "rounding": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "fitting": {
+            "type": "linear",
+            "emphasize": true
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "legend": {
+          "placement": "outside",
+          "position": "right",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "visibility": "visible"
+        }
+      },
+      "id": "eadec6d8-da46-4098-b888-dbf125baff98",
+      "type": "vis"
+    },
+    {
+      "grid": {
+        "y": 2,
+        "x": 23,
+        "w": 13,
+        "h": 10
+      },
+      "config": {
+        "title": "Throughput",
+        "type": "xy",
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "SET unmapped_fields=\"NULLIFY\"; FROM traces-apm*, apm-*, traces-*.otel-* | WHERE `service.name` == \"trader\" | WHERE `transaction.type` == \"request\" | WHERE TO_STRING(processor.event) == \"transaction\" OR TO_STRING(processor.event) == \"span\" OR processor.event IS NULL | EVAL id = COALESCE(transaction.id, span.id) | STATS COUNT(id) BY TBUCKET(100), resource.attributes.cloud.region"
+            },
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "x": {
+              "column": "TBUCKET(100)"
+            },
+            "y": [
+              {
+                "column": "COUNT(id)"
+              }
+            ],
+            "breakdown_by": {
+              "column": "resource.attributes.cloud.region",
+              "color": {
+                "mode": "categorical",
+                "palette": "elastic_line_optimized",
+                "mapping": []
+              }
+            }
+          }
+        ],
+        "axis": {
+          "x": {
+            "title": {
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal"
+          },
+          "y": {
+            "title": {
+              "visible": false
+            },
+            "scale": "linear",
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "domain": {
+              "type": "full",
+              "rounding": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "fitting": {
+            "type": "linear",
+            "emphasize": true
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "legend": {
+          "placement": "outside",
+          "position": "right",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "visibility": "visible"
+        }
+      },
+      "id": "839aba20-643b-469e-b902-26aec48327e2",
+      "type": "vis"
+    },
+    {
+      "collapsed": true,
+      "title": "Service Map",
+      "grid": {
+        "y": 24
+      },
+      "id": "21640d24-309f-43dc-b37c-f95cc2240bf4",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 1,
+            "w": 13,
+            "h": 15
+          },
+          "config": {
+            "environment": "ENVIRONMENT_ALL",
+            "service_name": "trader",
+            "map_orientation": "horizontal",
+            "sync_with_dashboard_filters": false
+          },
+          "id": "27822541-866b-48d3-8448-459fe24611d7",
+          "type": "apm_service_map"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "title": "Monitors",
+      "grid": {
+        "y": 25
+      },
+      "id": "5c6c3db8-2525-459e-beb1-96b7215761a1",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 12,
+            "h": 8
+          },
+          "config": {
+            "overview_mode": "single",
+            "slo_id": "7b834446-821f-4583-8940-7285a6b52b72",
+            "slo_instance_id": "trader"
+          },
+          "id": "b3fffb05-15da-491a-b949-5520223918b0",
+          "type": "slo_overview"
+        },
+        {
+          "grid": {
+            "y": 8,
+            "x": 0,
+            "w": 12,
+            "h": 8
+          },
+          "config": {
+            "overview_mode": "single",
+            "slo_id": "3ec17627-6907-477d-842a-88acd0350568",
+            "slo_instance_id": "trader"
+          },
+          "id": "88ce93f9-6f13-461e-ba3e-b4f593aa7d05",
+          "type": "slo_overview"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 13,
+            "w": 26,
+            "h": 12
+          },
+          "config": {
+            "filters": {
+              "projects": [],
+              "tags": [
+                {
+                  "label": "trader",
+                  "value": "trader"
+                }
+              ],
+              "locations": [],
+              "monitor_ids": [
+                {
+                  "label": "Trader API Health",
+                  "value": "307c836c-7ce6-4a29-b0b9-67408d755f86"
+                },
+                {
+                  "label": "Request Trade (trading-na)",
+                  "value": "7ced1edf-d179-450c-abd1-f042766e76c6"
+                }
+              ],
+              "monitor_types": []
+            },
+            "view": "cardView"
+          },
+          "id": "9fdd2215-1f79-4170-9bc0-a57a272670d3",
+          "type": "synthetics_monitors"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "title": "Logs",
+      "grid": {
+        "y": 26
+      },
+      "id": "6288f25f-7895-43dc-a2a4-c05a672e7145",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 0,
+            "w": 24,
+            "h": 15
+          },
+          "config": {
+            "title": "Pattern analysis: message",
+            "field_name": "message",
+            "minimum_time_range": "no_minimum",
+            "random_sampler_mode": "on_automatic",
+            "random_sampler_probability": 0.001,
+            "data_view_id": "62a2d5ce-11cd-4204-b82e-4a799a6166fd"
+          },
+          "id": "a7da72b8-8531-454c-a93d-cb43e87f747b",
+          "type": "aiops_pattern_analysis"
+        },
+        {
+          "grid": {
+            "y": 0,
+            "x": 24,
+            "w": 20,
+            "h": 15
+          },
+          "config": {
+            "title": "Log rate analysis",
+            "data_view_id": "62a2d5ce-11cd-4204-b82e-4a799a6166fd"
+          },
+          "id": "5cea5e44-6389-4ee4-bd65-3622dbed5e59",
+          "type": "aiops_log_rate_analysis"
+        },
+        {
+          "grid": {
+            "y": 15,
+            "x": 0,
+            "w": 44,
+            "h": 9
+          },
+          "config": {
+            "title": "",
+            "description": "",
+            "tabs": [
+              {
+                "sort": [],
+                "column_order": [],
+                "header_row_height": 3,
+                "density": "compact",
+                "data_source": {
+                  "type": "esql",
+                  "query": "FROM logs-trader"
+                }
+              }
+            ]
+          },
+          "id": "65df087e-b191-4fe0-b1a8-cd0ac6d6b876",
+          "type": "discover_session"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "title": "Fraud",
+      "grid": {
+        "y": 27
+      },
+      "id": "25394bbe-fd5f-4e0d-8aab-ab028dab4d0c",
+      "panels": [
+        {
+          "grid": {
+            "y": 0,
+            "x": 1,
+            "w": 24,
+            "h": 15
+          },
+          "config": {
+            "title": "ML anomaly swim lane for shares_traded_anomalies",
+            "job_ids": [
+              "shares_traded_anomalies"
+            ],
+            "swimlane_type": "viewBy",
+            "view_by": "customer_id",
+            "per_page": 10
+          },
+          "id": "d9783f18-5674-4f5d-bcca-4af727b49607",
+          "type": "ml_anomaly_swimlane"
+        }
+      ]
+    }
+  ],
+  "pinned_panels": []
+}

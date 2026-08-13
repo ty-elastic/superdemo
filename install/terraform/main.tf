@@ -238,7 +238,7 @@ locals {
 
 resource "google_compute_instance" "windows_server" {
   name         = "${local.cluster_name}-windows"
-  machine_type = "n1-standard-4"
+  machine_type = "n2-standard-4"
   zone         = var.zone
 
   tags = ["windows-rdp"]

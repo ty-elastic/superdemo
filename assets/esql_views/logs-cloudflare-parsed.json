@@ -1,6 +1,0 @@
-{
-    "query": "FROM logs-cloudflare \
-            | EVAL `@timestamp` = TO_DATETIME(EdgeStartTimestamp / 1000000), end_time = TO_DATETIME(EdgeEndTimestamp / 1000000) \
-            | USER_AGENT useragent = ClientRequestUserAgent | IP_LOCATION clientip = ClientIP \
-            | WHERE useragent.os.name IS NOT NULL AND clientip.country_iso_code IS NOT NULL"
-}
