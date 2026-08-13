@@ -47,6 +47,11 @@ data "http" "turn_on_o11y" {
   url    = "https://cloud.elastic.co/api/v1/serverless/projects/observability/${ec_observability_project.es_cluster[0].id}"
   method = "PATCH"
 
+  request_headers = {
+    Accept        = "application/json"
+    Authorization = "ApiKey ${var.cloud_apikey}"
+  }
+
   request_body = jsonencode({
     monitoring = {
       logging = {
