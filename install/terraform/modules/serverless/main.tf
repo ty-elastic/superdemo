@@ -2,15 +2,17 @@ provider "ec" {
   apikey = var.cloud_apikey
 }
 
-provider "http-full" { }
+provider "http-full" {
+  # Generally left empty unless initializing global properties
+}
 
 # Create an Elastic Cloud Serverless Project
 resource "ec_observability_project" "es_cluster" {
   count = var.enable == true ? 1 : 0
 
-  name        = "${var.cluster_name}-${var.project}"
+  name        = "${var.cluster_name}"
   region_id   = "gcp-${var.region}"
-  alias = var.alias
+  alias = "${var.cluster_name}"
 }
 
 resource "time_sleep" "wait" {
@@ -43,12 +45,14 @@ data "http" "get_fleet_endpoint" {
 
 data "http" "turn_on_o11y" {
   count = var.enable == true ? 1 : 0
+  provider = http-full
 
   url    = "https://cloud.elastic.co/api/v1/serverless/projects/observability/${ec_observability_project.es_cluster[0].id}"
   method = "PATCH"
 
   request_headers = {
     Accept        = "application/json"
+    Content-Type = "application/json"
     Authorization = "ApiKey ${var.cloud_apikey}"
   }
 
@@ -59,26 +63,13 @@ data "http" "turn_on_o11y" {
           destination = {
             project_id = "${ec_observability_project.es_cluster[0].id}"
             project_type = "observability"
-            enabled = true
-            ignore_filters = []
           }
+          enabled = true
+          ignore_filters = []
         }
       }
     }
   })
-
-  request_headers = {
-    Accept        = "application/json"
-    Content-Type = "application/json"
-    Authorization = "Basic ${base64encode("${ec_observability_project.es_cluster[0].credentials.username}:${ec_observability_project.es_cluster[0].credentials.password}")}"
-  }
-
-  # Configure the retry behavior
-  retry {
-    attempts     = 5
-    min_delay_ms = 5000
-    max_delay_ms = 5000
-  }
 }
 
 locals {

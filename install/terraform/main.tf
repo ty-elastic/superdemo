@@ -6,10 +6,33 @@ provider "google" {
 
 data "google_client_config" "default" {}
 
+resource "time_offset" "three_days_future" {
+  offset_days = 3
+}
+
+locals {
+  labels = {
+    for key, value in var.labels : key => {
+      division = value.division
+      org = value.org
+      team = value.team
+      project = value.project
+      keep-until = value.keep-until != null ? value.keep-until : formatdate("YYYY-MM-DD", time_offset.three_days_future.rfc3339)
+    }
+  }
+}
+
 provider "kubernetes" {
   host                   = "https://${google_container_cluster.primary.endpoint}"
   token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+}
+
+resource "random_string" "project_guid" {
+  length  = 6
+  upper   = false
+  numeric = false
+  special = false
 }
 
 locals {
@@ -26,7 +49,7 @@ locals {
   install_image = "us-central1-docker.pkg.dev/elastic-sa/tbekiares/install:${local.selected_course}"
 
   # String interpolation combining both variables
-  cluster_name = "${var.cluster_name}-${var.labels.project}"
+  cluster_name = "${local.labels.gcp_labels.project}-${var.deployment_name}-${random_string.project_guid.result}"
 }
 
 resource "random_bytes" "access_password" {
@@ -74,7 +97,7 @@ resource "google_container_cluster" "primary" {
     services_ipv4_cidr_block = "/24"
   }
 
-  resource_labels = var.labels
+  resource_labels = local.labels.gcp_labels
 }
 
 resource "google_container_node_pool" "primary_nodes" {
@@ -98,7 +121,7 @@ resource "google_container_node_pool" "primary_nodes" {
       enable_integrity_monitoring = true
     }
 
-    labels = var.labels
+    labels = local.labels.gcp_labels
   }
 
   management {
@@ -263,7 +286,7 @@ resource "google_compute_instance" "windows_server" {
     windows-startup-script-ps1 = local.windows_startup_auth
   }
 
-  labels = var.labels
+  labels = local.labels.gcp_labels
 
   timeouts {
     create = var.job_timeout

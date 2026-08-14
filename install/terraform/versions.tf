@@ -17,8 +17,9 @@ terraform {
     elasticstack = {
       source  = "elastic/elasticstack"
     }
-    http-full = {
-      source = "salrashid123/http-full"
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.11.0"
     }
   }
 }

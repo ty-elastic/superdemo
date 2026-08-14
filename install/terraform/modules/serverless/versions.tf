@@ -5,5 +5,8 @@ terraform {
     ec = {
       source  = "elastic/ec"
     }
+    http-full = {
+      source = "salrashid123/http-full"
+    }
   }
 }

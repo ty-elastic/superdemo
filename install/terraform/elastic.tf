@@ -1,19 +1,12 @@
-resource "random_string" "alias_id" {
-  length  = 6
-  upper   = false
-  numeric = false
-  special = false
-}
+
 
 module "es_serverless" {
   source = "./modules/serverless" # Relative path to your module
 
   # Pass required variables into the module
-  project = var.labels.project
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
-  cluster_name = var.cluster_name
-  alias = "${var.cluster_name}-${random_string.alias_id.result}"
+  cluster_name = "${local.cluster_name}"
   enable = var.es_cluster_type == "serverless" ? true : false
 }
 
@@ -21,12 +14,10 @@ module "es_hosted" {
   source = "./modules/hosted" # Relative path to your module
 
   # Pass required variables into the module
-  project = var.labels.project
   region = "${var.region}"
   cloud_apikey = var.es_cloud_apikey
-  cluster_name = var.cluster_name
+  cluster_name = "${local.cluster_name}"
   es_version = var.es_cluster_hosted_version
-  alias = "${var.cluster_name}-${random_string.alias_id.result}"
   enable = var.es_cluster_type == "hosted" ? true : false
 }
 

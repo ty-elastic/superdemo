@@ -6,6 +6,9 @@ consts:
   - workflow_id: signal-to-metrics-proxy
     datastream: metrics-logs.otel-default
     bucket_size_mins: 1
+  - workflow_id: signal-to-metrics-monkey
+    datastream: metrics-logs.otel-default
+    bucket_size_mins: 1
 triggers:
 - type: scheduled
   with:

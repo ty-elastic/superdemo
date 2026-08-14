@@ -1,8 +1,3 @@
-variable "project" {
-  description = "GCP project ID"
-  type        = string
-}
-
 variable "region" {
   description = "GCP region (used for provider defaults)"
   type        = string
@@ -20,8 +15,4 @@ variable "cluster_name" {
 variable "cloud_apikey" {
   description = "Elastic cloud apikey for creating elastic cloud projects"
   type        = string
-}
-
-variable "alias" {
-  type = string
 }

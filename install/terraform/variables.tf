@@ -14,7 +14,7 @@ variable "zone" {
   type        = string
 }
 
-variable "cluster_name" {
+variable "deployment_name" {
   description = "Name of the GKE cluster"
   type        = string
   default     = "superdemo"
@@ -46,14 +46,13 @@ variable "disk_size_gb" {
 
 variable "labels" {
   description = "Labels applied to the cluster and its nodes"
-  type        = map(string)
-  default = {
-    division   = ""
-    org        = ""
-    team       = ""
-    project    = ""
-    keep-until = ""
-  }
+  type = map(object({
+    division = string
+    org = string
+    team = string
+    project = string
+    keep-until = optional(string, null)
+  }))
 }
 
 variable "job_name" {

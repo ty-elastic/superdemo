@@ -1,8 +1,3 @@
-variable "project" {
-  description = "GCP project ID"
-  type        = string
-}
-
 variable "region" {
   description = "GCP region (used for provider defaults)"
   type        = string
@@ -29,8 +24,4 @@ variable "es_version" {
 variable "deployment_template_id" {
   type = string
   default = "gcp-cpu-optimized"
-}
-
-variable "alias" {
-  type = string
 }
