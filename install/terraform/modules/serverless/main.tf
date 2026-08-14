@@ -2,9 +2,9 @@ provider "ec" {
   apikey = var.cloud_apikey
 }
 
-provider "http-full" {
-  # Generally left empty unless initializing global properties
-}
+# provider "http-full" {
+#   # Generally left empty unless initializing global properties
+# }
 
 # Create an Elastic Cloud Serverless Project
 resource "ec_observability_project" "es_cluster" {

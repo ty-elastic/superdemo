@@ -10,33 +10,34 @@ while getopts "a:b:r:c:" opt
 do
    case "$opt" in
       a ) arch="$OPTARG" ;;
-      b ) build="$OPTARG" ;;
+      b ) build="$OPTARG" ;; 
       r ) branch="$OPTARG" ;;
-      c ) customer="$OPTARG" ;;
+      c ) course="$OPTARG" ;;
    esac
 done
 
 # prep track sub
 
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-if [[ "$CURRENT_BRANCH" == "$branch" ]]; then
-  echo "Current branch is correct: $CURRENT_BRANCH"
-else
-  echo "Error: Current branch is \"$CURRENT_BRANCH\", but expected \"$EXPECTED_BRANCH\"."
-  exit 1
-fi
-
-if [ -n "$(git status --porcelain -uno)" ]; then
-  echo "🔴 There are modified or untracked files."
-  # Optional: list the modified files
-  git status --porcelain
-  exit 1
-else
-  echo "🟢 The working directory is clean."
-fi
-
 if [ -z "$course" ]; then
+
+  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+  if [[ "$CURRENT_BRANCH" == "$branch" ]]; then
+    echo "Current branch is correct: $CURRENT_BRANCH"
+  else
+    echo "Error: Current branch is \"$CURRENT_BRANCH\", but expected \"$EXPECTED_BRANCH\"."
+    exit 1
+  fi
+
+  if [ -n "$(git status --porcelain -uno)" ]; then
+    echo "🔴 There are modified or untracked files."
+    # Optional: list the modified files
+    git status --porcelain
+    exit 1
+  else
+    echo "🟢 The working directory is clean."
+  fi
+
   if [[ "$CURRENT_BRANCH" == "main" ]]; then
       course=o11y--course--field--100-e2e--serverless
   else

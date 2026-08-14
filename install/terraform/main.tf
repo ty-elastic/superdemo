@@ -28,7 +28,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
 }
 
-resource "random_string" "project_guid" {
+resource "random_string" "random_project_guid" {
   length  = 6
   upper   = false
   numeric = false
@@ -36,6 +36,9 @@ resource "random_string" "project_guid" {
 }
 
 locals {
+
+  project_guid = coalesce(var.project_guid, random_string.random_project_guid.result)
+
   course = {
     test = "o11y--course--field--100-e2e--test"
     prod = "o11y--course--field--100-e2e--serverless"
@@ -50,7 +53,7 @@ locals {
   install_image = "us-central1-docker.pkg.dev/elastic-sa/tbekiares/install:${local.selected_course}"
 
   # String interpolation combining both variables
-  cluster_name = "${local.labels.gcp_labels.project}-${var.deployment_name}-${random_string.project_guid.result}"
+  cluster_name = "${local.labels.gcp_labels.project}-${var.deployment_name}-${local.project_guid}"
 }
 
 resource "random_bytes" "access_password" {

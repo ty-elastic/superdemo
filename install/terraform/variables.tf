@@ -90,6 +90,11 @@ variable "es_cloud_apikey" {
   default     = ""
 }
 
+variable "project_guid" {
+  type = string
+  default     = ""
+}
+
 variable "es_cluster_hosted_version" {
   type = string
   default = "9.5.1"
