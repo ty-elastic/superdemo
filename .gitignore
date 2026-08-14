@@ -60,3 +60,9 @@ uv.lock
 local.properties
 
 .env*
+install/terraform/.terraform.lock.hcl
+install/state/nvidia/.terraform.lock.hcl
+install/state/nvidia/terraform.tfstate
+install/state/nvidia/terraform.tfstate.backup
+install/state/nvidia/terraform.tfvars
+.claude/settings.json
