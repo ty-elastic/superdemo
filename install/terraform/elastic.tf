@@ -48,5 +48,5 @@ resource "elasticstack_elasticsearch_security_api_key" "project_api_key" {
 }
 
 locals {
-  elasticsearch_apikey = coalesce(var.elasticsearch_apikey)#, elasticstack_elasticsearch_security_api_key.project_api_key[0].encoded)
+  elasticsearch_apikey = coalesce(var.elasticsearch_apikey, elasticstack_elasticsearch_security_api_key.project_api_key[0].encoded)
 }

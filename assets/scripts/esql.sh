@@ -57,6 +57,6 @@ config_esql_df_set() {
 }
 
 config_esql_df_source logs s3 eu-west-3
-config_esql_df_set logs-cloudflare logs "s3://datasets-documentation/clickstack-integrations/cloudflare/*.json" ndjson
+config_esql_df_set ext-logs-cloudflare logs "s3://datasets-documentation/clickstack-integrations/cloudflare/*.json" ndjson
 
 
