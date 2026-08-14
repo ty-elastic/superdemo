@@ -39,6 +39,7 @@ locals {
   course = {
     test = "o11y--course--field--100-e2e--test"
     prod = "o11y--course--field--100-e2e--serverless"
+    customer = "o11y--course--field--100-e2e--customer"
   }
   # Fallback to a default if the variable doesn't match a known key
   selected_course = try(

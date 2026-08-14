@@ -68,7 +68,7 @@ variable "job_namespace" {
 }
 
 variable "environment" {
-  description = "test, prod"
+  description = "test, prod, customer"
   type        = string
   default     = "prod"
 }
@@ -87,11 +87,12 @@ variable "job_timeout" {
 
 variable "es_cloud_apikey" {
   type = string
+  default     = ""
 }
 
 variable "es_cluster_hosted_version" {
   type = string
-  default = "9.5.0-SNAPSHOT"
+  default = "9.5.1"
 }
 
 variable "es_cluster_type" {

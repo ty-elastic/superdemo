@@ -2,15 +2,17 @@ arch=linux/amd64
 repo=us-central1-docker.pkg.dev/elastic-sa/tbekiares
 build=true
 branch=test
+course=""
 repo=us-central1-docker.pkg.dev/elastic-sa/tbekiares
 
 OPTIND=1
-while getopts "a:b:r:" opt
+while getopts "a:b:r:c:" opt
 do
    case "$opt" in
       a ) arch="$OPTARG" ;;
       b ) build="$OPTARG" ;;
       r ) branch="$OPTARG" ;;
+      c ) customer="$OPTARG" ;;
    esac
 done
 
@@ -34,10 +36,12 @@ else
   echo "🟢 The working directory is clean."
 fi
 
-if [[ "$CURRENT_BRANCH" == "main" ]]; then
-    course=o11y--course--field--100-e2e--serverless
-else
-    course=o11y--course--field--100-e2e--test
+if [ -z "$course" ]; then
+  if [[ "$CURRENT_BRANCH" == "main" ]]; then
+      course=o11y--course--field--100-e2e--serverless
+  else
+      course=o11y--course--field--100-e2e--test
+  fi
 fi
 echo $course
 
