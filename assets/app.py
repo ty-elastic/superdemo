@@ -389,6 +389,24 @@ def load_objects(kibana_server, kibana_auth):
                                         headers={f"Authorization": kibana_auth, "kbn-xsrf": "true"})
                     print(resp.json())  
 
+def load_ilm(es_host, kibana_auth):
+
+    directory_path = "ilm"
+    target_extension = ".json"
+    
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, 'r') as fileo:
+                    ilm = json.load(fileo)
+                    #print(rule)
+                    resp = requests.put(f"{es_host}/_ilm/policy/{filename_no_ext}",
+                                        json=ilm,
+                                        headers={f"Authorization": kibana_auth, "Content-Type": "application/json"})
+                    print(resp.json())     
+
 def load_ml(es_host, kibana_auth):
 
     directory_path = "ml"
@@ -931,7 +949,12 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_esql_views(es_host, auth)
         print('done')
 
+    elif action == 'load_ilm':
+        load_ilm(es_host, auth)
+        print('done')
+
     elif action == 'load':
+        load_ilm(es_host, auth)
         load_workflows(kibana_host, auth, es_host, remote_host)
         #load_new_knowledge(es_host, auth)
         load_agent_tools(kibana_host, auth)

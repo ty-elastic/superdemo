@@ -19,6 +19,7 @@ COPY tools tools
 COPY aliases aliases
 COPY data_views data_views
 COPY ml ml
+COPY ilm ilm
 COPY objects objects
 COPY skills skills
 COPY slos slos
