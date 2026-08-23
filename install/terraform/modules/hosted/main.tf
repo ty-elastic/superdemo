@@ -13,7 +13,7 @@ resource "ec_deployment" "es_cluster" {
 
   elasticsearch = {
     hot = {
-      size          = "4g"
+      size          = "16g"
       size_resource = "memory"
       zone_count    = 1
       autoscaling = {}
@@ -30,7 +30,7 @@ resource "ec_deployment" "es_cluster" {
         esql.federation.enabled: true
         xpack.security.audit.logfile.events.emit_request_body: true
         xpack.security.audit.enabled: true
-        xpack.security.audit.logfile.events.include: _all
+        xpack.security.audit.logfile.events.include: authentication_success
       EOT
     }
   }

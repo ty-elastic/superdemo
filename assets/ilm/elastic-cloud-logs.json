@@ -11,7 +11,7 @@
         }
       },
       "delete": {
-        "min_age": "2h",
+        "min_age": "3h",
         "actions": {
           "delete": {
             "delete_searchable_snapshot": true
