@@ -477,12 +477,13 @@ if [ "$grafana" = "true" ]; then
     cd utils/prometheus-grafana
 
     export elasticsearch_es_endpoint=$elasticsearch_es_endpoint
+    export elasticsearch_otlp_endpoint=$elasticsearch_otlp_endpoint
     export elasticsearch_kibana_endpoint=$elasticsearch_kibana_endpoint
     export elasticsearch_api_key=$elasticsearch_api_key  
     export COURSE=$course
     export REPO=$repo
 
-    envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < grafana.yaml | kubectl apply -f -
+    envsubst '$COURSE,$REPO,$elasticsearch_otlp_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key' < grafana.yaml | kubectl apply -f -
     check_services infra
     retry_command_lin check_http "http://grafana.infra.svc.cluster.local:3000/"
     envsubst '$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$COURSE,$REPO' < migrate.yaml | kubectl apply -f -

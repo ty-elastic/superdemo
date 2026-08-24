@@ -42,7 +42,7 @@ data:
         metrics:
           receivers: [docker_stats]
           processors: [resourcedetection, transform/ds]
-          exporters: [debug, otlp/gateway]
+          exporters: [otlp/gateway]
 ---
 apiVersion: v1
 kind: Pod

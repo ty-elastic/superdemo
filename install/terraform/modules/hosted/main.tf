@@ -28,9 +28,9 @@ resource "ec_deployment" "es_cluster" {
     config = {
       user_settings_yaml = <<-EOT
         esql.federation.enabled: true
-        xpack.security.audit.logfile.events.emit_request_body: true
-        xpack.security.audit.enabled: true
-        xpack.security.audit.logfile.events.include: _all
+        # xpack.security.audit.enabled: true
+        # xpack.security.audit.logfile.events.emit_request_body: true
+        # xpack.security.audit.logfile.events.include: authentication_success
       EOT
     }
   }
@@ -40,13 +40,13 @@ resource "ec_deployment" "es_cluster" {
   }
 
   kibana = {
-      size          = "2g"
+      size          = "4g"
       size_resource = "memory"
       zone_count    = 1   
       config = {
       user_settings_yaml = <<-EOT
         xpack.dataFederation.enabled: true
-        xpack.security.audit.enabled: true
+        # xpack.security.audit.enabled: true
       EOT
     }
   }
