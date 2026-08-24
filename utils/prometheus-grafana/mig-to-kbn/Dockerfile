@@ -4,8 +4,8 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 WORKDIR /python-docker
 
-RUN git clone https://github.com/elastic/mig-to-kbn.git
-WORKDIR /python-docker/mig-to-kbn
+RUN git clone https://github.com/elastic/observability-migration-platform.git
+WORKDIR /python-docker/observability-migration-platform
 
 RUN pip install -e ".[all]"
 RUN pip install uv
