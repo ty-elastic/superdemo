@@ -118,8 +118,6 @@ spec:
   selector:
     matchLabels:
       service: ramen
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:

@@ -264,8 +264,6 @@ spec:
     matchLabels:
       app: trading
       service: proxy
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:

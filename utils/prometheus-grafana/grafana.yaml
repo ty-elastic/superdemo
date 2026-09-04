@@ -19,7 +19,7 @@ data:
       - name: Elasticsearch
         type: prometheus
         access: proxy
-        url: "$elasticsearch_otlp_endpoint/_prometheus/metrics-generic.prometheus-default"
+        url: "$elasticsearch_es_endpoint/_prometheus/metrics-generic.prometheus-default"
         isDefault: true
         uid: elasticsearch-prometheus
         jsonData:
@@ -64,8 +64,6 @@ spec:
   selector:
     matchLabels:
       service: grafana
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -201,7 +199,7 @@ data:
           labels:
             namespace: 'infra'
     remote_write:
-      - url: "$elasticsearch_es_endpoint/api/v1/write"
+      - url: "$elasticsearch_otlp_endpoint/api/v1/write"
         authorization:
           type: "ApiKey"
           credentials: "$elasticsearch_api_key"
@@ -224,8 +222,6 @@ spec:
   selector:
     matchLabels:
       service: prometheus
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:

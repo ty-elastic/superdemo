@@ -1,0 +1,248 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snmpsim
+  namespace: infra
+  labels:
+    service: snmpsim
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: snmpsim
+  template:
+    metadata:
+      labels:
+        service: snmpsim
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+    spec:
+      containers:
+        - image: $repo/snmpsim:$course
+          name: snmpsim
+          ports:
+            - containerPort: 161
+              protocol: UDP
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: snmpsim
+  name: snmpsim
+  namespace: infra
+spec:
+  ports:
+    - name: "1611"
+      port: 1611
+      targetPort: 161
+  selector:
+    service: snmpsim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logstashui-claim1
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstashui
+  namespace: infra
+  labels:
+    service: logstashui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: logstashui
+  template:
+    metadata:
+      labels:
+        service: logstashui
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+    spec:
+      containers:
+        - name: logstashui
+          env:
+          - name: LOGSTASHUI_DATA_DIR
+            value: "/var/lib/logstashui"
+
+          - name: LOGSTASHUI_BIND
+            value: "0.0.0.0:80"
+          - name: LOGSTASHUI_TLS
+            value: "false"
+          - name: LOGSTASHUI_NO_AUTH
+            value: "true"
+          - name: DEBUG
+            value: "true"
+          image: codyjackson032/logstashui:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+          - mountPath: /var/lib/logstashui
+            name: logstashui-claim
+      restartPolicy: Always
+      volumes:
+        - name: logstashui-claim
+          persistentVolumeClaim:
+            claimName: logstashui-claim1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: logstashui
+  name: logstashui
+  namespace: infra
+spec:
+  ports:
+    - name: logstashui
+      protocol: TCP
+      port: 3000
+      targetPort: 80
+  type: ClusterIP
+  sessionAffinity: ClientIP 
+  selector:
+    service: logstashui
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: logstashui-config-6
+  namespace: infra
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      containers:
+        - image: $repo/logstashui-config:$course
+          name: logstashui-config
+          imagePullPolicy: Always
+          args:
+            - "--logstashui_url"
+            - "http://logstashui.infra.svc.cluster.local:3000"
+            - "--es_apikey"
+            - "$elasticsearch_api_key"
+            - "--es_url"
+            - "$elasticsearch_es_endpoint"
+            - "create_elasticsearch_connection"
+      restartPolicy: Never
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: logstashui-route
+  namespace: default
+spec:
+  entryPoints:
+    - logstashui
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/`)
+      services:
+        - name: logstashui
+          port: 3000
+      middlewares:
+        - name: basic-auth-middleware
+          namespace: traefik
+---
+apiVersion: v1
+data:
+  logstash.yml: |
+    api:
+      http:
+        host: 0.0.0.0
+        port: 9600
+    config:
+      reload:
+        automatic: true
+        interval: 10s
+    log:
+      level: info
+      format: json
+    path:
+      logs: /var/log/logstash
+    xpack:
+      monitoring:
+        enabled: true
+        elasticsearch:
+          api_key: $elasticsearch_api_key
+          hosts:
+            - $elasticsearch_es_endpoint:443
+      management:
+        enabled: true
+        elasticsearch:
+          api_key: $elasticsearch_api_key
+          hosts:
+            - $elasticsearch_es_endpoint:443
+        pipeline:
+          id:
+            - '*'
+kind: ConfigMap
+metadata:
+  labels:
+    service: grafana
+  name: logstash-config
+  namespace: infra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: infra
+  labels:
+    service: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: logstash
+  template:
+    metadata:
+      labels:
+        service: logstash
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+    spec:
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:9.5.3
+          ports:
+            - containerPort: 9600
+              protocol: TCP
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+      restartPolicy: Always
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+            items:
+              - key: logstash.yml
+                path: logstash.yml
