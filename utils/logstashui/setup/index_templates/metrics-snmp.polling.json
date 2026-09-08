@@ -1,0 +1,431 @@
+{
+  "index_patterns": [
+    "metrics-snmp.polling-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "mode": "time_series",
+        "routing_path": [
+          "host.polled_address",
+          "tsds.category"
+        ]
+      }
+    },
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "mapping": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "match_mapping_type": "string"
+          }
+        }
+      ],
+      "properties": {
+        "component": {
+          "properties": {
+            "cpu": {
+              "properties": {
+                "load_pct": {
+                  "time_series_metric": "gauge",
+                  "index": false,
+                  "type": "float"
+                }
+              }
+            },
+            "sensor": {
+              "properties": {
+                "temp": {
+                  "properties": {
+                    "celsius": {
+                      "time_series_metric": "gauge",
+                      "index": false,
+                      "type": "long"
+                    }
+                  }
+                },
+                "value": {
+                  "time_series_metric": "gauge",
+                  "index": false,
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "system": {
+          "properties": {
+            "memory": {
+              "properties": {
+                "actual": {
+                  "properties": {
+                    "total": {
+                      "properties": {
+                        "bytes": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        },
+                        "kb": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        }
+                      }
+                    },
+                    "cached": {
+                      "properties": {
+                        "kb": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        }
+                      }
+                    },
+                    "available": {
+                      "properties": {
+                        "kb": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        }
+                      }
+                    },
+                    "used": {
+                      "properties": {
+                        "pct": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "float"
+                        },
+                        "bytes": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        }
+                      }
+                    },
+                    "free": {
+                      "properties": {
+                        "pct": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "float"
+                        },
+                        "bytes": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        },
+                        "kb": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "long"
+                        }
+                      }
+                    }
+                  }
+                },
+                "total": {
+                  "properties": {
+                    "bytes": {
+                      "time_series_metric": "gauge",
+                      "index": false,
+                      "type": "float"
+                    },
+                    "kb": {
+                      "time_series_metric": "gauge",
+                      "index": false,
+                      "type": "long"
+                    }
+                  }
+                }
+              }
+            },
+            "cpu": {
+              "properties": {
+                "total": {
+                  "properties": {
+                    "norm": {
+                      "properties": {
+                        "pct": {
+                          "time_series_metric": "gauge",
+                          "index": false,
+                          "type": "float"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "filesystem": {
+              "properties": {
+                "used": {
+                  "properties": {
+                    "pct": {
+                      "time_series_metric": "gauge",
+                      "index": false,
+                      "type": "float"
+                    },
+                    "bytes": {
+                      "time_series_metric": "gauge",
+                      "index": false,
+                      "type": "long"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "printer": {
+          "properties": {
+            "marker": {
+              "properties": {
+                "pages_lifetime": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "pages_power_on": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                }
+              }
+            },
+            "supply": {
+              "properties": {
+                "level": {
+                  "time_series_metric": "gauge",
+                  "index": false,
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "tsds": {
+          "properties": {
+            "index": {
+              "ignore_above": 1024,
+              "time_series_dimension": true,
+              "type": "keyword"
+            },
+            "category": {
+              "ignore_above": 1024,
+              "time_series_dimension": true,
+              "type": "keyword"
+            }
+          }
+        },
+        "host": {
+          "properties": {
+            "device_template": {
+              "ignore_above": 1024,
+              "type": "keyword",
+              "fields": {
+                "keyword": {
+                  "ignore_above": 256,
+                  "type": "keyword"
+                }
+              }
+            },
+            "hostname": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "polled_address": {
+              "ignore_above": 1024,
+              "time_series_dimension": true,
+              "type": "keyword",
+              "fields": {
+                "keyword": {
+                  "ignore_above": 256,
+                  "type": "keyword"
+                }
+              }
+            },
+            "ip": {
+              "type": "ip"
+            },
+            "location": {
+              "properties": {
+                "geo": {
+                  "type": "geo_point"
+                },
+                "site": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "building": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "room": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "wireless": {
+          "properties": {
+            "vap": {
+              "properties": {
+                "out_errors": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "in_bytes": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "out_bytes": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "out_packets": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "stations": {
+                  "time_series_metric": "gauge",
+                  "index": false,
+                  "type": "long"
+                },
+                "in_discards": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "out_discards": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "in_packets": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                }
+              }
+            },
+            "radio": {
+              "properties": {
+                "out_errors": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "in_bytes": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "out_bytes": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                },
+                "out_discards": {
+                  "time_series_metric": "counter",
+                  "index": false,
+                  "type": "long"
+                }
+              }
+            }
+          }
+        },
+        "interface": {
+          "properties": {
+            "out_errors": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "out_multicast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_unicast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_multicast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "out_broadcast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_octets": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_broadcast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "out_unicast_pkts": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_discards": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "out_discards": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "in_errors": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            },
+            "out_octets": {
+              "time_series_metric": "counter",
+              "index": false,
+              "type": "long"
+            }
+          }
+        }
+      }
+    }
+  },
+  "composed_of": [
+    "metrics-mappings",
+    "metrics-settings"
+  ],
+  "priority": 500,
+  "_meta": {
+    "description": "SNMP polling metrics index template for LogstashUI. Extends the built-in metrics component templates with TSDS mode, a geo_point location field, and time-series metric/dimension annotations.",
+    "template_name": "metrics-snmp.polling",
+    "managed_by": "LogstashUI",
+    "version": "1.6"
+  },
+  "data_stream": {
+    "hidden": false,
+    "allow_custom_routing": false
+  }
+}

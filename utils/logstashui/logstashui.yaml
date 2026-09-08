@@ -183,14 +183,14 @@ spec:
           imagePullPolicy: Always
           args:
             - "--logstashui_url"
-            - "https://logstashui.infra.svc.cluster.local:8443"
+            - "http://logstashui.infra.svc.cluster.local:9015"
             - "--es_apikey"
             - "$elasticsearch_api_key"
             - "--es_url"
             - "$elasticsearch_es_endpoint"
             - "--kibana_url"
             - "$elasticsearch_kibana_endpoint"
-            - "create_elasticsearch_connection"
+            - "load"
       restartPolicy: Never
 ---
 apiVersion: traefik.io/v1alpha1

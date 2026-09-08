@@ -4,6 +4,7 @@ import click
 import urllib3
 import os
 from pathlib import Path
+import json
 
 def es_load_pipelines(kibana_url, es_apikey):
     directory_path = "pipelines"
@@ -31,6 +32,25 @@ def es_load_pipelines(kibana_url, es_apikey):
                                         json=pipeline,
                                         headers={f"Authorization": f"ApiKey {es_apikey}", "kbn-xsrf": "true", "Content-Type": "application/json"})
                     print(resp)   
+
+def es_load_index_templates(es_url, es_apikey):
+    directory_path = "index_templates"
+    target_extension = ".json"
+
+    entries = []
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, "r", encoding="utf-8") as file:
+                    template = json.load(file)
+                    name = filename_no_ext
+
+                    resp = requests.post(f"{es_url}/_index_template/{name}",
+                                        json=template,
+                                        headers={f"Authorization": f"ApiKey {es_apikey}", "kbn-xsrf": "true", "Content-Type": "application/json"})
+                    print(resp.json())
 
 def create_elasticsearch_connection(logstashui_url, es_url, es_apikey):
 
@@ -94,8 +114,11 @@ def main(logstashui_url, es_url, kibana_url, es_apikey, action):
         create_elasticsearch_connection(logstashui_url, es_url, es_apikey)
     elif action == 'load_pipelines':
         es_load_pipelines(kibana_url, es_apikey)
+    elif action == 'load_templates':
+        es_load_index_templates(es_url, es_apikey)
     elif action == 'load':
         create_elasticsearch_connection(logstashui_url, es_url, es_apikey)
+        es_load_index_templates(es_url, es_apikey)
         es_load_pipelines(kibana_url, es_apikey)
 
 if __name__ == '__main__':
