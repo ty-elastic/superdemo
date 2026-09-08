@@ -61,6 +61,10 @@ output "windows_url" {
   value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9013/guacamole"
 }
 
+output "logstashui_url" {
+  value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9015"
+}
+
 output "elasticsearch_url" {
   value       = local.elasticsearch_url
 }

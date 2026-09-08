@@ -214,6 +214,10 @@ if [ "$build_infra" = "true" ]; then
   cd ./utils/dockerhost
   ./build.sh -c $course
   cd ../..
+
+  cd ./utils/logstashui
+  ./build.sh -c $course
+  cd ../..
 fi
 
 if [ "$build_service" = "true" ]; then
@@ -432,6 +436,18 @@ if [ "$ramen" = "true"  ]; then
     cd ../..
 
     printf "deploying dockerhost...SUCCESS\n"
+fi
+
+if [ "$ramen" = "true"  ]; then
+    printf "deploying logstashui...\n"
+
+    cd utils/logstashui
+
+    source $PWD/utils/windows/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
+    
+    cd ../..
+
+    printf "deploying logstashui...SUCCESS\n"
 fi
 
 if [ "$assets" = "true" ]; then

@@ -1,0 +1,368 @@
+input {
+	snmp {
+		hosts => [
+			{ host => "udp:snmpsim.infra.svc.cluster.local/1611" community => "cisco_ios_2" version => "2c" timeout => 1000 retries => 2 }
+		]
+		interval => 60
+		ecs_compatibility => "disabled"
+		oid_mapping_format => "dotted_string"
+		add_field => {
+			"[host][polled_address]" => "%{[@metadata][host_address]}"
+			"[host][device_template]" => "cisco_ios"
+			"[host][type]" => "Network"
+			"[observer][vendor]" => "Cisco"
+			"[observer][os][full]" => "IOS-Any"
+		}
+		get => ["1.3.6.1.4.1.9.9.23.1.3.5", "1.3.6.1.4.1.9.9.23.1.3.1", "1.3.6.1.4.1.9.2.1.57.0", "1.3.6.1.4.1.9.9.48.1.1.1.5.1", "1.3.6.1.4.1.9.9.48.1.1.1.6.1", "1.3.6.1.2.1.1.1.0", "1.3.6.1.2.1.1.2.0", "1.3.6.1.2.1.1.5.0", "1.3.6.1.2.1.1.3.0", "1.3.6.1.2.1.1.4.0"]
+		tables => [
+			{ name => "network.neighbor" columns => ["1.3.6.1.4.1.9.9.23.1.2.1.1.1", "1.3.6.1.4.1.9.9.23.1.2.1.1.6", "1.3.6.1.4.1.9.9.23.1.2.1.1.7", "1.3.6.1.4.1.9.9.23.1.2.1.1.8", "1.3.6.1.4.1.9.9.23.1.2.1.1.9", "1.3.6.1.4.1.9.9.23.1.2.1.1.5", "1.3.6.1.4.1.9.9.23.1.2.1.1.4"] },
+			{ name => "component.fan" columns => ["1.3.6.1.4.1.9.9.13.1.4.1.2", "1.3.6.1.4.1.9.9.13.1.4.1.3"] },
+			{ name => "component.sensor" columns => ["1.3.6.1.4.1.9.9.13.1.3.1.2", "1.3.6.1.4.1.9.9.13.1.3.1.3", "1.3.6.1.4.1.9.9.13.1.3.1.4", "1.3.6.1.4.1.9.9.13.1.3.1.5", "1.3.6.1.4.1.9.9.13.1.3.1.6"] },
+			{ name => "interface" columns => ["1.3.6.1.2.1.2.2.1.1", "1.3.6.1.2.1.2.2.1.2", "1.3.6.1.2.1.2.2.1.3", "1.3.6.1.2.1.2.2.1.7", "1.3.6.1.2.1.2.2.1.8", "1.3.6.1.2.1.31.1.1.1.1", "1.3.6.1.2.1.31.1.1.1.18", "1.3.6.1.2.1.2.2.1.5", "1.3.6.1.2.1.31.1.1.1.15", "1.3.6.1.2.1.2.2.1.6", "1.3.6.1.2.1.2.2.1.4", "1.3.6.1.2.1.31.1.1.1.6", "1.3.6.1.2.1.31.1.1.1.10", "1.3.6.1.2.1.31.1.1.1.9", "1.3.6.1.2.1.31.1.1.1.13", "1.3.6.1.2.1.31.1.1.1.7", "1.3.6.1.2.1.31.1.1.1.11", "1.3.6.1.2.1.31.1.1.1.8", "1.3.6.1.2.1.31.1.1.1.12", "1.3.6.1.2.1.2.2.1.9", "1.3.6.1.2.1.17.7.1.4.5.1.1", "1.3.6.1.2.1.2.2.1.14", "1.3.6.1.2.1.2.2.1.20", "1.3.6.1.2.1.2.2.1.13", "1.3.6.1.2.1.2.2.1.19"] }
+		]
+	}
+}
+filter {
+	ruby {
+		init => 'def snmp_remove_errors(obj)
+	  found = false
+	  case obj
+	  when Hash
+	    obj.keys.each do |k|
+	      v = obj[k]
+	      if v.is_a?(String) && v =~ /\Aerror: (no such instance|no such object|end of mib view)/i
+	        obj.delete(k)
+	        found = true
+	      elsif v.is_a?(Hash) || v.is_a?(Array)
+	        found = true if snmp_remove_errors(v)
+	      end
+	    end
+	  when Array
+	    obj.each { |item| found = true if snmp_remove_errors(item) }
+	  end
+	  found
+	end'
+		code => 'had_errors = false
+	event.to_hash.each do |k, v|
+	  next if k.start_with?("@")
+	  if v.is_a?(String) && v =~ /\Aerror: (no such instance|no such object|end of mib view)/i
+	    event.remove(k)
+	    had_errors = true
+	  elsif snmp_remove_errors(v)
+	    event.set(k, v)
+	    had_errors = true
+	  end
+	end
+	event.tag("_snmp_oid_error") if had_errors'
+	}
+	if [host][polled_address] =~ /^\d+\.\d+\.\d+\.\d+$/ or [host][polled_address] =~ /^[0-9a-fA-F]+:[0-9a-fA-F:]*$/ {
+		mutate {
+			copy => {
+				"[host][polled_address]" => "[host][ip]"
+			}
+		}
+	}
+	else {
+		mutate {
+			copy => {
+				"[host][polled_address]" => "[host][hostname]"
+			}
+		}
+	}
+	mutate {
+		rename => {
+			"1.3.6.1.4.1.9.9.23.1.3.5" => "[network][discovery][last_change]"
+			"1.3.6.1.4.1.9.9.23.1.3.1" => "[network][discovery][cdp_enabled]"
+			"1.3.6.1.4.1.9.2.1.57.0" => "[system][cpu][total][norm][pct]"
+			"1.3.6.1.4.1.9.9.48.1.1.1.5.1" => "[system][memory][actual][used][bytes]"
+			"1.3.6.1.4.1.9.9.48.1.1.1.6.1" => "[system][memory][actual][free][bytes]"
+			"1.3.6.1.2.1.1.1.0" => "[observer][sys_descr]"
+			"1.3.6.1.2.1.1.2.0" => "[observer][object_id]"
+			"1.3.6.1.2.1.1.5.0" => "[host][sysname]"
+			"1.3.6.1.2.1.1.3.0" => "[host][uptime]"
+			"1.3.6.1.2.1.1.4.0" => "[host][contact]"
+		}
+	}
+	mutate {
+		add_field => {
+			"[network][name]" => "infra (192.168.4.0/24)"
+			"[metricset][module]" => "system"
+			"[tsds][category]" => "metrics"
+			"[tsds][index]" => "metrics"
+		}
+	}
+	# Normalizer: Multiply
+	# Multiplies field values by configured factors:
+	#   - system.cpu.total.norm.pct × 0.01
+	ruby {
+		code => 'v = event.get("[system][cpu][total][norm][pct]")
+	if v
+	  event.set("[system][cpu][total][norm][pct]", v.to_f * 0.01)
+	end'
+	}
+	# Normalizer: Ratio
+	# Calculates ratios and derived fields from two input values:
+	#   Inputs: system.memory.actual.used.bytes, system.memory.actual.free.bytes
+	#     → system.memory.total.bytes = sum
+	#     → system.memory.actual.used.pct = value1 / (value1 + value2)
+	#     → system.memory.actual.free.pct = value2 / (value1 + value2)
+	ruby {
+		code => 'value1 = event.get("[system][memory][actual][used][bytes]")
+	value2 = event.get("[system][memory][actual][free][bytes]")
+	
+	if value1 && value2
+	  value1_f = value1.to_f
+	  value2_f = value2.to_f
+	  total_f = value1_f + value2_f
+	
+	  if total_f > 0
+	    event.set("[system][memory][total][bytes]", total_f)
+	    event.set("[system][memory][actual][used][pct]", (value1_f / total_f))
+	    event.set("[system][memory][actual][free][pct]", (value2_f / total_f))
+	  end
+	end'
+	}
+	ruby {
+		code => 'rows = event.get("[network.neighbor]")
+	if rows.is_a?(Array)
+	  host_name = event.get("[host][name]")
+	  host_hostname = event.get("[host][hostname]")
+	  host_sysname = event.get("[host][sysname]")
+	  host_polled_address = event.get("[host][polled_address]")
+	  host_type = event.get("[host][type]")
+	  host_device_template = event.get("[host][device_template]")
+	  observer_vendor = event.get("[observer][vendor]")
+	  observer_os_full = event.get("[observer][os][full]")
+	  network_name = event.get("[network][name]")
+	  timestamp = event.get("@timestamp")
+	  _row_counter = 0
+	  rows.each do |row|
+	    next unless row.is_a?(Hash)
+	    row["local_interface"] ||= {}
+	    row["local_interface"]["index"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.1")
+	    row["device_id"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.6")
+	    row["port"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.7")
+	    row["platform"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.8")
+	    row["capabilities"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.9")
+	    row["version"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.5")
+	    row["address"] = row.delete("1.3.6.1.4.1.9.9.23.1.2.1.1.4")
+	    new_event = LogStash::Event.new({
+	      "@timestamp" => timestamp,
+	      "host" => { "name" => host_name, "hostname" => host_hostname, "type" => host_type },
+	      "observer" => { "vendor" => observer_vendor, "os" => { "full" => observer_os_full } },
+	      "metricset" => { "module" => "snmp" },
+	      "event" => { "category" => "network.neighbor" }
+	    })
+	    new_event.set("[network][name]", network_name)
+	    new_event.set("[host][device_template]", host_device_template) if host_device_template
+	    new_event.set("[host][sysname]", host_sysname) if host_sysname
+	    new_event.set("[host][polled_address]", host_polled_address) if host_polled_address
+	    new_event.set("[network][neighbor]", row)
+	    new_event.set("[tsds][category]", "network.neighbor")
+	    new_event.set("[tsds][index]", _row_counter.to_s)
+	    _row_counter += 1
+	    new_event_block.call(new_event)
+	  end
+	  event.remove("[network.neighbor]")
+	  event.set("[event][category]", "metrics")
+	end'
+	}
+	ruby {
+		code => 'rows = event.get("[component.fan]")
+	if rows.is_a?(Array)
+	  host_name = event.get("[host][name]")
+	  host_hostname = event.get("[host][hostname]")
+	  host_sysname = event.get("[host][sysname]")
+	  host_polled_address = event.get("[host][polled_address]")
+	  host_type = event.get("[host][type]")
+	  host_device_template = event.get("[host][device_template]")
+	  observer_vendor = event.get("[observer][vendor]")
+	  observer_os_full = event.get("[observer][os][full]")
+	  network_name = event.get("[network][name]")
+	  timestamp = event.get("@timestamp")
+	  _row_counter = 0
+	  rows.each do |row|
+	    next unless row.is_a?(Hash)
+	    row["description"] = row.delete("1.3.6.1.4.1.9.9.13.1.4.1.2")
+	    row["state"] = row.delete("1.3.6.1.4.1.9.9.13.1.4.1.3")
+	    new_event = LogStash::Event.new({
+	      "@timestamp" => timestamp,
+	      "host" => { "name" => host_name, "hostname" => host_hostname, "type" => host_type },
+	      "observer" => { "vendor" => observer_vendor, "os" => { "full" => observer_os_full } },
+	      "metricset" => { "module" => "snmp" },
+	      "event" => { "category" => "component.fan" }
+	    })
+	    new_event.set("[network][name]", network_name)
+	    new_event.set("[host][device_template]", host_device_template) if host_device_template
+	    new_event.set("[host][sysname]", host_sysname) if host_sysname
+	    new_event.set("[host][polled_address]", host_polled_address) if host_polled_address
+	    new_event.set("[component][fan]", row)
+	    new_event.set("[tsds][category]", "component.fan")
+	    new_event.set("[tsds][index]", _row_counter.to_s)
+	    _row_counter += 1
+	    new_event_block.call(new_event)
+	  end
+	  event.remove("[component.fan]")
+	  event.set("[event][category]", "metrics")
+	end'
+	}
+	ruby {
+		code => 'rows = event.get("[component.sensor]")
+	if rows.is_a?(Array)
+	  host_name = event.get("[host][name]")
+	  host_hostname = event.get("[host][hostname]")
+	  host_sysname = event.get("[host][sysname]")
+	  host_polled_address = event.get("[host][polled_address]")
+	  host_type = event.get("[host][type]")
+	  host_device_template = event.get("[host][device_template]")
+	  observer_vendor = event.get("[observer][vendor]")
+	  observer_os_full = event.get("[observer][os][full]")
+	  network_name = event.get("[network][name]")
+	  timestamp = event.get("@timestamp")
+	  _row_counter = 0
+	  rows.each do |row|
+	    next unless row.is_a?(Hash)
+	    row["description"] = row.delete("1.3.6.1.4.1.9.9.13.1.3.1.2")
+	    row["temp"] ||= {}
+	    row["temp"]["celsius"] = row.delete("1.3.6.1.4.1.9.9.13.1.3.1.3")
+	    row["temp"]["threshold"] = row.delete("1.3.6.1.4.1.9.9.13.1.3.1.4")
+	    row["temp"]["last_shutdown"] = row.delete("1.3.6.1.4.1.9.9.13.1.3.1.5")
+	    row["state"] = row.delete("1.3.6.1.4.1.9.9.13.1.3.1.6")
+	    new_event = LogStash::Event.new({
+	      "@timestamp" => timestamp,
+	      "host" => { "name" => host_name, "hostname" => host_hostname, "type" => host_type },
+	      "observer" => { "vendor" => observer_vendor, "os" => { "full" => observer_os_full } },
+	      "metricset" => { "module" => "snmp" },
+	      "event" => { "category" => "component.sensor" }
+	    })
+	    new_event.set("[network][name]", network_name)
+	    new_event.set("[host][device_template]", host_device_template) if host_device_template
+	    new_event.set("[host][sysname]", host_sysname) if host_sysname
+	    new_event.set("[host][polled_address]", host_polled_address) if host_polled_address
+	    new_event.set("[component][sensor]", row)
+	    new_event.set("[tsds][category]", "component.sensor")
+	    new_event.set("[tsds][index]", _row_counter.to_s)
+	    _row_counter += 1
+	    new_event_block.call(new_event)
+	  end
+	  event.remove("[component.sensor]")
+	  event.set("[event][category]", "metrics")
+	end'
+	}
+	ruby {
+		code => 'rows = event.get("[interface]")
+	if rows.is_a?(Array)
+	  host_name = event.get("[host][name]")
+	  host_hostname = event.get("[host][hostname]")
+	  host_sysname = event.get("[host][sysname]")
+	  host_polled_address = event.get("[host][polled_address]")
+	  host_type = event.get("[host][type]")
+	  host_device_template = event.get("[host][device_template]")
+	  observer_vendor = event.get("[observer][vendor]")
+	  observer_os_full = event.get("[observer][os][full]")
+	  network_name = event.get("[network][name]")
+	  timestamp = event.get("@timestamp")
+	  _row_counter = 0
+	  rows.each do |row|
+	    next unless row.is_a?(Hash)
+	    row["index"] = row.delete("1.3.6.1.2.1.2.2.1.1")
+	    row["name"] = row.delete("1.3.6.1.2.1.2.2.1.2")
+	    row["type"] = row.delete("1.3.6.1.2.1.2.2.1.3")
+	    row["admin_status"] = row.delete("1.3.6.1.2.1.2.2.1.7")
+	    row["oper_status"] = row.delete("1.3.6.1.2.1.2.2.1.8")
+	    row["alt_name"] = row.delete("1.3.6.1.2.1.31.1.1.1.1")
+	    row["alias"] = row.delete("1.3.6.1.2.1.31.1.1.1.18")
+	    row["speed"] = row.delete("1.3.6.1.2.1.2.2.1.5")
+	    row["speed_high_mbps"] = row.delete("1.3.6.1.2.1.31.1.1.1.15")
+	    row["mac"] = row.delete("1.3.6.1.2.1.2.2.1.6")
+	    row["mtu"] = row.delete("1.3.6.1.2.1.2.2.1.4")
+	    row["in_octets"] = row.delete("1.3.6.1.2.1.31.1.1.1.6")
+	    row["out_octets"] = row.delete("1.3.6.1.2.1.31.1.1.1.10")
+	    row["in_broadcast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.9")
+	    row["out_broadcast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.13")
+	    row["in_unicast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.7")
+	    row["out_unicast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.11")
+	    row["in_multicast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.8")
+	    row["out_multicast_pkts"] = row.delete("1.3.6.1.2.1.31.1.1.1.12")
+	    row["last_change"] = row.delete("1.3.6.1.2.1.2.2.1.9")
+	    row["vlan_id"] = row.delete("1.3.6.1.2.1.17.7.1.4.5.1.1")
+	    row["in_errors"] = row.delete("1.3.6.1.2.1.2.2.1.14")
+	    row["out_errors"] = row.delete("1.3.6.1.2.1.2.2.1.20")
+	    row["in_discards"] = row.delete("1.3.6.1.2.1.2.2.1.13")
+	    row["out_discards"] = row.delete("1.3.6.1.2.1.2.2.1.19")
+	    new_event = LogStash::Event.new({
+	      "@timestamp" => timestamp,
+	      "host" => { "name" => host_name, "hostname" => host_hostname, "type" => host_type },
+	      "observer" => { "vendor" => observer_vendor, "os" => { "full" => observer_os_full } },
+	      "metricset" => { "module" => "snmp" },
+	      "event" => { "category" => "interface" }
+	    })
+	    new_event.set("[network][name]", network_name)
+	    new_event.set("[host][device_template]", host_device_template) if host_device_template
+	    new_event.set("[host][sysname]", host_sysname) if host_sysname
+	    new_event.set("[host][polled_address]", host_polled_address) if host_polled_address
+	    new_event.set("[interface]", row)
+	    new_event.set("[tsds][category]", "interface")
+	    new_event.set("[tsds][index]", _row_counter.to_s)
+	    _row_counter += 1
+	    new_event_block.call(new_event)
+	  end
+	  event.remove("[interface]")
+	  event.set("[event][category]", "metrics")
+	end'
+	}
+	# Normalizer: Translate
+	# Maps interface.admin_status: 1→UP, 2→DOWN, 3→TESTING
+	translate {
+		source => "[interface][admin_status]"
+		destination => "[interface][admin_status]"
+		dictionary => {
+			"1" => "UP"
+			"2" => "DOWN"
+			"3" => "TESTING"
+		}
+		override => true
+	}
+	# Normalizer: Translate
+	# Maps interface.oper_status: 1→UP, 2→DOWN, 3→TESTING, 4→UNKNOWN, 5→DORMANT, 6→NOT_PRESENT, 7→LOWER_LAYER_DOWN
+	translate {
+		source => "[interface][oper_status]"
+		destination => "[interface][oper_status]"
+		dictionary => {
+			"1" => "UP"
+			"2" => "DOWN"
+			"3" => "TESTING"
+			"4" => "UNKNOWN"
+			"5" => "DORMANT"
+			"6" => "NOT_PRESENT"
+			"7" => "LOWER_LAYER_DOWN"
+		}
+		override => true
+	}
+	translate {
+		source => "[host][polled_address]"
+		destination => "[@metadata][device_enrichment]"
+		dictionary => {
+			"snmpsim.infra.svc.cluster.local" => {
+				"name" => "snmpsim.infra.svc.cluster.local"
+			}
+		}
+	}
+	mutate {
+		copy => {
+			"[@metadata][device_enrichment][name]" => "[host][name]"
+			"[@metadata][device_enrichment][location]" => "[host][location]"
+			"[@metadata][device_enrichment][metadata]" => "[host][metadata]"
+		}
+	}
+}
+output {
+	elasticsearch {
+		data_stream => true
+		data_stream_type => "metrics"
+		data_stream_namespace => "infra"
+		data_stream_dataset => "snmp.polling"
+		hosts => ["https://logstashui-eef6d9.es.us-central1.gcp.elastic.cloud:443"]
+		api_key => "VkVlMWJLQUJoVlBya2lfdjFIOVI6eTgtalFTV0htMmh1a2h6TXY4bmdkUQ=="
+	}
+}

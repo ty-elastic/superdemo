@@ -1,10 +1,44 @@
 import requests
 from bs4 import BeautifulSoup
 import click
+import urllib3
+import os
+from pathlib import Path
+
+def es_load_pipelines(kibana_url, es_apikey):
+    directory_path = "pipelines"
+    target_extension = ".txt"
+
+    entries = []
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, "r", encoding="utf-8") as file:
+                    file_content = file.read()
+
+                    pipeline = {
+                        "description": "snmp-cisco_ios-polling",
+                        "pipeline": f"{file_content}",
+                        "settings": {
+                            "pipeline.workers": 1,
+                            "queue.type": "memory"
+                        } 
+                    }
+
+                    resp = requests.put(f"{kibana_url}/api/logstash/pipeline/{filename_no_ext}",
+                                        json=pipeline,
+                                        headers={f"Authorization": f"ApiKey {es_apikey}", "kbn-xsrf": "true", "Content-Type": "application/json"})
+                    print(resp)   
 
 def create_elasticsearch_connection(logstashui_url, es_url, es_apikey):
+
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     # 1. Initialize a persistent session
     session = requests.Session()
+    session.verify = False
 
     # 2. Add standard browser headers to look human
     session.headers.update({
@@ -51,12 +85,18 @@ def create_elasticsearch_connection(logstashui_url, es_url, es_apikey):
 @click.command()
 @click.option('--logstashui_url', default="", help='address of kibana server')
 @click.option('--es_url', default=None, help='address of iis server')
+@click.option('--kibana_url', default=None, help='address of iis server')
 @click.option('--es_apikey', default="", help='address of elasticsearch server')
 @click.argument('action')
-def main(logstashui_url, es_url, es_apikey, action):
+def main(logstashui_url, es_url, kibana_url, es_apikey, action):
 
     if action == 'create_elasticsearch_connection':
         create_elasticsearch_connection(logstashui_url, es_url, es_apikey)
+    elif action == 'load_pipelines':
+        es_load_pipelines(kibana_url, es_apikey)
+    elif action == 'load':
+        create_elasticsearch_connection(logstashui_url, es_url, es_apikey)
+        es_load_pipelines(kibana_url, es_apikey)
 
 if __name__ == '__main__':
     main()

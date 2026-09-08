@@ -16,4 +16,3 @@ cd ..
 cd snmpsim
 ./build.sh -c $course
 cd ..
-

@@ -34,6 +34,11 @@ spec:
         exposedPort: 9014
         expose:
           default: true 
+      logstashui:
+        port: 9015
+        exposedPort: 9015
+        expose:
+          default: true 
       trading-na:
         port: 9000
         exposedPort: 9000
