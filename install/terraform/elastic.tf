@@ -4,7 +4,7 @@ module "es_serverless" {
   source = "./modules/serverless" # Relative path to your module
 
   # Pass required variables into the module
-  region = "${var.region}"
+  region = "${var.es_cluster_region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = "${local.cluster_name}"
   enable = var.es_cluster_type == "serverless" ? true : false
@@ -14,7 +14,7 @@ module "es_hosted" {
   source = "./modules/hosted" # Relative path to your module
 
   # Pass required variables into the module
-  region = "${var.region}"
+  region = "${var.es_cluster_region}"
   cloud_apikey = var.es_cloud_apikey
   cluster_name = "${local.cluster_name}"
   es_version = var.es_cluster_hosted_version

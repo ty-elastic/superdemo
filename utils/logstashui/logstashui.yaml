@@ -171,7 +171,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: logstashui-config-8
+  name: logstashui-config-14
   namespace: infra
 spec:
   backoffLimit: 10
@@ -233,13 +233,13 @@ data:
         elasticsearch:
           api_key: $elasticsearch_api_key
           hosts:
-            - $elasticsearch_es_endpoint:443
+            - $elasticsearch_es_endpoint
       management:
         enabled: true
         elasticsearch:
           api_key: $elasticsearch_api_key
           hosts:
-            - $elasticsearch_es_endpoint:443
+            - $elasticsearch_es_endpoint
         pipeline:
           id:
             - '*'

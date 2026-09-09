@@ -441,12 +441,8 @@ fi
 if [ "$ramen" = "true"  ]; then
     printf "deploying logstashui...\n"
 
-    cd utils/logstashui
-
-    source $PWD/utils/windows/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
+    source $PWD/utils/logstashui/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
     
-    cd ../..
-
     printf "deploying logstashui...SUCCESS\n"
 fi
 

@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 import json
 
-def es_load_pipelines(kibana_url, es_apikey):
+
+def es_load_pipelines(es_url, kibana_url, es_apikey):
     directory_path = "pipelines"
     target_extension = ".txt"
 
@@ -18,6 +19,9 @@ def es_load_pipelines(kibana_url, es_apikey):
                 filename_no_ext = Path(file).stem
                 with open(full_path, "r", encoding="utf-8") as file:
                     file_content = file.read()
+
+                    file_content = file_content.replace('$elasticsearch_es_endpoint', es_url)
+                    file_content = file_content.replace('$elasticsearch_api_key', es_apikey)
 
                     pipeline = {
                         "description": "snmp-cisco_ios-polling",
@@ -72,13 +76,15 @@ def create_elasticsearch_connection(logstashui_url, es_url, es_apikey):
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', {'name': 'csrfmiddlewaretoken'})['value']
 
+    clean_es_url = es_url.rsplit(':', 1)[0]
+
     # 4. Prepare your payload containing form details AND the token
     payload = {
         'csrfmiddlewaretoken': csrf_token,
         'connection_type': "CENTRALIZED",
         'name': 'superdemo',
         "connection_mode": "url",
-        "host": es_url,
+        "host": clean_es_url,
         "port": "443",
         "auth_type": "apiKey",
         "api_key": es_apikey,
@@ -119,7 +125,7 @@ def main(logstashui_url, es_url, kibana_url, es_apikey, action):
     elif action == 'load':
         create_elasticsearch_connection(logstashui_url, es_url, es_apikey)
         es_load_index_templates(es_url, es_apikey)
-        es_load_pipelines(kibana_url, es_apikey)
+        es_load_pipelines(es_url, kibana_url, es_apikey)
 
 if __name__ == '__main__':
     main()

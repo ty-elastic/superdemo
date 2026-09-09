@@ -362,7 +362,7 @@ output {
 		data_stream_type => "metrics"
 		data_stream_namespace => "infra"
 		data_stream_dataset => "snmp.polling"
-		hosts => ["https://logstashui-eef6d9.es.us-central1.gcp.elastic.cloud:443"]
-		api_key => "VkVlMWJLQUJoVlBya2lfdjFIOVI6eTgtalFTV0htMmh1a2h6TXY4bmdkUQ=="
+		hosts => ["$elasticsearch_es_endpoint"]
+		api_key => "$elasticsearch_api_key"
 	}
 }
