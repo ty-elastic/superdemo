@@ -1,0 +1,815 @@
+{
+  "pinned_panels": [
+    {
+      "id": "1cc9d436-7ba5-4a92-aeec-030897e3e702",
+      "width": "medium",
+      "grow": true,
+      "type": "options_list_control",
+      "config": {
+        "title": "Switch",
+        "use_global_filters": true,
+        "ignore_validations": false,
+        "values_source": "esql",
+        "esql_query": "FROM metrics-snmp.polling-infra | STATS BY `host.sysname`",
+        "exclude": false,
+        "exists_selected": false,
+        "run_past_timeout": false,
+        "search_technique": "wildcard",
+        "selected_options": [],
+        "single_select": false,
+        "sort": {
+          "by": "_key",
+          "direction": "desc"
+        }
+      }
+    },
+    {
+      "id": "b906363a-9fee-4791-bb65-caf344000edf",
+      "width": "medium",
+      "grow": true,
+      "type": "options_list_control",
+      "config": {
+        "title": "Operational Status",
+        "use_global_filters": true,
+        "ignore_validations": false,
+        "values_source": "esql",
+        "esql_query": "FROM metrics-snmp.polling-infra | STATS BY `interface.oper_status`",
+        "exclude": false,
+        "exists_selected": false,
+        "run_past_timeout": false,
+        "search_technique": "wildcard",
+        "selected_options": [],
+        "single_select": false,
+        "sort": {
+          "by": "_key",
+          "direction": "desc"
+        }
+      }
+    },
+    {
+      "id": "6e718daf-3da6-480a-8b3f-03ca07dfdc53",
+      "width": "medium",
+      "grow": true,
+      "type": "options_list_control",
+      "config": {
+        "title": "Admin Status",
+        "use_global_filters": true,
+        "ignore_validations": false,
+        "values_source": "esql",
+        "esql_query": "FROM metrics-snmp.polling-infra | STATS BY `interface.admin_status`",
+        "exclude": false,
+        "exists_selected": false,
+        "run_past_timeout": false,
+        "search_technique": "wildcard",
+        "selected_options": [],
+        "single_select": false,
+        "sort": {
+          "by": "_key",
+          "direction": "desc"
+        }
+      }
+    }
+  ],
+  "description": "Monitors Cisco IOS switches (SNMP polling) — CPU, memory, and per-port interface health.",
+  "filters": [],
+  "options": {
+    "auto_apply_filters": true,
+    "hide_panel_titles": false,
+    "hide_panel_borders": false,
+    "use_margins": true,
+    "sync_colors": false,
+    "sync_tooltips": false,
+    "sync_cursor": true
+  },
+  "panels": [
+    {
+      "id": "c36d79f1-a44a-49a0-aaab-14802d35bf75",
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 4
+      },
+      "config": {
+        "content": "## Cisco IOS Switch Monitoring\nHealth overview for Cisco IOS switches polled via SNMP (`metrics-snmp.polling-infra`). Includes CPU/memory trends, interface traffic and error trends, and a per-port health grid below. Use the controls to filter by switch or port status.",
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "id": "cbb56342-e53c-4cbe-83ea-43ee119f7a41",
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 5
+      },
+      "config": {
+        "type": "metric",
+        "sampling": 1,
+        "ignore_global_filters": false,
+        "data_source": {
+          "type": "esql",
+          "query": "FROM \"metrics-snmp.polling-infra\"\n| WHERE host.device_template == \"cisco_ios\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Unique Switches` = COUNT_DISTINCT(host.sysname)"
+        },
+        "styling": {
+          "density": "default",
+          "primary": {
+            "position": "bottom",
+            "labels": {
+              "alignment": "left"
+            },
+            "value": {
+              "alignment": "right",
+              "sizing": "auto"
+            }
+          }
+        },
+        "metrics": [
+          {
+            "column": "Unique Switches",
+            "label": "Unique Switches",
+            "type": "primary",
+            "color": {
+              "type": "auto"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "7c8e4339-e2b7-4b3a-995f-79b68aa968e6",
+      "type": "vis",
+      "grid": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 5
+      },
+      "config": {
+        "type": "metric",
+        "sampling": 1,
+        "ignore_global_filters": false,
+        "data_source": {
+          "type": "esql",
+          "query": "FROM metrics-snmp.polling-infra\n| WHERE event.category == \"interface\" AND host.device_template == \"cisco_ios\" AND interface.oper_status == \"UP\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Interface Count` = COUNT(*)"
+        },
+        "styling": {
+          "density": "default",
+          "primary": {
+            "position": "bottom",
+            "labels": {
+              "alignment": "left"
+            },
+            "value": {
+              "alignment": "right",
+              "sizing": "auto"
+            }
+          }
+        },
+        "metrics": [
+          {
+            "column": "Interface Count",
+            "label": "Interfaces Up",
+            "type": "primary",
+            "color": {
+              "type": "auto"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "239c9320-3713-44b4-8997-5376e84e623e",
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 4,
+        "w": 12,
+        "h": 5
+      },
+      "config": {
+        "type": "metric",
+        "sampling": 1,
+        "ignore_global_filters": false,
+        "data_source": {
+          "type": "esql",
+          "query": "FROM \"metrics-snmp.polling-infra\"\n| WHERE event.category == \"interface\" AND host.device_template == \"cisco_ios\" AND interface.oper_status == \"DOWN\" AND interface.admin_status == \"UP\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Down Interfaces Count` = COUNT(*)"
+        },
+        "styling": {
+          "density": "default",
+          "primary": {
+            "position": "bottom",
+            "labels": {
+              "alignment": "left"
+            },
+            "value": {
+              "alignment": "right",
+              "sizing": "auto"
+            }
+          }
+        },
+        "metrics": [
+          {
+            "column": "Down Interfaces Count",
+            "label": "Down Interfaces Count",
+            "type": "primary",
+            "color": {
+              "type": "auto"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "9dce4fb1-297b-4fd4-83e6-64d34e187db9",
+      "type": "vis",
+      "grid": {
+        "x": 36,
+        "y": 4,
+        "w": 12,
+        "h": 5
+      },
+      "config": {
+        "type": "metric",
+        "sampling": 1,
+        "ignore_global_filters": false,
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-snmp.polling-infra\n| WHERE host.device_template == \"cisco_ios\"\n| STATS `Average CPU Utilization` = AVG(AVG_OVER_TIME(system.cpu.total.norm.pct)) BY `Time` = TBUCKET(75, ?_tstart, ?_tend)"
+        },
+        "styling": {
+          "density": "default",
+          "primary": {
+            "position": "bottom",
+            "labels": {
+              "alignment": "left"
+            },
+            "value": {
+              "alignment": "right",
+              "sizing": "auto"
+            }
+          }
+        },
+        "metrics": [
+          {
+            "column": "Average CPU Utilization",
+            "label": "Average CPU Utilization",
+            "format": {
+              "type": "percent",
+              "decimals": 1,
+              "compact": true
+            },
+            "type": "primary",
+            "color": {
+              "type": "dynamic",
+              "range": "absolute",
+              "steps": [
+                {
+                  "lt": 0.5,
+                  "color": "#24c292"
+                },
+                {
+                  "gte": 0.5,
+                  "lt": 0.8,
+                  "color": "#fcd883"
+                },
+                {
+                  "gte": 0.8,
+                  "color": "#f6726a"
+                }
+              ]
+            },
+            "apply_color_to": "value",
+            "background_chart": {
+              "type": "trend"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "10a73275-3f5d-4b63-92b7-64f0e01d748b",
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 9,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "legend": {
+          "visibility": "visible",
+          "statistics": [
+            "avg",
+            "min",
+            "max"
+          ],
+          "placement": "outside",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "position": "bottom"
+        },
+        "axis": {
+          "x": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal",
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            }
+          },
+          "y": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "linear",
+            "domain": {
+              "type": "full",
+              "rounding": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "layers": [
+          {
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-snmp.polling-infra\n| WHERE host.device_template == \"cisco_ios\"\n| STATS `Average CPU` = AVG(AVG_OVER_TIME(system.cpu.total.norm.pct)) BY `Time` = TBUCKET(75, ?_tstart, ?_tend)"
+            },
+            "type": "line",
+            "y": [
+              {
+                "column": "Average CPU",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1,
+                  "compact": true
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "x": {
+              "column": "Time"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "250f673a-a77d-43a3-895b-e7a76e6e345a",
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 9,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Memory Used Percentage Over Time (Cisco IOS)",
+        "legend": {
+          "visibility": "auto",
+          "placement": "outside",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "position": "bottom"
+        },
+        "axis": {
+          "x": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal",
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            }
+          },
+          "y": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "linear",
+            "domain": {
+              "type": "full",
+              "rounding": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "layers": [
+          {
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-snmp.polling-infra\n| WHERE host.device_template == \"cisco_ios\"\n| STATS `Average Memory Used` = AVG(AVG_OVER_TIME(system.memory.actual.used.pct)), `Minimum Memory Used` = MIN(MIN_OVER_TIME(system.memory.actual.used.pct)), `Maximum Memory Used` = MAX(MAX_OVER_TIME(system.memory.actual.used.pct)) BY `Time` = TBUCKET(75, ?_tstart, ?_tend)"
+            },
+            "type": "line",
+            "y": [
+              {
+                "column": "Average Memory Used",
+                "label": "Average",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1,
+                  "compact": true
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              },
+              {
+                "column": "Minimum Memory Used",
+                "label": "Minimum",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1,
+                  "compact": true
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              },
+              {
+                "column": "Maximum Memory Used",
+                "label": "Maximum",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1,
+                  "compact": true
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "x": {
+              "column": "Time"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "6da19b3b-3f51-4e9c-879d-f4f84e05bc4a",
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Cisco IOS Interface In/Out Octet Rate Over Time",
+        "legend": {
+          "visibility": "auto",
+          "placement": "outside",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "position": "bottom"
+        },
+        "axis": {
+          "x": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal",
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            }
+          },
+          "y": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "linear",
+            "domain": {
+              "type": "full",
+              "rounding": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "layers": [
+          {
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-snmp.polling-infra\n| WHERE event.category == \"interface\" AND host.device_template == \"cisco_ios\"\n| STATS `Total In Octets` = SUM(RATE(interface.in_octets)), `Total Out Octets` = SUM(RATE(interface.out_octets)) BY `Time Bucket` = TBUCKET(75, ?_tstart, ?_tend)"
+            },
+            "type": "line",
+            "y": [
+              {
+                "column": "Total In Octets",
+                "label": "Sum of In Octets Rate",
+                "format": {
+                  "type": "bytes",
+                  "decimals": 1,
+                  "suffix": "/s"
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              },
+              {
+                "column": "Total Out Octets",
+                "label": "Sum of Out Octets Rate",
+                "format": {
+                  "type": "bytes",
+                  "decimals": 1,
+                  "suffix": "/s"
+                },
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "x": {
+              "column": "Time Bucket"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "849dc043-3e69-436e-aafa-2ad427df8f43",
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 19,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Sum of Interface In/Out Errors Over Time by Interface Name (Cisco IOS)",
+        "legend": {
+          "visibility": "auto",
+          "placement": "outside",
+          "layout": {
+            "type": "grid",
+            "truncate": {
+              "max_lines": 1
+            }
+          },
+          "position": "bottom"
+        },
+        "axis": {
+          "x": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "temporal",
+            "domain": {
+              "type": "fit",
+              "rounding": false
+            }
+          },
+          "y": {
+            "title": {
+              "text": "",
+              "visible": false
+            },
+            "ticks": {
+              "visible": true
+            },
+            "grid": {
+              "visible": true
+            },
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "scale": "linear",
+            "domain": {
+              "type": "full",
+              "rounding": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {
+            "partial_buckets": {
+              "visible": false
+            },
+            "current_time_marker": {
+              "visible": false
+            }
+          },
+          "interpolation": "linear",
+          "points": {
+            "visibility": "auto"
+          }
+        },
+        "layers": [
+          {
+            "sampling": 1,
+            "ignore_global_filters": false,
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-snmp.polling-infra\n| WHERE event.category == \"interface\" AND host.device_template == \"cisco_ios\"\n| STATS sum_in_errors = SUM(INCREASE(interface.in_errors)), sum_out_errors = SUM(INCREASE(interface.out_errors)) BY interface.name, time_bucket = TBUCKET(75, ?_tstart, ?_tend)"
+            },
+            "type": "line",
+            "breakdown_by": {
+              "column": "interface.name",
+              "color": {
+                "mode": "categorical",
+                "palette": "default",
+                "mapping": []
+              }
+            },
+            "y": [
+              {
+                "column": "sum_in_errors",
+                "label": "Sum of In Errors",
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              },
+              {
+                "column": "sum_out_errors",
+                "label": "Sum of Out Errors",
+                "axis": "y",
+                "color": {
+                  "type": "auto"
+                }
+              }
+            ],
+            "x": {
+              "column": "time_bucket"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "08dae52a-7f31-486f-8fac-1d0abab9138c",
+      "type": "custom_content",
+      "grid": {
+        "x": 0,
+        "y": 29,
+        "w": 48,
+        "h": 20
+      },
+      "config": {
+        "esql_query": [
+          "TS \"metrics-snmp.polling-infra\"\n| WHERE TRANGE(?_tstart, ?_tend) AND event.category == \"interface\" AND host.device_template == \"cisco_ios\"\n| STATS interface.oper_status = MAX(LAST_OVER_TIME(interface.oper_status)),\n        interface.admin_status = MAX(LAST_OVER_TIME(interface.admin_status)),\n        interface.in_errors = MAX(LAST_OVER_TIME(interface.in_errors)),\n        interface.out_errors = MAX(LAST_OVER_TIME(interface.out_errors)),\n        interface.in_discards = MAX(LAST_OVER_TIME(interface.in_discards)),\n        interface.out_discards = MAX(LAST_OVER_TIME(interface.out_discards)),\n        interface.speed = MAX(LAST_OVER_TIME(interface.speed)),\n        interface.alias = MAX(LAST_OVER_TIME(interface.alias)),\n        interface.index = MAX(LAST_OVER_TIME(interface.index))\n    BY interface.name, host.sysname\n| SORT host.sysname ASC, interface.index ASC"
+        ],
+        "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .empty-state {\n    padding: var(--cc-space-l);\n    text-align: center;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n    font-size: 0.875rem;\n  }\n\n  .switch-group {\n    margin-bottom: var(--cc-space-l);\n  }\n  .switch-group:last-child {\n    margin-bottom: 0;\n  }\n\n  .switch-header {\n    font-size: 0.875rem;\n    font-weight: 600;\n    margin-bottom: var(--cc-space-s);\n    padding-bottom: var(--cc-space-xs);\n    border-bottom: 1px solid var(--cc-color-border);\n  }\n\n  .port-grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));\n    gap: var(--cc-space-xs);\n  }\n\n  .tile {\n    position: relative;\n    aspect-ratio: 1 / 1;\n    border-radius: var(--cc-radius-s);\n    border: 1px solid var(--cc-color-border);\n    padding: var(--cc-space-xs);\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    overflow: hidden;\n    box-sizing: border-box;\n  }\n\n  .tile-up {\n    background: color-mix(in srgb, var(--cc-color-accent) 20%, var(--cc-color-surface));\n  }\n  .tile-down {\n    background: color-mix(in srgb, var(--cc-color-danger) 20%, var(--cc-color-surface));\n  }\n  .tile-disabled {\n    background: var(--cc-color-surface);\n    opacity: 0.55;\n  }\n\n  .port-name {\n    font-size: 0.75rem;\n    font-weight: 600;\n    line-height: 1.1;\n    white-space: nowrap;\n  }\n\n  .status-dot {\n    position: absolute;\n    top: var(--cc-space-xs);\n    right: var(--cc-space-xs);\n    width: 0.5rem;\n    height: 0.5rem;\n    border-radius: 50%;\n  }\n  .dot-up { background: var(--cc-color-accent); }\n  .dot-down { background: var(--cc-color-danger); }\n  .dot-disabled { background: var(--cc-color-border); }\n\n  .alias {\n    font-size: 0.625rem;\n    line-height: 1.1;\n    margin-top: 2px;\n    opacity: 0.75;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  .errors {\n    font-size: 0.625rem;\n    font-weight: 600;\n    margin-top: 2px;\n    color: var(--cc-color-danger);\n  }\n\n  .tooltip {\n    position: absolute;\n    top: calc(100% + var(--cc-space-xs));\n    left: 0;\n    z-index: 10;\n    width: max-content;\n    max-width: 12rem;\n    background: var(--cc-color-surface);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n    padding: var(--cc-space-xs) var(--cc-space-s);\n    font-size: 0.75rem;\n    box-shadow: 0 2px 8px rgba(0,0,0,0.2);\n    opacity: 0;\n    pointer-events: none;\n    transition: opacity var(--cc-motion-fast) var(--cc-ease);\n    text-align: left;\n  }\n  .tile:hover .tooltip {\n    opacity: 1;\n  }\n\n  .tooltip-row {\n    white-space: nowrap;\n  }\n  .tooltip-label {\n    opacity: 0.6;\n    margin-right: var(--cc-space-xs);\n  }\n</style>\n\n{% if rows.size == 0 %}\n  <div class=\"empty-state\">No interface data available.</div>\n{% else %}\n  {% assign prev_host = \"\" %}\n  {% for row in rows %}\n    {% assign cur_host = row[\"host.sysname\"].value %}\n    {% if cur_host != prev_host %}\n      {% unless forloop.first %}\n        </div></div>\n      {% endunless %}\n      <div class=\"switch-group\">\n        <div class=\"switch-header\">{{ cur_host }}</div>\n        <div class=\"port-grid\">\n    {% endif %}\n    {% assign prev_host = cur_host %}\n\n    {% assign short_name = row[\"interface.name\"].value\n      | replace: \"TenGigabitEthernet\", \"Te\"\n      | replace: \"GigabitEthernet\", \"Gi\"\n      | replace: \"FastEthernet\", \"Fa\"\n      | replace: \"Port-channel\", \"Po\"\n      | replace: \"Ethernet\", \"Eth\" %}\n\n    {% assign admin_down = false %}\n    {% assign oper_up = false %}\n    {% if row[\"interface.admin_status\"].value == \"DOWN\" %}\n      {% assign admin_down = true %}\n    {% endif %}\n    {% if row[\"interface.oper_status\"].value == \"UP\" %}\n      {% assign oper_up = true %}\n    {% endif %}\n\n    {% assign in_err = row[\"interface.in_errors\"].value %}\n    {% assign out_err = row[\"interface.out_errors\"].value %}\n\n    {% if admin_down %}\n      <div class=\"tile tile-disabled\">\n        <span class=\"status-dot dot-disabled\"></span>\n    {% elsif oper_up %}\n      <div class=\"tile tile-up\">\n        <span class=\"status-dot dot-up\"></span>\n    {% else %}\n      <div class=\"tile tile-down\">\n        <span class=\"status-dot dot-down\"></span>\n    {% endif %}\n\n        <div class=\"port-name\">{{ short_name }}</div>\n        {% if row[\"interface.alias\"].value != blank %}\n          <div class=\"alias\">{{ row[\"interface.alias\"].value }}</div>\n        {% endif %}\n        {% if in_err > 0 or out_err > 0 %}\n          <div class=\"errors\">⚠ {{ in_err }}/{{ out_err }}</div>\n        {% endif %}\n\n        <div class=\"tooltip\">\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">Port:</span>{{ row[\"interface.name\"].value }}</div>\n          {% if row[\"interface.alias\"].value != blank %}\n            <div class=\"tooltip-row\"><span class=\"tooltip-label\">Alias:</span>{{ row[\"interface.alias\"].value }}</div>\n          {% endif %}\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">Admin:</span>{{ row[\"interface.admin_status\"].value }}</div>\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">Oper:</span>{{ row[\"interface.oper_status\"].value }}</div>\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">In errors:</span>{{ in_err }}</div>\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">Out errors:</span>{{ out_err }}</div>\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">In discards:</span>{{ row[\"interface.in_discards\"].value }}</div>\n          <div class=\"tooltip-row\"><span class=\"tooltip-label\">Out discards:</span>{{ row[\"interface.out_discards\"].value }}</div>\n        </div>\n      </div>\n  {% endfor %}\n  </div></div>\n{% endif %}"
+      }
+    }
+  ],
+  "esql_approximation": false,
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 0
+  },
+  "tags": [],
+  "title": "Cisco IOS Switch Health Monitoring"
+}
