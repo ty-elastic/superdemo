@@ -45,6 +45,7 @@ resource "ec_deployment" "es_cluster" {
       zone_count    = 1   
       config = {
       user_settings_yaml = <<-EOT
+        xpack.nightshift_investigations.enabled: true      
         xpack.dataFederation.enabled: true
         # xpack.security.audit.enabled: true
       EOT
