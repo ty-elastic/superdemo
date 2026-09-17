@@ -8,9 +8,6 @@ settings:
   timeout: 5m
 triggers:
 - type: manual
-- type: scheduled
-  with:
-    every: 5m
 steps:
 
 - name: get_topologies
