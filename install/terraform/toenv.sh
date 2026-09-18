@@ -9,19 +9,25 @@ echo $COURSE
 export ELASTICSEARCH_URL=$(terraform output -raw elasticsearch_url)
 export elasticsearch_es_endpoint=$(terraform output -raw elasticsearch_url)
 echo $ELASTICSEARCH_URL
+echo "HERE"
+echo $$elasticsearch_es_endpoint
 
 export elasticsearch_apikey=$(terraform output -raw elasticsearch_apikey)
+export elasticsearch_api_key=$(terraform output -raw elasticsearch_apikey)
 
 export KIBANA_URL=$(terraform output -raw kibana_url)
+export elasticsearch_kibana_endpoint=$(terraform output -raw kibana_url)
 echo $KIBANA_URL
 
 export ACCESS_PASSWORD=$(terraform output -raw access_password)
 echo $ACCESS_PASSWORD
 
 export INGEST_URL=$(terraform output -raw ingest_url)
+export elasticsearch_otlp_endpoint=$(terraform output -raw ingest_url)
 echo $INGEST_URL
 
 export FLEET_URL=$(terraform output -raw fleet_url)
+export elasticsearch_fleet_endpoint=$(terraform output -raw fleet_url)
 echo $FLEET_URL
 
 export HTTP_AUTH=true

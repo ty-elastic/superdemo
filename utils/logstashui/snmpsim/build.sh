@@ -1,7 +1,7 @@
 arch=linux/amd64
 repo=us-central1-docker.pkg.dev/elastic-sa/tbekiares
 course=latest
-current_service=obs-migrate
+current_service=snmpsim
 
 OPTIND=1
 while getopts "c:" opt

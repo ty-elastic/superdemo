@@ -14,6 +14,12 @@ variable "zone" {
   type        = string
 }
 
+variable "es_cluster_region" {
+  description = "GCP region (used for provider defaults)"
+  type        = string
+  default     = "us-central1"
+}
+
 variable "deployment_name" {
   description = "Name of the GKE cluster"
   type        = string

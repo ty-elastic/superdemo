@@ -148,6 +148,11 @@ spec:
         io.opentelemetry.discovery.logs.postgresql/config: |
           operators:
           - type: container
+          - type: add
+            id: dataset
+            field: attributes["data_stream.dataset"]
+            value: postgresql
+
           - type: regex_parser
             on_error: send_quiet
             parse_from: body

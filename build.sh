@@ -214,6 +214,10 @@ if [ "$build_infra" = "true" ]; then
   cd ./utils/dockerhost
   ./build.sh -c $course
   cd ../..
+
+  cd ./utils/logstashui
+  ./build.sh -c $course
+  cd ../..
 fi
 
 if [ "$build_service" = "true" ]; then
@@ -434,6 +438,14 @@ if [ "$ramen" = "true"  ]; then
     printf "deploying dockerhost...SUCCESS\n"
 fi
 
+if [ "$ramen" = "true"  ]; then
+    printf "deploying logstashui...\n"
+
+    source $PWD/utils/logstashui/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
+    
+    printf "deploying logstashui...SUCCESS\n"
+fi
+
 if [ "$assets" = "true" ]; then
     printf "deploying assets...\n"
 
@@ -477,12 +489,13 @@ if [ "$grafana" = "true" ]; then
     cd utils/prometheus-grafana
 
     export elasticsearch_es_endpoint=$elasticsearch_es_endpoint
+    export elasticsearch_otlp_endpoint=$elasticsearch_otlp_endpoint
     export elasticsearch_kibana_endpoint=$elasticsearch_kibana_endpoint
     export elasticsearch_api_key=$elasticsearch_api_key  
     export COURSE=$course
     export REPO=$repo
 
-    envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < grafana.yaml | kubectl apply -f -
+    envsubst '$COURSE,$REPO,$elasticsearch_otlp_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key' < grafana.yaml | kubectl apply -f -
     check_services infra
     retry_command_lin check_http "http://grafana.infra.svc.cluster.local:3000/"
     envsubst '$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$COURSE,$REPO' < migrate.yaml | kubectl apply -f -
