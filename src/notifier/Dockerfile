@@ -8,4 +8,7 @@ RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish -c Release -o
 
 ENV ASPNETCORE_HTTP_PORTS=5000
 
+ENV OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES="notifier"
+ENV OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES="notifier"
+
 ENTRYPOINT [ "./out/Notifier", "--urls", "http://*:5000" ]

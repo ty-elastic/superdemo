@@ -2,6 +2,7 @@ using Npgsql;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Globalization;
+using System.Diagnostics;
 
 string ConnectionString() {
     string postgresql_host = Environment.GetEnvironmentVariable("POSTGRESQL_HOST");
@@ -25,6 +26,12 @@ builder.Services.AddNpgsqlDataSource(ConnectionString());
 builder.Services.AddLogging();
 
 var app = builder.Build();
+
+const string AttributePrefix = "com.example";
+const string ServiceName = "notifier";
+var activitySource = new ActivitySource(ServiceName);
+var meter = new Meter(ServiceName);
+var requestCounter = meter.CreateCounter<long>("requests", "count");
 
 string HealthHandler(ILogger<Program> logger)
 {
@@ -67,6 +74,10 @@ void QueryPostgresql(string trade_id, string flags, NpgsqlDataSource ds, ILogger
 
 string NotifyHandler([FromQuery] string? database, [FromQuery] string? trade_id, [FromQuery] string? flags, NpgsqlDataSource ds, ILogger<Program> logger)
 {
+    requestCounter.Add(1);
+    Activity? currentActivity = Activity.Current;
+    activity?.SetTag($"{AttributePrefix}.flags", flags);
+
     if (!string.IsNullOrEmpty(database) && database == "postgresql") {
         try {
             QueryPostgresql(trade_id, flags, ds, logger);
