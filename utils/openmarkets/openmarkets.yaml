@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmarkets
+  namespace: infra
+  labels:
+    app: trading
+    service: openmarkets
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trading
+      service: openmarkets
+  template:
+    metadata:
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+      labels:
+        app: trading
+        service: openmarkets
+    spec:
+      containers:
+        - name: remote
+          image: $REPO/openmarkets:$COURSE
+          imagePullPolicy: Always
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: trading
+    service: openmarkets
+  name: openmarkets
+  namespace: infra
+spec:
+  ports:
+    - name: openmarkets
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+  selector:
+    app: trading
+    service: openmarkets
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: openmarkets-route
+  namespace: infra
+spec:
+  entryPoints:
+    - openmarkets
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/`)
+      services:
+        - name: openmarkets
+          port: 8080
+      middlewares:
+        - name: basic-auth-middleware
+          namespace: traefik
