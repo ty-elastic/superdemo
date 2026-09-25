@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Globalization;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 string ConnectionString() {
     string postgresql_host = Environment.GetEnvironmentVariable("POSTGRESQL_HOST");
@@ -42,30 +43,33 @@ Random rnd = new Random();
 
 void QueryPostgresql(string trade_id, string flags, NpgsqlDataSource ds, ILogger<Program> logger)
 {
-    var sqlQuery = "SELECT trade_id, customer_id, symbol, share_price FROM trades WHERE trade_id = '" + trade_id + "';";
-    if (flags.Contains("SLOWQUERY")) {
-        sqlQuery = "SELECT *, pg_sleep(0.00001) FROM trades;";
-        //sqlQuery = "SELECT * FROM trades;";
-    }
-    
-    using (var cmd = ds.CreateCommand(sqlQuery))
-    {
-        using (var reader = cmd.ExecuteReader())
+    using (var activity = activitySource.StartActivity("QueryPostgresql")) {
+
+        var sqlQuery = "SELECT trade_id, customer_id, symbol, share_price FROM trades WHERE trade_id = '" + trade_id + "';";
+        if (flags.Contains("SLOWQUERY")) {
+            sqlQuery = "SELECT *, pg_sleep(0.00001) FROM trades;";
+            //sqlQuery = "SELECT * FROM trades;";
+        }
+        
+        using (var cmd = ds.CreateCommand(sqlQuery))
         {
-            while (reader.Read())
+            using (var reader = cmd.ExecuteReader())
             {
-                if (reader["trade_id"].ToString() == trade_id) {
-                    string sku = rnd.Next(1000, 9999).ToString();
-                    string employee_id = rnd.Next(1000, 9999).ToString();
-                    string store_id = rnd.Next(1000, 9999).ToString();
-                    string? region = Environment.GetEnvironmentVariable("REGION");
-                    if (region != null) {
-                        if (region.Contains("NA", StringComparison.OrdinalIgnoreCase))
-                            store_id = rnd.Next(0, 4).ToString();
-                        else if (region.Contains("EMEA", StringComparison.OrdinalIgnoreCase))
-                            store_id = rnd.Next(5, 9).ToString();
+                while (reader.Read())
+                {
+                    if (reader["trade_id"].ToString() == trade_id) {
+                        string sku = rnd.Next(1000, 9999).ToString();
+                        string employee_id = rnd.Next(1000, 9999).ToString();
+                        string store_id = rnd.Next(1000, 9999).ToString();
+                        string? region = Environment.GetEnvironmentVariable("REGION");
+                        if (region != null) {
+                            if (region.Contains("NA", StringComparison.OrdinalIgnoreCase))
+                                store_id = rnd.Next(0, 4).ToString();
+                            else if (region.Contains("EMEA", StringComparison.OrdinalIgnoreCase))
+                                store_id = rnd.Next(5, 9).ToString();
+                        }
+                        logger.LogInformation("[" + DateTime.UtcNow.ToString("o") + "] TXTYPE:S, SKU:" + reader["symbol"].ToString() +", CUST_ID:" + reader["customer_id"].ToString() + ", EMPLY_ID:" +  employee_id + ", STOR_ID:" + store_id + ", REGION:" + region + ", PRICE:" + reader["share_price"].ToString());
                     }
-                    logger.LogInformation("[" + DateTime.UtcNow.ToString("o") + "] TXTYPE:S, SKU:" + reader["symbol"].ToString() +", CUST_ID:" + reader["customer_id"].ToString() + ", EMPLY_ID:" +  employee_id + ", STOR_ID:" + store_id + ", REGION:" + region + ", PRICE:" + reader["share_price"].ToString());
                 }
             }
         }
@@ -76,7 +80,7 @@ string NotifyHandler([FromQuery] string? database, [FromQuery] string? trade_id,
 {
     requestCounter.Add(1);
     Activity? currentActivity = Activity.Current;
-    activity?.SetTag($"{AttributePrefix}.flags", flags);
+    currentActivity?.SetTag($"{AttributePrefix}.flags", flags);
 
     if (!string.IsNullOrEmpty(database) && database == "postgresql") {
         try {

@@ -11,15 +11,15 @@ do
    esac
 done
 
-git clone -b ty-elastic/elasticsearch_llm --single-branch --depth 1 https://github.com/ty-elastic/litellm.git
-cd litellm
+# git clone -b ty-elastic/elasticsearch_llm --single-branch --depth 1 https://github.com/ty-elastic/litellm.git
+# cd litellm
 
-current_service=litellm
-docker buildx build --platform $arch \
-    --progress plain -t $repo/$current_service:$course --output "type=registry,name=$repo/$current_service:$course" .
+# current_service=litellm
+# docker buildx build --platform $arch \
+#     --progress plain -t $repo/$current_service:$course --output "type=registry,name=$repo/$current_service:$course" .
 
-cd ..
-rm -rf litellm
+# cd ..
+# rm -rf litellm
 
 
 git clone -b main --single-branch --depth 1 https://github.com/BerriAI/example_openai_endpoint.git

@@ -13,12 +13,6 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: anthropic-claude-4.5-haiku
-        litellm_params:
-          model: "elasticsearch/anthropic-claude-4.5-haiku"
-          api_base: "$elasticsearch_es_endpoint"
-          api_key: "$elasticsearch_api_key" 
-
       - model_name: "mock-openai"
         litellm_params:
           model: openai/gpt-3.5-turbo
@@ -71,7 +65,7 @@ spec:
         ports:
           - containerPort: 8090
       - name: litellm
-        image: us-central1-docker.pkg.dev/elastic-sa/tbekiares/litellm:$COURSE
+        image: ghcr.io/berriai/litellm:v1.100.3
         imagePullPolicy: Always
         args:
           - "--config"
