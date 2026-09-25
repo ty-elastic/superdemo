@@ -83,6 +83,8 @@ spec:
             value: "true"
           - name: LITELLM_OTEL_INTEGRATION_ENABLE_METRICS
             value: "true"
+          - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+            value: "delta"
           - name: OTEL_EXPORTER
             value: "otlp_grpc"
           - name: OTEL_ENDPOINT

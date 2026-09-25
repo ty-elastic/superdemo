@@ -446,6 +446,14 @@ if [ "$ramen" = "true"  ]; then
     printf "deploying logstashui...SUCCESS\n"
 fi
 
+if [ "$ramen" = "true"  ]; then
+    printf "deploying openmarkets...\n"
+
+    envsubst '$COURSE,$REPO' < $PWD/utils/openmarkets/openmarkets.yaml | kubectl apply -f -
+
+    printf "deploying openmarkets...SUCCESS\n"
+fi
+
 if [ "$assets" = "true" ]; then
     printf "deploying assets...\n"
 

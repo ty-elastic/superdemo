@@ -44,6 +44,11 @@ ports:
     exposedPort: 9015
     expose:
       default: true 
+  openmarkets:
+    port: 9016
+    exposedPort: 9016
+    expose:
+      default: true 
   trading-na:
     port: 9000
     exposedPort: 9000
