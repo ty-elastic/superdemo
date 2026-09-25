@@ -65,34 +65,36 @@ output "logstashui_url" {
   value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9015"
 }
 
+
+
 output "elasticsearch_url" {
-  value       = local.elasticsearch_url
+  value       = module.elastic.elasticsearch_url
 }
 
 output "kibana_url" {
-  value       = local.kibana_url
+  value       = module.elastic.kibana_url
 }
 
 output "ingest_url" {
-  value       = local.ingest_url
+  value       = module.elastic.ingest_url
 }
 
 output "fleet_url" {
-  value       = local.fleet_url
+  value       = module.elastic.fleet_url
 }
 
 output "elasticsearch_username" {
-  value     = local.elasticsearch_username
+  value     = module.elastic.elasticsearch_username
   sensitive = true
 }
 
 output "elasticsearch_password" {
-  value     = local.elasticsearch_password
+  value     = module.elastic.elasticsearch_password
   sensitive = true
 }
 
 output "elasticsearch_apikey" {
-  value     = local.elasticsearch_apikey
+  value     = module.elastic.elasticsearch_apikey
   sensitive = true
 }
 

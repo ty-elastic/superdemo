@@ -56,6 +56,24 @@ locals {
   cluster_name = "${local.labels.gcp_labels.project}-${var.deployment_name}-${local.project_guid}"
 }
 
+module "elastic" {
+  source = "./modules/elastic" # Relative path to your module
+
+  # Pass required variables into the module
+  es_cluster_region = "${var.es_cluster_region}"
+  es_cloud_apikey = "${var.es_cloud_apikey}"
+  es_cluster_name = "${local.cluster_name}"
+  es_cluster_hosted_version = "${var.es_cluster_hosted_version}"
+  es_cluster_type = "${var.es_cluster_type}"
+  elasticsearch_url = "${var.elasticsearch_url}"
+  elasticsearch_apikey = "${var.elasticsearch_apikey}"
+  elasticsearch_username = "${var.elasticsearch_username}"
+  elasticsearch_password = "${var.elasticsearch_password}"
+  fleet_url = "${var.fleet_url}"
+  kibana_url = "${var.kibana_url}"
+  ingest_url = "${var.ingest_url}"
+}
+
 resource "random_bytes" "access_password" {
   length = 12
 }
@@ -194,11 +212,11 @@ resource "kubernetes_job_v1" "install" {
           }
           env {
             name  = "ELASTICSEARCH_URL"
-            value = local.elasticsearch_url
+            value = module.elastic.elasticsearch_url
           }
           env {
             name  = "ELASTICSEARCH_APIKEY"
-            value = local.elasticsearch_apikey
+            value = module.elastic.elasticsearch_apikey
           }
           env {
             name  = "ACCESS_PASSWORD"
@@ -206,15 +224,15 @@ resource "kubernetes_job_v1" "install" {
           }
           env {
             name  = "FLEET_URL"
-            value = local.fleet_url
+            value = module.elastic.fleet_url
           }
           env {
             name  = "KIBANA_URL"
-            value = local.kibana_url
+            value = module.elastic.kibana_url
           }
           env {
             name  = "INGEST_URL"
-            value = local.ingest_url
+            value = module.elastic.ingest_url
           }
           env {
             name  = "WINDOWS_HOST_IP"
