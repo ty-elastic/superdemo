@@ -5,7 +5,7 @@
         "tools": [
             {
                 "tool_ids": [
-
+                    "com-example-kubernetes-action"
                 ]
             }
         ],

@@ -281,7 +281,7 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
                     if remote_host is not None:
                         connector['config']['url'] = connector['config']['url'].replace('$REMOTE_URL', remote_host)
                         connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_USERNAME', remote_user)
-                        connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_PASSWORD', remote_password)
+                        connector['secrets']['password'] = connector['secrets']['password'].replace('$REMOTE_PASSWORD', remote_password)
 
                     resp = requests.post(f"{kibana_server}/api/actions/connector/{filename_no_ext}",
                                         json=connector,
@@ -1016,7 +1016,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_skills(kibana_host, auth)
         load_agents(kibana_host, auth)
 
-        run_workflow(kibana_host, auth, 'setup')
+        run_workflow(kibana_host, auth, 'com-example-setup')
         load_synthetics(kibana_host, auth, namespaces_split, iis_endpoint)
         load_aliases(es_host, auth)
         load_dataviews(kibana_host, auth)
