@@ -13,25 +13,14 @@
     "tools": [
       {
         "tool_ids": [
-          "platform.core.search",
-          "platform.core.list_indices",
-          "platform.core.get_index_mapping",
-          "platform.core.get_document_by_id",
-          "platform.core.get_workflow_execution_status",
-          "platform.core.create_visualization",
-          "observability.get_anomaly_detection_jobs",
-          "platform.core.execute_esql",
-          "platform.core.generate_esql",
-          "platform.core.index_explorer",
-          "platform.core.cases",
-          
-          "rca-core.cases"
+
         ]
       }
     ],
     "skill_ids": [
-        "rca-search-knowledge"
-    ]
+        "com-example-knowledge"
+    ],
+    "enable_elastic_capabilities": true
   },
   "readonly": false
 }

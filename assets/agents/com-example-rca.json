@@ -9,8 +9,7 @@
     "avatar_color": "",
     "avatar_symbol": "",
     "access_control": {
-        "access_mode": "shared",
-        "entries": []
+        "access_mode": "shared"
     },
 
     "configuration": {

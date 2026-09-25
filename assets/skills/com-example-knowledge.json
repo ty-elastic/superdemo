@@ -1,6 +1,6 @@
 {
     "id": "com-example-knowledge",
-    "name": "Search Knowledgebase",
+    "name": "com-example-knowledge",
     "description": "Use this skill to search for company IT practices and conventions and for past incidents and issues",
     "content": "I keep knowledge of company IT best practices and conventions, past incidents and issues in an index called `wiki`.",
     "referenced_content": [],
@@ -9,7 +9,6 @@
     "readonly": false,
     "experimental": false,
     "x-add-to-agents": [
-        "elastic-ai-agent",
-        "com-example-rca"
+        "elastic-ai-agent"
     ]
 }

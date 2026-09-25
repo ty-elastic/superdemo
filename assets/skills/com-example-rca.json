@@ -8,6 +8,6 @@
     "readonly": false,
     "experimental": false,
     "x-add-to-agents": [
-        "com-example-rca"
+
     ]
 }

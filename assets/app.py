@@ -849,6 +849,12 @@ def load_agents(kibana_server, kibana_auth):
                             del existing['permissions']
                         if 'created_by' in existing:
                             del existing['created_by']
+                        if 'created_at' in existing:
+                            del existing['created_at']
+                        if 'updated_by' in existing:
+                            del existing['updated_by']
+                        if 'updated_at' in existing:
+                            del existing['updated_at']
 
                         print(existing)
                         #print('here')
