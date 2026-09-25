@@ -1,0 +1,16 @@
+
+    {
+      "id": "elastic-docs-search_docs",
+      "type": "mcp",
+      "description": "Searches all published Elastic documentation by meaning. Use when the user asks about Elastic product features, needs to find existing docs pages, verify published content, or research what documentation exists on a topic. Returns relevant documents with AI summaries, relevance scores, and navigation context.",
+      "tags": [],
+      "configuration": {
+        "connector_id": "elastic-docs",
+        "tool_name": "search_docs"
+      },
+      "readonly": false,
+      "experimental": false,
+      "confirmation": {
+        "askUser": "never"
+      }
+    }

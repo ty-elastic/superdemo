@@ -115,7 +115,7 @@ spec:
           - name: LOGSTASH_AGENT_URL
             value: "http://127.0.0.1:9500"
 
-          image: codyjackson032/logstashui:latest
+          image: codyjackson032/logstashui:0.5.2
           imagePullPolicy: Always
 
           ports:

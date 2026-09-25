@@ -10,7 +10,8 @@
             }
         ],
         "skill_ids": [
-            "com-example-knowledge"
+            "com-example-knowledge",
+            "elastic-docs-esql-query-generator"
         ],
         "subagent_ids": [
             "_self",

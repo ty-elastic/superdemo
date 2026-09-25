@@ -1,0 +1,13 @@
+{
+  "id": "elastic-docs-analyze_document_structure",
+  "type": "mcp",
+  "description": "Analyzes the structure of a Elastic documentation page. Use when evaluating page quality, checking heading hierarchy, or assessing AI enrichment status. Returns heading count, link count, parent pages, and whether AI summaries are present.",
+  "tags": [],
+  "configuration": {
+    "connector_id": "elastic-docs",
+    "tool_name": "analyze_document_structure"
+  },
+  "confirmation": {
+    "askUser": "never"
+  }
+}

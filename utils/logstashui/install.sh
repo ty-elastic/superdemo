@@ -19,6 +19,10 @@ done
 
 echo $elasticsearch_api_key
 
+if [[ ! "$elasticsearch_es_endpoint" =~ :[0-9]+($|/) ]]; then
+    elasticsearch_es_endpoint=$elasticsearch_es_endpoint:443
+    printf "appending port to es url: $elasticsearch_es_endpoint\n"
+fi
 
 export elasticsearch_api_key=$elasticsearch_api_key
 export elasticsearch_es_endpoint=$elasticsearch_es_endpoint

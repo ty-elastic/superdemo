@@ -1,0 +1,13 @@
+{
+  "id": "elastic-docs-check_docs_coherence",
+  "type": "mcp",
+  "description": "Checks how coherently a topic is covered across all Elastic documentation. Use when reviewing documentation quality, auditing coverage of a feature or concept, or checking whether a topic is documented consistently across products and sections.",
+  "tags": [],
+  "configuration": {
+    "connector_id": "elastic-docs",
+    "tool_name": "check_docs_coherence"
+  },
+  "confirmation": {
+    "askUser": "never"
+  }
+}

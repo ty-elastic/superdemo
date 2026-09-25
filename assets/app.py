@@ -936,6 +936,10 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
     for key, value in config.items():
         print(f"{key}: {value}")
 
+    print(remote_host)
+    print(remote_user)
+    print(remote_password)
+
     if kibana_host == "":
         kibana_host = config['elasticsearch_kibana_endpoint']
     if es_host == "":

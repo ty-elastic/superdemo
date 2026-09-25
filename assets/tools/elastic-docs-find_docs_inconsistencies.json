@@ -1,0 +1,13 @@
+{
+  "id": "elastic-docs-find_docs_inconsistencies",
+  "type": "mcp",
+  "description": "Finds potential inconsistencies across Elastic documentation pages covering the same topic. Use when auditing docs quality, verifying that instructions don't contradict each other, or checking for overlapping content within a product area.",
+  "tags": [],
+  "configuration": {
+    "connector_id": "elastic-docs",
+    "tool_name": "find_docs_inconsistencies"
+  },
+  "confirmation": {
+    "askUser": "never"
+  }
+}

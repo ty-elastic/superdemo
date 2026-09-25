@@ -1,0 +1,13 @@
+{
+  "id": "elastic-docs-find_related_docs",
+  "type": "mcp",
+  "description": "Finds Elastic documentation pages related to a given topic. Use when exploring what documentation exists around a subject, building context for writing, or discovering related content the user should be aware of.",
+  "tags": [],
+  "configuration": {
+    "connector_id": "elastic-docs",
+    "tool_name": "find_related_docs"
+  },
+  "confirmation": {
+    "askUser": "never"
+  }
+}

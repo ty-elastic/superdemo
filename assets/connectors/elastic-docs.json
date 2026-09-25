@@ -1,0 +1,8 @@
+  {
+    "name": "elastic-docs",
+    "config": {
+      "serverUrl": "https://www.elastic.co/docs/_mcp/",
+      "hasAuth": true
+    },
+    "connector_type_id": ".mcp"
+  }
