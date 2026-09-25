@@ -20,6 +20,27 @@ log = logging.getLogger(__name__)
 _DEFAULT_BASE_URL = "https://api.openai.com/v1"
 
 
+def make_team(team_id):
+    base_url=config.openai_base_url or _DEFAULT_BASE_URL
+    proxy_url=base_url.removesuffix("/v1")
+    proxy_api_key = config.openai_api_key
+
+    # Define properties and access limits for the new virtual key
+    payload = {
+        "team_id": team_id,
+        "team_alias": team_id
+    }
+
+    headers = {
+        "Authorization": f"Bearer {proxy_api_key}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(f"{proxy_url}/team/new", json=payload, headers=headers)
+    #log.warn(response.text)
+    #response.raise_for_status()
+    print(response.json())
+
 def make_client(user_id, team_id) -> openai.OpenAI:
     """Return a configured synchronous OpenAI client.
 
@@ -69,11 +90,16 @@ def make_client(user_id, team_id) -> openai.OpenAI:
 #client = make_client()
 
 clients = {}
+teams = []
 def get_client(customer_id, region):
     if customer_id is None:
         customer_id = 'admin'
     if region is None:
         region = 'admin'
+
+    if region not in teams:
+        make_team(region)
+        teams.append(region)
 
     if customer_id not in clients:
         log.info(clients)

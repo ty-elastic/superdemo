@@ -15,7 +15,7 @@ done
 config_esql_df_source() {
    printf "$FUNCNAME $1...\n"
 
-   output=$(curl -s -X PUT "$elasticsearch_kibana_endpoint/internal/data_federation/data_sources/$1" \
+   output=$(curl -s -X PUT "$elasticsearch_kibana_endpoint/_query/data_source/$1" \
       -w "\n%{http_code}" \
       -H 'kbn-xsrf: true' \
       -H 'x-elastic-internal-origin: Kibana' \
@@ -37,7 +37,7 @@ config_esql_df_source() {
 config_esql_df_set() {
    printf "$FUNCNAME $1...\n"
 
-   output=$(curl -s -X PUT "$elasticsearch_kibana_endpoint/internal/data_federation/dataset/$1" \
+   output=$(curl -s -X PUT "$elasticsearch_kibana_endpoint/_query/dataset/$1" \
       -w "\n%{http_code}" \
       -H 'kbn-xsrf: true' \
       -H 'x-elastic-internal-origin: Kibana' \
