@@ -1,0 +1,16 @@
+{
+    "id": "com-example-alert-correlation",
+    "name": "com-example-alert-correlation",
+    "description": "use this skill when asked to do alert correlation",
+    "content": "Decide if a provided alert is directly related to any existing open case.\n\n## First, gather information:\n\n1. Use the skill with id `cases-management` to query for ONLY open cases in the `observability` solution. If there are no open cases, do not search for additional cases. For each open case, get the attached alerts.\n\n2. Use the `observability.get_service_topology` tool to get the service topology for the entity referenced by the new alert.\n\nDO NOT GATHER INFORMATION FROM ANY OTHER SOURCE.\n\n## Second, determine if the new alert is related (correlated) to an existing case:\n\n* consider the service topology. In general, if a downstream service is failing and generating alerts, it will likely cause any upstream services (which are dependent on the downstream service) to also alert. This is particularly true if the time range of the alerts are also correlated.\n\n* consider the alert related to a case if the it has a close time range, is related by topology/dependency, is in the same system environment, and/or appears to be a duplicative alert compared to the other alerts already attached to the case. Do not consider tags when deciding if an alert is related.\n\n* if an alert appears to be related to two or more cases, select what appears to be the most relevant case.\n\n* if an alert doesn't appear to be strongly related to existing cases, return a `case_id` value of `NONE`\n",
+    "referenced_content": [],
+    "tool_ids": [
+        "observability.get_service_topology"
+    ],
+    "readonly": false,
+    "experimental": false,
+    "x-add-to-agents": [
+        "com-example-rca"
+    ]
+}
+

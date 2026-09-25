@@ -1,0 +1,13 @@
+{
+    "id": "com-example-rca",
+    "name": "com-example-rca",
+    "description": "Use this skill to perform RCA",
+    "content": "You will be given a case ID to perform RCA on.\n\n# Prepare to investigate\n\n* Use the skill with id `cases-management` to get the details of the referenced `case_id`, including attached alerts. Referenced `case_id`s are ALWAYS observability cases.\n\n# Investigate\n\n* Use ONLY the skill with id `observability.investigation` to perform the actual investigation and RCA. NEVER use the skill with id \"observability.rca\".\n\n* Use the `Sourcerer` sub-agent to look at the relevant source code and try to determine what happened as a function of the source code, including the exception/log statements\n\n* Always search for related knowledge in the `wiki` index. Additionally, check any ai indices attached to this agent to determine if this issue has happened before, and what remediation might be possible\n\n# Determine Root Cause Analysis\n\n* explain how the alerts are related (using the topology to understand dependencies)\n* visualize the dependencies and where the problem is occurring in an ASCII graph\n* explain what the root cause of the problem is\n* indicate if the issue is known or has been previously seen\n* explain how the source code helps validate the problem\n* if remediation is possible (from the knowledgebase), indicate remediation steps\n\n# Output\n* respond only in valid markdown format\n* use emojis where appropriate\n* do not include `render_attachment` links in the markdown\n* DO NOT directly add any comments to the case or modify the case in any way as part of this investigation",
+    "referenced_content": [],
+    "tool_ids": [],
+    "readonly": false,
+    "experimental": false,
+    "x-add-to-agents": [
+        "com-example-rca"
+    ]
+}

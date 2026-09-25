@@ -1,0 +1,16 @@
+{
+    "name": "kubernetes",
+    "config": {
+        "url": "$REMOTE_URL",
+        "headers": null,
+        "hasAuth": true,
+        "authType": "webhook-authentication-basic",
+        "proxyUrl": null,
+        "hasProxyAuth": false
+    },
+    "connector_type_id": ".http",
+    "secrets": {
+        "user": "$REMOTE_USERNAME",
+        "password": "$REMOTE_PASSWORD"
+    }
+}

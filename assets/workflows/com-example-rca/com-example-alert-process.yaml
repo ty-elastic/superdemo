@@ -1,0 +1,129 @@
+version: '1'
+name: com-example-alert-process
+description: Process o11y alerts and correlate to cases
+enabled: true
+tags:
+- com-example-rca
+consts:
+  case_workflow_id: com-example-case-process
+  correlation_model: .anthropic-claude-4.6-sonnet-chat_completion
+  rca_agent_id: com-example-rca
+  cases_template: com-example-rca
+triggers:
+- type: alert
+settings:
+  timeout: 20m
+  concurrency:
+    key: alert_process
+    strategy: queue
+steps:
+  - name: foreach_alert
+    type: foreach
+    foreach: '{{ event.alerts }}'
+    steps:
+    - name: correlate
+      type: ai.agent
+      inference-id: '{{ consts.correlation_model }}'
+      create-conversation: true
+      agent-id: '{{ consts.rca_agent_id }}'
+      with:
+        schema:
+          title: CorrelateAlert
+          type: object
+          additionalProperties: false
+          required: [case_id, relation]
+          properties:
+            case_id:
+              type: string
+              description: if this alert is related to an existing case, the ID of the related case, otherwise `NONE`
+            relation:
+              type: string
+              description: if this alert is related to an existing case, briefly explain how this alert relates to the identified case, otherwise briefly explain why it isn't related to existing cases
+            title:
+              type: string
+              description: if this alert is not related to an existing case, briefly summarize the attached alert in a few words
+            trigger:
+              type: string
+              description: if this alert is not related to an existing case, a detailed summary of the attached alert
+            severity:
+              type: string
+              description: if this alert is not related to an existing case, a value of `low`, `medium`, `high`, or `critical` based on an initial analysis of the alert
+            system_environment:
+              type: string
+              description: if, from the topologies, you can identify a system_environment associated with this alert, a value of the name of the associated system
+        message: |
+          Try to correlate this alert to a case: 
+          ```json
+          {{ steps.foreach_alert.item | json: 2 }}
+          ```
+    - name: new_or_update_case
+      type: if
+      condition: 'steps.correlate.output.structured_output.case_id : NONE'
+      steps:
+
+      - name: create_ai_conversation_id
+        type: kibana.request
+        with:
+          path: "/api/agent_builder/conversations"
+          method: "POST"
+          body:
+            "agent_id": "{{ consts.rca_agent_id }}"
+            "title": '{{ steps.correlate.output.structured_output.title }}'
+        
+      - name: create_new_case
+        type: cases.createCase
+        connector-id: snowem
+        with:
+          title: '{{ steps.correlate.output.structured_output.title }}'
+          description: '{{ steps.correlate.output.structured_output.trigger }}'
+          severity: '{{ steps.correlate.output.structured_output.severity }}'
+          tags: ["com-example-rca"]
+          owner: "observability"
+          settings:
+            syncAlerts: true
+          extended_fields:
+            ai_conversation_id_as_keyword: '{{ steps.create_ai_conversation_id.output.id}}'
+
+    - name: case_id
+      type: data.set
+      with:
+        case_id: "{% if steps.correlate.output.structured_output.case_id == 'NONE' %}{{ steps.create_new_case.output.case.id }}{% else %}{{ steps.correlate.output.structured_output.case_id }}{%endif%}"
+
+    - name: add_alert_to_case
+      type: cases.addAlerts
+      with:
+        case_id: '{{ variables.case_id }}'
+        alerts:
+        - alertId: '{{ steps.foreach_alert.item._id }}'
+          index: '{{ steps.foreach_alert.item._index }}'
+      on-failure:
+        retry:
+          max-attempts: 2
+          delay: 1s
+
+    - name: add_comment_to_case
+      type: cases.addComment
+      with:
+        case_id: '{{ variables.case_id }}'
+        comment: |
+          # Related Alert
+          * Summary: {{ steps.foreach_alert.item.kibana.alert.reason }}
+          * [Conversation](/app/agent_builder/conversations/{{ steps.correlate.output.conversation_id }})
+          * Relationship to Case: {{ steps.correlate.output.structured_output.relation }}
+      on-failure:
+        retry:
+          max-attempts: 2
+          delay: 1s
+
+    - name: new_or_update_case2
+      type: if
+      condition: 'steps.correlate.output.structured_output.case_id : NONE'
+      steps:
+        - name: start_case_process_workflow
+          type: workflow.executeAsync
+          with:
+            workflow-id: '{{ consts.case_workflow_id }}'
+            inputs:
+              case_id: '{{ variables.case_id }}'
+
+

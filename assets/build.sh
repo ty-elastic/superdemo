@@ -1,6 +1,6 @@
 arch=linux/amd64
 repo=us-central1-docker.pkg.dev/elastic-sa/tbekiares
-course=o11y--course--field--100-e2e--main
+course=latest
 current_service=assets
 
 OPTIND=1  # Reset to 1 for sourced environment compatibility

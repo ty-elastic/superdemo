@@ -1,0 +1,74 @@
+name: com-example-case-process
+enabled: true
+description: Perform RCA on a Case
+tags:
+- com-example-rca
+triggers:
+- type: manual
+  inputs:
+  - name: case_id
+    required: true
+    type: string
+settings:
+  timeout: 20m
+  concurrency:
+    key: "{{ inputs.case_id }}"
+    strategy: drop
+consts:
+  rca_model: .anthropic-claude-4.6-sonnet-chat_completion
+  rca_agent_id: com-example-rca
+steps:
+
+  - name: fetch_case
+    type: cases.getCase
+    with:
+      case_id: "{{ inputs.case_id }}"
+      include_comments: false
+
+  - name: get_ai_coversation_id
+    type: data.set
+    with:
+      ai_conversation_id: '{% if steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword != "not_available" %}{{ steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword }}{% endif %}'
+
+  - name: delay
+    type: wait
+    with:
+      duration: "60s"
+
+  - name: perform_rca
+    type: ai.agent
+    inference-id: '{{ consts.rca_model }}'
+    agent-id: '{{ consts.rca_agent_id }}'
+    with:
+      conversation_id: "{{ variables.ai_conversation_id }}"
+      message: 'perform RCA on case id: {{ inputs.case_id }}'
+
+      schema:
+        title: RCA
+        type: object
+        additionalProperties: false
+        required: [rca]
+        properties:
+          rca:
+            type: string
+            description: the root cause analysis in markdown form
+
+  - name: add_response_to_existing_case
+    type: cases.addComment
+    with:
+      case_id: "{{ inputs.case_id }}"
+      comment: '{{ steps.perform_rca.output.structured_output.rca }}'
+    on-failure:
+      retry:
+        max-attempts: 2
+        delay: 1s
+
+  - name: add_conversation_to_existing_case
+    type: cases.addComment
+    with:
+      case_id: "{{ inputs.case_id }}"
+      comment: 🔍 You can continue your investigation or take remediation action [here](/app/agent_builder/conversations/{{ steps.perform_rca.output.conversation_id }}).
+    on-failure:
+      retry:
+        max-attempts: 2
+        delay: 1s

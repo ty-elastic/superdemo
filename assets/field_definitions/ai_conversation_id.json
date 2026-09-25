@@ -1,0 +1,7 @@
+{
+    "name": "ai_conversation_id",
+    "definition": "name: ai_conversation_id\nlabel: \"ai_conversation_id\"\ncontrol: INPUT_TEXT\ntype: keyword\n",
+    "owner": "observability",
+    "description": "",
+    "isGlobal": true
+}

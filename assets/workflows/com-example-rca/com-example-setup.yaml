@@ -1,0 +1,25 @@
+version: '1'
+name: com-example-setup
+description: setup state for automated rca
+enabled: true
+tags:
+- com-example-rca
+triggers:
+- type: manual
+steps:
+
+- name: setup_cases
+  type: kibana.request
+  with:
+    method: POST
+    path: /api/cases/configure
+    body:
+      closure_type: close-by-user
+      connector:
+        fields:
+        id: snowem
+        name: snowem
+        type: .servicenow
+      owner: observability
+  on-failure:
+    continue: true

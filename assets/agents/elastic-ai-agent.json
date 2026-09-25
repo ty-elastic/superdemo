@@ -5,22 +5,16 @@
         "tools": [
             {
                 "tool_ids": [
-                    "sourcerer.code.grep",
-                    "sourcerer.code.search",
-                    "sourcerer.files.cat",
-                    "sourcerer.files.head",
-                    "sourcerer.files.ls",
-                    "sourcerer.files.read_lines",
-                    "sourcerer.files.tail",
-                    "sourcerer.refs.list"
+
                 ]
             }
         ],
         "skill_ids": [
-            "sourcerer-code-citations",
-            "sourcerer-code-search",
-            "sourcerer-ref-resolution",
-            "sourcerer-repo-discovery"
+            "com-example-knowledge"
+        ],
+        "subagent_ids": [
+            "_self",
+            "sourcerer"
         ]
     }
 }

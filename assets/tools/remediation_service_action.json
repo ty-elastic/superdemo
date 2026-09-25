@@ -1,1 +1,0 @@
-{"id": "remediation_service_action", "type": "workflow", "description": "This tool can restart a service if that is a recommended course of remediation for an issue", "tags": ["rca"], "configuration": {"workflow_id": "workflow-089fbd7d-aa37-4373-81a3-31058ac63b5a", "wait_for_completion": true}, "readonly": false}

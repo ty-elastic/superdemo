@@ -154,6 +154,29 @@ def load_streams(kibana_server, kibana_auth):
                                         json=proc,
                                         headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json"})
                     print(resp.json())   
+
+
+
+  
+def load_field_definitions(kibana_server, kibana_auth):
+    
+    directory_path = "field_definitions"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                parent_dir_name = os.path.basename(root)
+                full_path = os.path.join(root, file)
+                with open(full_path, 'r') as fileo:
+
+                    definition = json.load(fileo)
+
+                    resp = requests.post(f"{kibana_server}/internal/cases/field_definitions",
+                                        json=definition,
+                                        headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                    print(resp.json())   
+  
   
 def delete_existing_workflow(kibana_server, kibana_auth, es_host, workflow_name):
     
@@ -241,8 +264,29 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
                     print(resp.json())
 
+def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=None, remote_password=None):
 
-#
+    directory_path = "connectors"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(target_extension):
+                full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+
+                with open(full_path, 'r') as fileo:
+                    connector = json.load(fileo)
+
+                    if remote_host is not None:
+                        connector['config']['url'] = connector['config']['url'].replace('$REMOTE_URL', remote_host)
+                        connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_USERNAME', remote_user)
+                        connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_PASSWORD', remote_password)
+
+                    resp = requests.post(f"{kibana_server}/api/actions/connector/{filename_no_ext}",
+                                        json=connector,
+                                        headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                    print(resp.json())  
 
 def delete_synthetic(kibana_server, kibana_auth, synthetic_name):
     print("search sythetics...")
@@ -783,12 +827,15 @@ def load_agents(kibana_server, kibana_auth):
                                 "skill_ids": existing['configuration']['skill_ids'] if 'skill_ids' in existing['configuration'] else [],
                                 "tools": [
                                     {"tool_ids": existing['configuration']['tools'][0]['tool_ids'] if 'tools' in existing['configuration'] and len(existing['configuration']['tools']) > 0 and 'tool_ids' in existing['configuration']['tools'][0] else []}
-                                ]
+                                ],
+                                "subagent_ids": existing['configuration']['subagent_ids'] if 'subagent_ids' in existing['configuration'] else [],
                             }
                         
 
                         existing['configuration']['skill_ids'] = list(set(agent['configuration']['skill_ids'] + existing['configuration']['skill_ids']))
                         existing['configuration']['tools'][0]['tool_ids'] = list(set(agent['configuration']['tools'][0]['tool_ids'] + existing['configuration']['tools'][0]['tool_ids']))
+                        existing['configuration']['subagent_ids'] = list(set(agent['configuration']['subagent_ids'] + existing['configuration']['subagent_ids']))
+
 
                         if 'readonly' in existing:
                             del existing['readonly']
@@ -864,10 +911,12 @@ def run_workflow(kibana_server, kibana_auth, workflow_name):
 @click.option('--es_authbasic', default="", help='basic for auth')
 @click.option('--connect_alerts', default=False, help='connect alerts to workflow')
 @click.option('--remote_host', default=None, help='remote host url')
+@click.option('--remote_user', default=None, help='remote host url')
+@click.option('--remote_password', default=None, help='remote host url')
 @click.option('--namespaces', default="trading-na,trading-emea", help='namespaces')
 @click.option('--services', default="trader,router,recorder-java,recorder-go", help='services')
 @click.argument('action')
-def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, namespaces, services, iis_endpoint):
+def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint):
     
 
     namespaces_split = namespaces.split(',')
@@ -974,6 +1023,9 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         
         load_streams(kibana_host, auth)
         load_esql_views(es_host, auth)
+
+        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password)
+        load_field_definitions(kibana_host, auth)
 
         print('done')
 

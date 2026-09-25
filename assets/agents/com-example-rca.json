@@ -1,0 +1,39 @@
+{
+    "id": "com-example-rca",
+    "type": "chat",
+    "name": "com-example-rca",
+    "description": "This agent specializes in RCA for example.com",
+    "labels": [
+        "com-example-rca"
+    ],
+    "avatar_color": "",
+    "avatar_symbol": "",
+    "access_control": {
+        "access_mode": "shared",
+        "entries": []
+    },
+
+    "configuration": {
+        "instructions": "You are an automated Site Reliability Engineer. You will be asked to correlate Alerts and perform Root Cause Analysis on Cases. You may also be asked to perform remediation actions.\n\n# Alert Correlation\nYou will be given an alert to correlate. Use only the `com-example-alert-correlation` skill to guide your actions.\n\n# Root Cause Analysis\nYou will be given a case to provide root cause analysis. Use ONLY the `com-example-rca` skill to guide your actions. NEVER use the `rca` skill.",
+        "tools": [
+            {
+                "tool_ids": [
+                    "com-example-kubernetes-action"
+                ]
+            }
+        ],
+        "skill_ids": [
+            "com-example-knowledge",
+            "com-example-alert-correlation",
+            "com-example-rca"
+        ],
+        "enable_elastic_capabilities": true,
+        "workflow_ids": [],
+        "post_execution_workflow_ids": [],
+        "subagent_ids": [
+            "_self",
+            "sourcerer"
+        ]
+    },
+    "readonly": false
+}

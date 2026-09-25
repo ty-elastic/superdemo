@@ -19,6 +19,7 @@ do
    esac
 done
 
+source $PWD/assets/scripts/alerts.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key
 source $PWD/assets/scripts/spaces.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -8 $elasticsearch_limited_password
 source $PWD/assets/scripts/genai.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint
 source $PWD/assets/scripts/streams.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint

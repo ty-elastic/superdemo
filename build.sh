@@ -462,7 +462,7 @@ if [ "$assets" = "true" ]; then
     echo $windows_host_ip
     echo $iis_endpoint
 
-    envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces' < assets.yaml | kubectl apply -f -
+    envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password' < assets.yaml | kubectl apply -f -
     cd ..
 
     retry_command_lin check_assets $JOB_ID

@@ -25,6 +25,8 @@ COPY skills skills
 COPY slos slos
 COPY dashboards dashboards
 COPY streams streams
+COPY connectors connectors
+COPY field_definitions field_definitions
 
 ENV PYTHONUNBUFFERED=1
 
