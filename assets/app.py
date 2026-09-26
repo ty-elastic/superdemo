@@ -543,7 +543,7 @@ def load_agent_tools(kibana_server, kibana_auth):
 
     workflows_resp = requests.get(f"{kibana_server}/api/workflows?size=50&page=1",
                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-    #print(workflows_resp.json())
+    print(workflows_resp.json())
 
     directory_path = "tools"
     target_extension = ".json"

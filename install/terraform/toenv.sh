@@ -33,3 +33,9 @@ echo $FLEET_URL
 export HTTP_AUTH=true
 export REMOTE_ENDPOINT=true
 export K3S=false
+
+  cat > ".env" <<EOF
+elasticsearch_kibana_endpoint=$elasticsearch_kibana_endpoint
+elasticsearch_es_endpoint=$elasticsearch_es_endpoint
+elasticsearch_api_key=$elasticsearch_api_key
+EOF
