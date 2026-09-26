@@ -152,6 +152,9 @@ func buildReverseProxy(
 			if err == nil {
 				logBuf.Append(doc)
 			}
+
+			// insert log record here
+
 			return nil
 		},
 
