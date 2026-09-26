@@ -1017,6 +1017,9 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_ilm(es_host, auth)
         load_workflows(kibana_host, auth, es_host, remote_host)
         #load_new_knowledge(es_host, auth)
+
+        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password)
+
         load_agent_tools(kibana_host, auth)
         load_skills(kibana_host, auth)
         load_agents(kibana_host, auth)
@@ -1035,7 +1038,7 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_streams(kibana_host, auth)
         load_esql_views(es_host, auth)
 
-        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password)
+
         load_field_definitions(kibana_host, auth)
 
         print('done')
