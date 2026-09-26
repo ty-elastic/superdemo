@@ -19,7 +19,7 @@ source $PWD/assets/scripts/retry.sh
 enable_v2_alerts() {
    printf "$FUNCNAME...\n"
 
-   output=$(curl -s -X POST "$elasticsearch_kibana_endpoint/internal/kibana/settings" \
+   output=$(curl -s -X POST "$elasticsearch_kibana_endpoint/internal/kibana/global_settings" \
       -w "\n%{http_code}" \
       -H 'kbn-xsrf: true' \
       -H 'x-elastic-internal-origin: Kibana' \
