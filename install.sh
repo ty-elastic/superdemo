@@ -1,4 +1,4 @@
-COURSE=o11y--course--field--100-e2e--serverless
+COURSE=o11y--course--field--100-e2e--test
 
 OPTIND=1
 while getopts "c:" opt
@@ -44,5 +44,6 @@ fi
 export I=99
 
 HTTP_AUTH=true
+
 envsubst '$COURSE,$ELASTICSEARCH_URL,$KIBANA_URL,$ELASTICSEARCH_APIKEY,$ACCESS_PASSWORD,$INGEST_URL,$FLEET_URL,$I,$HTTP_AUTH' < install/install.yaml | kubectl apply -f -
 retry_command_lin kubectl logs -f job/superdemo-install-$I

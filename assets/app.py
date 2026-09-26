@@ -278,7 +278,7 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
                 with open(full_path, 'r') as fileo:
                     connector = json.load(fileo)
 
-                    if remote_host is not None:
+                    if remote_host is not None and 'url' in connector['config']:
                         connector['config']['url'] = connector['config']['url'].replace('$REMOTE_URL', remote_host)
                         connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_USERNAME', remote_user)
                         connector['secrets']['password'] = connector['secrets']['password'].replace('$REMOTE_PASSWORD', remote_password)
@@ -559,7 +559,8 @@ def load_agent_tools(kibana_server, kibana_auth):
                 with open(full_path, 'r') as fileo:
                     #content = file.read()
                     tool = json.load(fileo)
-                    del tool['readonly']
+                    if 'readonly' in tool:
+                        del tool['readonly']
 
                     print(tool)
                     if 'x-add-to-agents' in tool:
