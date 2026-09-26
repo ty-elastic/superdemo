@@ -586,7 +586,7 @@ def load_agent_tools(kibana_server, kibana_auth):
                     resp = requests.post(f"{kibana_server}/api/agent_builder/tools",
                                         json=tool,
                                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-                    #print(resp.json())     
+                    print(resp.json())     
 
                     for agent in agents:
 
