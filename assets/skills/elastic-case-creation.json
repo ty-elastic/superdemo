@@ -1,0 +1,14 @@
+{
+    "id": "elastic-case-creation",
+    "name": "elastic-case-creation",
+    "description": "Use this skill only when a user asks you to create a case using natural language from the AI Agent.",
+    "content": "* always assume cases should be created in the Observability app\n* always add the snowem connector:\"connector\": { \"id\": \"snowem\", \"type\": \".servicenow\", \"fields\": { \"urgency\": null, \"severity\": null, \"impact\": null, \"category\": null, \"subcategory\": null, \"additionalFields\": null }, \"name\": \"snowem\" }",
+    "referenced_content": [],
+    "tool_ids": [
+    ],
+    "readonly": false,
+    "experimental": false,
+    "x-add-to-agents": [
+        "elastic-ai-agent"
+    ]
+}
