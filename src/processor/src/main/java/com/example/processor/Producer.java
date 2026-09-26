@@ -140,9 +140,18 @@ public class Producer {
 
             // create topics in a retry loop
             while (true) {
+
+                // 2. Define your "max queue size" configurations
+                Map<String, String> topicConfigs = new HashMap<>();
+                // Set the maximum size per partition (e.g., 1 GB)
+
+                // Optional: Set a time-based retention policy as well (e.g., 1 min)
+                topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(60 * 1000));
+
                 // use default RF to avoid NOT_ENOUGH_REPLICAS error with minISR > 1
                 short replicationFactor = -1;
-                NewTopic newTopic = new NewTopic(topicName, KAFKA_NUM_PARITIONS, replicationFactor);
+                NewTopic newTopic = new NewTopic(topicName, KAFKA_NUM_PARITIONS, replicationFactor).configs(topicConfigs);
+
                 List<NewTopic> newTopics = Arrays.asList(newTopic);
                 try {
                     admin.createTopics(newTopics).all().get();
