@@ -39,6 +39,11 @@ data:
             "~.*session\.id=([^,]+)" $1; # Captures 'session_id'
         }
 
+        map $http_x_forwarded_for $client_ip {
+            "~^(?P<first_ip>[^,]+)" $first_ip;
+            default $remote_addr;
+        }
+
         include       /etc/nginx/mime.types;
         default_type  application/octet-stream;
 
