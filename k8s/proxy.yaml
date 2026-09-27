@@ -39,7 +39,7 @@ data:
             "~.*session\.id=([^,]+)" $1; # Captures 'session_id'
         }
 
-        map $http_x_forwarded_for $client_ip {
+        map $http_x_forwarded_for $client_real_ip {
             "~^(?P<first_ip>[^,]+)" $first_ip;
             default $remote_addr;
         }
@@ -47,11 +47,11 @@ data:
         include       /etc/nginx/mime.types;
         default_type  application/octet-stream;
 
-        log_format main '$http_x_forwarded_for - $remote_user [$time_local] '
+        log_format main '$client_real_ip - $remote_user [$time_local] '
                         '"$request" $status $body_bytes_sent $upstream_response_time '
                         '"$http_referer" "$http_user_agent"';
 
-        log_format otel '$http_x_forwarded_for - $remote_user [$time_local] '
+        log_format otel '$client_real_ip - $remote_user [$time_local] '
                         '"$request" $status $body_bytes_sent $upstream_response_time '
                         '"$http_referer" "$http_user_agent" '
                         '00-$otel_trace_id-$otel_span_id-$trace_flags';
