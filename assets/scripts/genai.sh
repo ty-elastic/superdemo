@@ -16,7 +16,7 @@ do
 done
 
 config_o11y_ai_assistant() {
-   #AI_CONNECTOR=".anthropic-claude-4.6-sonnet-chat_completion"
+   AI_CONNECTOR=".anthropic-claude-4.6-sonnet-chat_completion"
 
    printf "$FUNCNAME...\n"
    printf "$FUNCNAME...using connector: $AI_CONNECTOR\n"
@@ -27,7 +27,7 @@ config_o11y_ai_assistant() {
       -H 'x-elastic-internal-origin: Kibana' \
       -H "Authorization: ApiKey ${elasticsearch_api_key}" \
       -H 'Content-Type: application/json' \
-      -d '{"changes":{"contextEngine:enabled": true, "agentBuilder:tracing:enabled": true, "genAiSettings:tokenUsageTracking": true, "aiAssistant:preferredChatExperience": "agent", "agentBuilder:experimentalFeatures": true}}')
+      -d '{"changes":{"contextEngine:enabled": true, "agentBuilder:tracing:enabled": true, "genAiSettings:tokenUsageTracking": true, "aiAssistant:preferredChatExperience": "agent", "agentBuilder:experimentalFeatures": true}, "genAiSettings:defaultAIConnector": "'$AI_CONNECTOR'"}}')
 
    # Extract HTTP status code
    http_code=$(echo "$output" | tail -n1)
