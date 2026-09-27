@@ -149,7 +149,7 @@ public class Producer {
                 // Set the maximum size per partition (e.g., 1 GB)
 
                 // Optional: Set a time-based retention policy as well (e.g., 1 min)
-                topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(60 * 1000));
+                topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(5 * 60 * 1000));
 
                 // use default RF to avoid NOT_ENOUGH_REPLICAS error with minISR > 1
                 short replicationFactor = -1;

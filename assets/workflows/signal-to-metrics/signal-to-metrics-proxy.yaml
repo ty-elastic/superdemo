@@ -9,6 +9,8 @@ triggers:
     type: string
   - name: datastream
     type: string
+tags:
+- signal-to-metrics
 steps:
 - name: query
   type: elasticsearch.esql.query
