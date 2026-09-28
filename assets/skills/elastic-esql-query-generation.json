@@ -2,7 +2,7 @@
   "id": "elastic-esql-query-generation",
   "name": "elastic-esql-query-generation",
   "description": "Use this skill whenever you are asked to generate ES|QL from natural language",
-  "content": "* always try to generate ES|QL using the `platform.core.generate_esql` tool before trying other methods\n* always test the generated ES|QL before providing it to the user; if it fails, try to correct the syntax. when testing, you only need to test against the subset of the data source filtered by the first `WHERE` clause.\n* when using the `GROK` or `DISSECT` functions, always triple quote the expression.",
+  "content": "* always try to generate ES|QL using the `platform.core.generate_esql` tool before trying other methods.\n* when using the `GROK` or `DISSECT` functions, always triple quote the expression.\n* always test the generated ES|QL before providing it to the user.\n* when testing, you only need to test against the subset of the data source filtered by the first `WHERE` clause.\n* if during testing the generated syntax is found to be invalid, try to fix it before providing it to the user.\n* if using `GROK` or `DISSECT` functions, and if during testing, no rows are returned, your pattern is likely slightly incorrect. try to fix it before providing it to the user.",
   "referenced_content": [],
   "tool_ids": [],
   "readonly": false,
@@ -11,3 +11,5 @@
         "elastic-ai-agent"
     ]
 }
+
+
