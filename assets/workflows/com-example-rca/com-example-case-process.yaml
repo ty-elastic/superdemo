@@ -42,7 +42,6 @@ steps:
     with:
       conversation_id: "{{ variables.ai_conversation_id }}"
       message: 'perform RCA on case id: {{ inputs.case_id }}'
-
       schema:
         title: RCA
         type: object
