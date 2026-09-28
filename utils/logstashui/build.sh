@@ -13,6 +13,6 @@ cd setup
 ./build.sh -c $course
 cd ..
 
-cd snmpsim
-./build.sh -c $course
-cd ..
+# cd snmpsim
+# ./build.sh -c $course
+# cd ..
