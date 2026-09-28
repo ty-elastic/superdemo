@@ -218,6 +218,10 @@ if [ "$build_infra" = "true" ]; then
   cd ./utils/logstashui
   ./build.sh -c $course
   cd ../..
+
+  cd ./utils/openmarkets
+  ./build.sh -c $course
+  cd ../..
 fi
 
 if [ "$build_service" = "true" ]; then
