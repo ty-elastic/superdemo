@@ -24,8 +24,7 @@
         "skill_ids": [
             "com-example-knowledge",
             "com-example-alert-correlation",
-            "com-example-rca",
-            "elastic-docs-esql-query-generator"
+            "com-example-rca"
         ],
         "enable_elastic_capabilities": true,
         "workflow_ids": [],
