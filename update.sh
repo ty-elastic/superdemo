@@ -40,8 +40,10 @@ if [ -z "$course" ]; then
 
   if [[ "$CURRENT_BRANCH" == "main" ]]; then
       course=o11y--course--field--100-e2e--serverless
-  else
+  elif [[ "$CURRENT_BRANCH" == "test" ]]; then
       course=o11y--course--field--100-e2e--test
+  else
+      course=$CURRENT_BRANCH
   fi
 fi
 echo $course
