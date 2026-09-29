@@ -16,7 +16,7 @@ do
 done
 
 config_o11y_ai_assistant() {
-   AI_CONNECTOR=".anthropic-claude-4.6-sonnet-chat_completion"
+   AI_CONNECTOR=".anthropic-claude-4.8-opus-chat_completion"
 
    printf "$FUNCNAME...\n"
    printf "$FUNCNAME...using connector: $AI_CONNECTOR\n"
