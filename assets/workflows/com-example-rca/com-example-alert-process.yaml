@@ -83,6 +83,7 @@ steps:
             syncAlerts: true
           extended_fields:
             ai_conversation_id_as_keyword: '{{ steps.create_ai_conversation_id.output.id}}'
+            system_environment_as_keyword: '{{ steps.correlate.output.structured_output.system_environment }}'
 
     - name: case_id
       type: data.set

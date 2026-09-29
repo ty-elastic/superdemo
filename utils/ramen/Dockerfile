@@ -38,4 +38,8 @@ RUN mkdir -p "/root/.config/elastic"
 
 RUN curl -fsSL https://raw.githubusercontent.com/elastic/elastic-ramen/dev/install | bash
 
+RUN apt update
+RUN apt install nodejs npm -y
+RUN npm install -g @elastic/cli
+
 ENTRYPOINT /usr/local/bin/ttyd -w /root --writable bash

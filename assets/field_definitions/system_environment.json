@@ -1,0 +1,7 @@
+{
+    "name": "system_environment",
+    "definition": "name: system_environment\nlabel: \"system_environment\"\ncontrol: INPUT_TEXT\ntype: keyword\n",
+    "owner": "observability",
+    "description": "the environment in which this error is occurring",
+    "isGlobal": true
+}
