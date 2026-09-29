@@ -24,7 +24,7 @@ config_workflows_enable() {
       -H 'x-elastic-internal-origin: Kibana' \
       -H "Authorization: ApiKey ${elasticsearch_api_key}" \
       -H 'Content-Type: application/json' \
-      -d '{"changes":{"workflows:ui:enabled":true}}')
+      -d '{"changes":{"workflows:experimentalFeatures": true}}')
 
    # Extract HTTP status code
    http_code=$(echo "$output" | tail -n1)
