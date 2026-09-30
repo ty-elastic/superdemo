@@ -34,23 +34,26 @@ def check_if_enabled(profile, path):
         config = yaml.safe_load(file)
         #print(config)
         parts = path.split("/")
+        if profile not in config:
+            return True
         state= config[profile]
         #print(state)
         for part in parts:
-            #print(f"state={state}")
-            #print(f"part={part}")
+            print(f"state={state}")
+            print(f"part={part}")
             
 
             if state is None or part not in state:
                 print(f"exclude={path}")
                 return False
             else:
-                if len(state) == 1:
+                #print(type(state))
+                if isinstance(state, dict) and part in state:
+                    print('here')
+                    state = state[part]
+                else:
                     print(f"include={path}")
                     return True
-
-                state = state[part]
-                #print("f")
     return True
 
 
@@ -1045,9 +1048,11 @@ def run_workflow(kibana_server, kibana_auth, workflow_name):
 @click.option('--remote_password', default=None, help='remote host url')
 @click.option('--namespaces', default="trading-na,trading-emea", help='namespaces')
 @click.option('--services', default="trader,router,recorder-java,recorder-go", help='services')
+@click.option('--profile', default="superdemo", help='profile')
 @click.argument('action')
-def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint):
-    
+def main(profile, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint):
+    global in_profile
+    in_profile = profile
 
     namespaces_split = namespaces.split(',')
     print(namespaces_split)
