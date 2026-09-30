@@ -45,7 +45,7 @@ steps:
   steps:
   - name: call_remote
     type: http
-    connector-id: kubernetes
+    connector-id: com-example-kubernetes
     with:
       path: '/service/{{inputs.namespace}}/{{inputs.service_name}}/{{inputs.service_action}}'
       method: POST

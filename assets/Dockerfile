@@ -6,10 +6,12 @@ WORKDIR /python-docker
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip pip3 install --root-user-action=ignore -r requirements.txt
 
-
+COPY profiles.yaml .
 COPY app.py .
 COPY workflows workflows
 COPY esql_views esql_views
+COPY esql_datasets esql_datasets
+COPY esql_datasources esql_datasources
 COPY rules_enable rules_enable
 COPY rules rules
 COPY knowledge knowledge

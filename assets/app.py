@@ -4,8 +4,8 @@ import json
 import requests
 from datetime import datetime, timezone
 import re
-#import yaml
-import ruamel.yaml
+import yaml
+#import ruamel.yaml
 import os
 import click
 import sys
@@ -27,6 +27,33 @@ class MyYAML(YAML):
         if inefficient:
             return stream.getvalue()
 
+in_profile = "base"
+def check_if_enabled(profile, path):
+    #print(path)
+    with open(f"profiles.yaml", 'r') as file:
+        config = yaml.safe_load(file)
+        #print(config)
+        parts = path.split("/")
+        state= config[profile]
+        #print(state)
+        for part in parts:
+            #print(f"state={state}")
+            #print(f"part={part}")
+            
+
+            if state is None or part not in state:
+                print(f"exclude={path}")
+                return False
+            else:
+                if len(state) == 1:
+                    print(f"include={path}")
+                    return True
+
+                state = state[part]
+                #print("f")
+    return True
+
+
 
 def load_knowledge(kibana_server, kibana_auth):
     directory_path = "knowledge"
@@ -35,8 +62,10 @@ def load_knowledge(kibana_server, kibana_auth):
     entries = []
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
             if file.endswith(target_extension):
-                full_path = os.path.join(root, file)
+                
                 with open(full_path, 'r') as fileo:
                     #content = file.read()
                     knowledge = json.load(fileo)
@@ -77,8 +106,9 @@ def load_new_knowledge(es_host, es_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
             if file.endswith(target_extension):
-                full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
                     jcontent = json.load(fileo)
 
@@ -134,8 +164,50 @@ def backup_workflows(kibana_server, kibana_auth):
             #yaml.dump(parsed)
             yaml.dump(parsed, yaml_file)
   
+def load_esql_data_sources(es_host, kibana_auth):
 
-  
+    directory_path = "esql_datasources"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
+            if file.endswith(target_extension):
+                #full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, 'r') as fileo:
+                    
+                    df_source = json5.load(fileo)
+                    print(filename_no_ext)
+                    resp = requests.put(f"{es_host}/_query/data_source/{filename_no_ext}",
+                                        json=df_source,
+                                        headers={f"Authorization": kibana_auth, "Content-Type": "application/json"})
+                    print(resp.json())
+   
+def load_esql_data_sets(es_host, kibana_auth):
+
+    directory_path = "esql_datasets"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
+            if file.endswith(target_extension):
+                #full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, 'r') as fileo:
+                    
+                    df_source = json5.load(fileo)
+                    print(filename_no_ext)
+                    resp = requests.put(f"{es_host}/_query/dataset/{filename_no_ext}",
+                                        json=df_source,
+                                        headers={f"Authorization": kibana_auth, "Content-Type": "application/json"})
+                    print(resp.json())
+
 def load_streams(kibana_server, kibana_auth):
     
     directory_path = "streams"
@@ -143,9 +215,12 @@ def load_streams(kibana_server, kibana_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 parent_dir_name = os.path.basename(root)
-                full_path = os.path.join(root, file)
+                #full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
 
                     proc = json.load(fileo)
@@ -155,9 +230,6 @@ def load_streams(kibana_server, kibana_auth):
                                         headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json"})
                     print(resp.json())   
 
-
-
-  
 def load_field_definitions(kibana_server, kibana_auth):
     
     directory_path = "field_definitions"
@@ -165,9 +237,12 @@ def load_field_definitions(kibana_server, kibana_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 parent_dir_name = os.path.basename(root)
-                full_path = os.path.join(root, file)
+                #full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
 
                     definition = json.load(fileo)
@@ -212,8 +287,11 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
-                full_path = os.path.join(root, file)
+                #full_path = os.path.join(root, file)
 
                 if '_archive' in full_path:
                     continue
@@ -271,6 +349,9 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 filename_no_ext = Path(file).stem
@@ -312,6 +393,9 @@ def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
 
@@ -365,6 +449,9 @@ def load_esql_views(es_host, kibana_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 filename_no_ext = Path(file).stem
@@ -384,6 +471,9 @@ def load_dataviews(kibana_server, kibana_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -403,6 +493,9 @@ def load_aliases(es_host, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -421,6 +514,9 @@ def load_objects(kibana_server, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'rb') as f:
@@ -440,6 +536,9 @@ def load_ilm(es_host, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 filename_no_ext = Path(file).stem
@@ -458,6 +557,9 @@ def load_ml(es_host, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -485,6 +587,9 @@ def enable_rules(kibana_server, kibana_auth, es_host):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             print(file)
 
             resp = requests.post(f"{kibana_server}/api/alerting/rule/{file}/_enable",
@@ -512,6 +617,9 @@ def load_rules(kibana_server, kibana_auth, es_host, connect_alerts=False):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -550,6 +658,9 @@ def load_agent_tools(kibana_server, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
 
@@ -642,6 +753,9 @@ def load_slos(kibana_server, kibana_auth, services):
         
         for root, dirs, files in os.walk(directory_path):
             for file in files:
+                full_path = os.path.join(root, file)
+                if check_if_enabled(in_profile, full_path) == False: continue
+
                 if file.endswith(target_extension):
                     full_path = os.path.join(root, file)
 
@@ -717,6 +831,9 @@ def load_dashboards(kibana_server, kibana_auth):
 
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -747,6 +864,9 @@ def load_skills(kibana_server, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -808,6 +928,9 @@ def load_agents(kibana_server, kibana_auth):
     
     for root, dirs, files in os.walk(directory_path):
         for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_profile, full_path) == False: continue
+
             if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
                 with open(full_path, 'r') as fileo:
@@ -933,20 +1056,20 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
     print(services_split)
 
 
-    config = dotenv_values()
-    for key, value in config.items():
-        print(f"{key}: {value}")
+    # config = dotenv_values()
+    # for key, value in config.items():
+    #     print(f"{key}: {value}")
 
-    print(remote_host)
-    print(remote_user)
-    print(remote_password)
+    print(kibana_host)
+    print(es_host)
+    print(es_apikey)
 
-    if kibana_host == "":
-        kibana_host = config['elasticsearch_kibana_endpoint']
-    if es_host == "":
-        es_host = config['elasticsearch_es_endpoint']
-    if es_apikey == "" and es_authbasic == "":
-        es_apikey = config['elasticsearch_api_key']
+    # if kibana_host == "":
+    #     kibana_host = config['elasticsearch_kibana_endpoint']
+    # if es_host == "":
+    #     es_host = config['elasticsearch_es_endpoint']
+    # if es_apikey == "" and es_authbasic == "":
+    #     es_apikey = config['elasticsearch_api_key']
 
     if es_authbasic != "":
         auth = f"Basic {es_authbasic}"
@@ -1005,8 +1128,10 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
         load_streams(kibana_host, auth)
         print('done')
 
-    elif action == 'load_esql_views':
+    elif action == 'load_esql':
         load_esql_views(es_host, auth)
+        load_esql_data_sources(es_host, auth)
+        load_esql_data_sets(es_host, auth)
         print('done')
 
     elif action == 'load_ilm':
@@ -1040,6 +1165,9 @@ def main(kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, 
 
 
         load_field_definitions(kibana_host, auth)
+
+        load_esql_data_sources(es_host, auth)
+        load_esql_data_sets(es_host, auth)
 
         print('done')
 
