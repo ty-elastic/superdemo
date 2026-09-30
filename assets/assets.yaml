@@ -30,6 +30,8 @@ spec:
             - "$iis_endpoint"
             - "--namespaces"
             - "$namespaces"
+            - "--course"
+            - "$COURSE"
             - "load"
       restartPolicy: Never
 ---
