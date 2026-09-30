@@ -1,5 +1,5 @@
 {
-    "name": "kubernetes",
+    "name": "com-example-kubernetes",
     "config": {
         "url": "$REMOTE_URL",
         "headers": null,

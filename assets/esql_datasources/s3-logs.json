@@ -1,0 +1,8 @@
+{
+    "description": "logs",
+    "settings": {
+        "region": "eu-west-3",
+        "auth": "anonymous"
+    },
+    "type": "s3"
+}

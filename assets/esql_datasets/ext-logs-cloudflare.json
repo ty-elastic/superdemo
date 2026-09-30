@@ -1,0 +1,7 @@
+{
+    "data_source": "s3-logs",
+    "resource": "s3://datasets-documentation/clickstack-integrations/cloudflare/*.json",
+    "settings": {
+        "format": "ndjson"
+    }
+}
