@@ -42,4 +42,6 @@ o11y--course--field--elasticon-2026:
   tools:
     - com-example-kubernetes-action.json
   workflows:
-  
+    com-example-rca:
+      - com-example-kubernetes-action.yaml
+      - com-example-setup.yaml
