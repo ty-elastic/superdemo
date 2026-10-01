@@ -21,23 +21,12 @@ triggers:
 steps:
 
 - name: review
-  type: waitForInput
+  type: waitForApproval
+  timeout: 24h
   with:
-    message: |
-      ## About to perform an action on a service
-
-      **Service Name:** {{ inputs.service_name }}
-      **Namespace:** {{ inputs.namespace}}
-      **Requested Action:** {{ inputs.service_action}}   
-
-      Proceed?
-    schema:
-      type: object
-      properties:
-        approved:
-          type: boolean
-          title: Proceed
-      required: [approved]
+    message: "Approve restart for {{ inputs.service_action}} in {{ inputs.namespace}}?"
+    approveLabel: Approve
+    rejectLabel: Decline
 
 - name: check_approval
   type: if
@@ -47,7 +36,7 @@ steps:
     type: http
     connector-id: com-example-kubernetes
     with:
-      path: '/service/{{inputs.namespace}}/{{inputs.service_name}}/{{inputs.service_action}}'
+      path: /service/{{inputs.namespace}}/{{inputs.service_name}}/{{inputs.service_action}}
       method: POST
       headers:
         Content-Type: application/json

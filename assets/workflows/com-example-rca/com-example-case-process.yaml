@@ -51,6 +51,19 @@ steps:
           rca:
             type: string
             description: the root cause analysis in markdown form
+          recommended_remediation:
+            type: object
+            description: the recommended remediation; only include if service_action=restart
+            properties:
+              service_action: 
+                type: string
+                description: a value of `restart` if the suggested remediation is to restart a service
+              service_name:
+                type: string
+                description: the name of the service
+              namespace:
+                type: string
+                description: namespace the service is running in
 
   - name: add_response_to_existing_case
     type: cases.addComment
