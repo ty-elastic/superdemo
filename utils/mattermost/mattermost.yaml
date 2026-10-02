@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mattermost
+  namespace: infra
+  labels:
+    app: trading
+    service: mattermost
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trading
+      service: mattermost
+  template:
+    metadata:
+      annotations:
+        io.opentelemetry.discovery.logs/enabled: "true"
+      labels:
+        app: trading
+        service: mattermost
+    spec:
+      containers:
+        - name: mattermost
+          image: mattermost/mattermost-preview
+          imagePullPolicy: Always
+          env:
+            - name: "MM_SERVICESETTINGS_ENABLELOCALMODE"
+              value: "true"
+            - name: "MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW"
+              value: "false"
+          lifecycle:
+            postStart:
+              exec:
+                command: 
+                  - /bin/sh
+                  - -c
+                  - |
+                    (
+                    while ! mmctl --local user create --email user@example.com --username userexample --password Password1 --system-admin; do
+                      echo "Initialization failed. Retrying in 5 seconds..."
+                      sleep 5
+                    done
+                    echo "success!"
+                    ) &
+      restartPolicy: Always
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: trading
+    service: mattermost
+  name: mattermost
+  namespace: infra
+spec:
+  ports:
+    - name: mattermost
+      port: 8065
+      targetPort: 8065
+  type: ClusterIP
+  selector:
+    app: trading
+    service: mattermost
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: mattermost-auth
+  namespace: traefik
+spec:
+  headers:
+    customRequestHeaders:
+      Authorization: "Basic YWRtaW46dVFwNkprQ1pXY1R0TGZ3bw=="
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mattermost-route
+  namespace: infra
+spec:
+  entryPoints:
+    - mattermost
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/`)
+      services:
+        - name: mattermost
+          port: 8065
+      middlewares:
+        - name: mattermost-auth
+          namespace: traefik
