@@ -14,7 +14,7 @@ done
 config_geodatabase() {
     printf "$FUNCNAME...\n"
 
-   output=$(curl -s -X POST "$elasticsearch_es_endpoint/_query?format=txt" \
+   output=$(curl -s -X POST "$elasticsearch_es_endpoint/_query" \
         -H 'Content-Type: application/json' \
         -H "Authorization: ApiKey ${elasticsearch_api_key}" \
         -d '{
