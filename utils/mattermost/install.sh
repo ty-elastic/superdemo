@@ -12,14 +12,15 @@ do
    esac
 done
 
-#source $root/assets/scripts/retry.sh
+source $root/assets/scripts/retry.sh
 
 kubectl apply -f $root/utils/mattermost/mattermost.yaml
 kubectl wait -n infra --for=condition=Ready pod -l service=mattermost --timeout=5m
 
+mm_login() {
+    printf "$FUNCNAME...\n"
 
-
-response=$(curl -i -v -H POST "$mattermost_url/api/v4/users/login" \
+   response=$(curl -i -v -H POST "$mattermost_url/api/v4/users/login" \
      -H 'Content-Type: application/json' \
      --header "X-Requested-With: XMLHttpRequest" \
      -d '{
@@ -27,11 +28,19 @@ response=$(curl -i -v -H POST "$mattermost_url/api/v4/users/login" \
        "password": "password"
      }')
 
-echo $response
-MMAUTHTOKEN=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMAUTHTOKEN=([^;]+).*/\1/p')
-MMCSRF=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMCSRF=([^;]+).*/\1/p')
-MMUSERID=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMUSERID=([^;]+).*/\1/p')
+    export MMAUTHTOKEN=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMAUTHTOKEN=([^;]+).*/\1/p')
+    export MMCSRF=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMCSRF=([^;]+).*/\1/p')
+    export MMUSERID=$(echo $response grep -Fi "Set-Cookie:" | sed -n -E 's/.*MMUSERID=([^;]+).*/\1/p')
 
+
+    if [[ -z "$MMAUTHTOKEN" ]]; then
+        printf "$FUNCNAME...ERROR: MMAUTHTOKEN is unset\n"
+        return 1
+    fi
+    printf "$FUNCNAME...MMAUTHTOKEN=$MMAUTHTOKEN\n"
+    return 0
+}
+retry_command_lin mm_login
 
 echo $MMAUTHTOKEN
 echo $MMCSRF
