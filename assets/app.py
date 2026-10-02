@@ -363,6 +363,8 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
                 with open(full_path, 'r') as fileo:
                     connector = json.load(fileo)
 
+                    print(f"Connector: {filename_no_ext}")
+
                     if mm_webhook is not None and 'webhookUrl' in connector['secrets']:
                         connector['secrets']['webhookUrl'] = connector['secrets']['webhookUrl'].replace('$MM_WEBHOOK', mm_webhook)
 
