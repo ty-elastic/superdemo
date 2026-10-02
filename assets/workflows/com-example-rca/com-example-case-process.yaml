@@ -35,7 +35,7 @@ steps:
     with:
       duration: "60s"
 
-  - name: perform_rca
+  - name: rca
     type: ai.agent
     inference-id: '{{ consts.rca_model }}'
     agent-id: '{{ consts.rca_agent_id }}'
@@ -51,7 +51,7 @@ steps:
           rca:
             type: string
             description: the root cause analysis in markdown form
-          recommended_remediation:
+          remediation:
             type: object
             description: the recommended remediation; only include if service_action=restart
             properties:
@@ -69,7 +69,7 @@ steps:
     type: cases.addComment
     with:
       case_id: "{{ inputs.case_id }}"
-      comment: '{{ steps.perform_rca.output.structured_output.rca }}'
+      comment: '{{ steps.rca.output.structured_output.rca }}'
     on-failure:
       retry:
         max-attempts: 2
@@ -79,8 +79,39 @@ steps:
     type: cases.addComment
     with:
       case_id: "{{ inputs.case_id }}"
-      comment: 🔍 You can continue your investigation or take remediation action [here](/app/agent_builder/conversations/{{ steps.perform_rca.output.conversation_id }}).
+      comment: 🔍 You can continue your investigation or take remediation action [here](/app/agent_builder/conversations/{{ steps.rca.output.conversation_id }}).
     on-failure:
       retry:
         max-attempts: 2
         delay: 1s
+
+  - name: notify_team
+    type: slack
+    connector-id: "com-example-mattermost"
+    with:
+      message: "PROBLEM DETECTED: {{ steps.rca.output.structured_output.title }}. [Investigation]({{ kibanaUrl }}/app/observability/cases/{{ inputs.case_id }})."
+
+  - name: if_remediation
+    type: if
+    condition: 'steps.rca.output.structured_output.remediation.service_action: restart'
+    steps:
+      - name: request_approval
+        type: waitForApproval
+        timeout: 24h
+        with:
+          message: "Approve {{ steps.rca.output.structured_output.remediation.service_action }} for {{ steps.rca.output.structured_output.remediation.service_name }} in {{ steps.rca.output.structured_output.remediation.namespace }}?"
+          approveLabel: Approve
+          rejectLabel: Decline
+          channels:
+            slack:
+              connector-id: "com-example-mattermost"
+
+      - name: call_remote
+        type: http
+        if: "steps.request_approval.output.response.approved : true"
+        connector-id: com-example-kubernetes
+        with:
+          path: /service/{{inputs.namespace}}/{{inputs.service_name}}/{{inputs.service_action}}
+          method: POST
+          headers:
+            Content-Type: application/json
