@@ -49,6 +49,11 @@ ports:
     exposedPort: 9016
     expose:
       default: true 
+  mattermost:
+    port: 9017
+    exposedPort: 9017
+    expose:
+      default: true 
   trading-na:
     port: 9000
     exposedPort: 9000
