@@ -12,15 +12,10 @@ done
 
 source $root/assets/scripts/retry.sh
 
-mattermost_url="http://mattermost.infra.svc.cluster.local:8065"
+kubectl apply -f $root/utils/mattermost/mattermost.yaml
+kubectl wait -n infra --for=condition=Ready pod -l service=mattermost --timeout=5m
 
-OPTIND=1
-while getopts "m:" opt
-do
-   case "$opt" in
-      m ) mattermost_url="$OPTARG" ;;
-   esac
-done
+mattermost_url="http://mattermost.infra.svc.cluster.local:8065"
 
 response=$(curl -i -v -H POST "$mattermost_url/api/v4/users/login" \
      -H 'Content-Type: application/json' \
@@ -118,7 +113,7 @@ spec:
     replacement: /hooks/$webhook_id
 EOF
 
-kubectl apply -f $root/utils/mattermost/mattermost.yaml
+
 kubectl apply -f $root/utils/mattermost/dynamic.yaml
 
 rm -rf $root/utils/mattermost/dynamic.yaml
