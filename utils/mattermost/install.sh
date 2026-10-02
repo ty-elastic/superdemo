@@ -1,21 +1,23 @@
 
 #!/bin/bash
 root="../../"
+mattermost_url="http://mattermost.infra.svc.cluster.local:8065"
 
 OPTIND=1
-while getopts "s:" opt
+while getopts "s:m:" opt
 do
    case "$opt" in
       s ) root="$OPTARG" ;;
+      m ) mattermost_url="$OPTARG" ;;
    esac
 done
 
-source $root/assets/scripts/retry.sh
+#source $root/assets/scripts/retry.sh
 
 kubectl apply -f $root/utils/mattermost/mattermost.yaml
 kubectl wait -n infra --for=condition=Ready pod -l service=mattermost --timeout=5m
 
-mattermost_url="http://mattermost.infra.svc.cluster.local:8065"
+
 
 response=$(curl -i -v -H POST "$mattermost_url/api/v4/users/login" \
      -H 'Content-Type: application/json' \
@@ -108,9 +110,8 @@ metadata:
   name: mattermost-hooks
   namespace: traefik
 spec:
-  replacePathRegex:
-    regex: ^/hooks/(.*)
-    replacement: /hooks/$webhook_id
+  replacePath:
+    path: /hooks/$webhook_id
 EOF
 
 

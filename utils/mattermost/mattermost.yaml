@@ -98,18 +98,21 @@ spec:
   routes:
     - kind: Rule
       match: PathPrefix(`/hooks/`)
+      priority: 100  # Force this to take precedence if needed
       services:
         - name: mattermost
           port: 8065
       middlewares:
         - name: mattermost-hooks
+          namespace: traefik    
     - kind: Rule
       match: PathPrefix(`/`)
+      priority: 10  # Force this to take precedence if needed
       services:
         - name: mattermost
           port: 8065
       middlewares:
-        - name: basic-auth-middleware
-          namespace: traefik      
+        # - name: basic-auth-middleware
+        #   namespace: traefik      
         # - name: mattermost-auth
         #   namespace: traefik
