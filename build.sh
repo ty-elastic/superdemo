@@ -461,7 +461,7 @@ fi
 if [ "$ramen" = "true"  ]; then
     printf "deploying mattermost...\n"
 
-    kubectl apply -f $PWD/utils/mattermost/mattermost.yaml
+    source $PWD/utils/mattermost/install.sh -s $PWD
     
     printf "deploying mattermost...SUCCESS\n"
 fi

@@ -29,6 +29,8 @@ spec:
               value: "true"
             - name: "MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW"
               value: "false"
+            - name: "MM_SERVICESETTINGS_ENABLEDESKTOPLANDINGPAGE"
+              value: "false"
           lifecycle:
             postStart:
               exec:
@@ -37,7 +39,7 @@ spec:
                   - -c
                   - |
                     (
-                    while ! mmctl --local user create --email user@example.com --username userexample --password Password1 --system-admin; do
+                    while ! mmctl --local user create --email user@example.com --username user --password password --system-admin; do
                       echo "Initialization failed. Retrying in 5 seconds..."
                       sleep 5
                     done
@@ -73,7 +75,17 @@ metadata:
 spec:
   headers:
     customRequestHeaders:
-      Authorization: "Basic YWRtaW46dVFwNkprQ1pXY1R0TGZ3bw=="
+      X-NoOp: "noop"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: mattermost-hooks
+  namespace: traefik
+spec:
+  headers:
+    customRequestHeaders:
+      X-NoOp: "noop"
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -85,10 +97,19 @@ spec:
     - mattermost
   routes:
     - kind: Rule
+      match: PathPrefix(`/hooks/`)
+      services:
+        - name: mattermost
+          port: 8065
+      middlewares:
+        - name: mattermost-hooks
+    - kind: Rule
       match: PathPrefix(`/`)
       services:
         - name: mattermost
           port: 8065
       middlewares:
-        - name: mattermost-auth
-          namespace: traefik
+        - name: basic-auth-middleware
+          namespace: traefik      
+        # - name: mattermost-auth
+        #   namespace: traefik
