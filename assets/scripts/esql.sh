@@ -31,4 +31,4 @@ config_geodatabase() {
    printf "$FUNCNAME...SUCCESS\n"
    return 0
 }
-retry_command_lin config_geodatabase
+config_geodatabase
