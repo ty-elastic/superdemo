@@ -1,0 +1,9 @@
+{
+  "name": "com-example-slack",
+  "config": {},
+  "connector_type_id": ".slack",
+  "auth_mode": "shared",
+  "secrets": {
+    "webhookUrl":"$MM_WEBHOOK"
+    }
+}

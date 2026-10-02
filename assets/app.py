@@ -346,7 +346,7 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
                     print(resp.json())
 
-def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=None, remote_password=None):
+def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=None, remote_password=None, mm_webhook=None):
 
     directory_path = "connectors"
     target_extension = ".json"
@@ -363,7 +363,10 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
                 with open(full_path, 'r') as fileo:
                     connector = json.load(fileo)
 
-                    if remote_host is not None and 'url' in connector['config']:
+                    if mm_webhook is not None and 'webhookUrl' in connector['secrets']:
+                        connector['secrets']['webhookUrl'] = connector['secrets']['webhookUrl'].replace('$MM_WEBHOOK', mm_webhook)
+
+                    elif remote_host is not None and 'url' in connector['config']:
                         connector['config']['url'] = connector['config']['url'].replace('$REMOTE_URL', remote_host)
                         connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_USERNAME', remote_user)
                         connector['secrets']['password'] = connector['secrets']['password'].replace('$REMOTE_PASSWORD', remote_password)
@@ -1044,6 +1047,7 @@ def run_workflow(kibana_server, kibana_auth, workflow_name):
 @click.option('--es_apikey', default="", help='apikey for auth')
 @click.option('--es_authbasic', default="", help='basic for auth')
 @click.option('--connect_alerts', default=False, help='connect alerts to workflow')
+@click.option('--mm_webhook', default=None, help='remote host url')
 @click.option('--remote_host', default=None, help='remote host url')
 @click.option('--remote_user', default=None, help='remote host url')
 @click.option('--remote_password', default=None, help='remote host url')
@@ -1051,7 +1055,7 @@ def run_workflow(kibana_server, kibana_auth, workflow_name):
 @click.option('--services', default="trader,router,recorder-java,recorder-go", help='services')
 @click.option('--course', default="superdemo", help='course')
 @click.argument('action')
-def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint):
+def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint, mm_webhook):
     global in_course
     in_course = course
 
@@ -1149,7 +1153,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_workflows(kibana_host, auth, es_host, remote_host)
         #load_new_knowledge(es_host, auth)
 
-        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password)
+        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password, mm_webhook)
 
         load_agent_tools(kibana_host, auth)
         load_skills(kibana_host, auth)

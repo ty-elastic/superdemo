@@ -480,11 +480,12 @@ if [ "$assets" = "true" ]; then
     export namespaces=$namespaces
     export access_password=$access_password
     export iis_endpoint="http://$windows_host_ip"
+    export mm_webhook="http://$SERVICE_IP:9017/hooks/4815162342"
     echo $windows_host_ip
     echo $iis_endpoint
     echo "ap=$access_password"
 
-    envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password' < assets.yaml | kubectl apply -f -
+    envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password,$mm_webhook' < assets.yaml | kubectl apply -f -
     cd ..
 
     retry_command_lin check_assets $JOB_ID

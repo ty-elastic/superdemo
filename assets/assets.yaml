@@ -26,6 +26,8 @@ spec:
             - "admin"
             - "--remote_password"
             - "$access_password"
+            - "--mm_webhook"
+            - "$mm_webhook"
             - "--iis_endpoint"
             - "$iis_endpoint"
             - "--namespaces"
