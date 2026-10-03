@@ -4,7 +4,6 @@ o11y--course--field--elasticon-2026:
     - logs-trader.json
     - metrics-trader.json
   connectors:
-    - com-example-kubernetes.json
   dashboards:
     - Cisco IOS Switch Health Monitoring.json
     - LiteLLM Observability.json
@@ -40,8 +39,6 @@ o11y--course--field--elasticon-2026:
     - monkey_state.json
     - trade.json
   tools:
-    - com-example-kubernetes-action.json
   workflows:
     com-example-rca:
-      - com-example-kubernetes-action.yaml
       - com-example-setup.yaml
