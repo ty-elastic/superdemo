@@ -23,7 +23,6 @@ o11y--course--field--elasticon-2026:
   pipelines:
   rules:
     - apm_failure.json
-    - db_rollbacks.json
   rules_eable:
   skills:
     - elastic-case-creation.json
