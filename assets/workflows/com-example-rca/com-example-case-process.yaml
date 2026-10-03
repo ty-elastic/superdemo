@@ -111,7 +111,19 @@ steps:
         if: "steps.request_approval.output.response.approved : true"
         connector-id: com-example-kubernetes
         with:
-          path: /service/{{inputs.namespace}}/{{inputs.service_name}}/{{inputs.service_action}}
+          path: /service/{{steps.rca.output.structured_output.remediation.namespace}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.service_action}}
           method: POST
           headers:
             Content-Type: application/json
+
+      - name: add_comment_to_existing_case
+        type: kibana.request
+        with:
+          method: POST
+          path: /api/cases/{{ inputs.case_id }}/comments
+          body:
+            type: user
+            owner: observability
+            comment: ⚡ Attempted `{{steps.rca.output.structured_output.remediation.service_action}}` of `{{steps.rca.output.structured_output.remediation.service_name}}` in `{{steps.rca.output.structured_output.remediation.namespace}}`
+        on-failure:
+          continue: true
