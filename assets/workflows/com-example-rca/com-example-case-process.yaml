@@ -12,118 +12,118 @@ triggers:
 settings:
   timeout: 20m
   concurrency:
-    key: "{{ inputs.case_id }}"
+    key: '{{ inputs.case_id }}'
     strategy: drop
 consts:
   rca_model: .anthropic-claude-4.6-sonnet-chat_completion
   rca_agent_id: com-example-rca
 steps:
 
-  - name: fetch_case
-    type: cases.getCase
-    with:
-      case_id: "{{ inputs.case_id }}"
-      include_comments: false
+- name: fetch_case
+  type: cases.getCase
+  with:
+    case_id: '{{ inputs.case_id }}'
+    include_comments: false
 
-  - name: get_ai_coversation_id
-    type: data.set
-    with:
-      ai_conversation_id: '{% if steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword != "not_available" %}{{ steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword }}{% endif %}'
+- name: get_ai_coversation_id
+  type: data.set
+  with:
+    ai_conversation_id: '{% if steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword != "not_available" %}{{ steps.fetch_case.output.case.extended_fields.ai_conversation_id_as_keyword }}{% endif %}'
 
-  - name: delay
-    type: wait
-    with:
-      duration: "60s"
+- name: delay
+  type: wait
+  with:
+    duration: 60s
 
-  - name: rca
-    type: ai.agent
-    inference-id: '{{ consts.rca_model }}'
-    agent-id: '{{ consts.rca_agent_id }}'
-    with:
-      conversation_id: "{{ variables.ai_conversation_id }}"
-      message: 'perform RCA on case id: {{ inputs.case_id }}'
-      schema:
-        title: RCA
-        type: object
-        additionalProperties: false
-        required: [rca]
-        properties:
-          rca:
-            type: string
-            description: the root cause analysis in markdown form
-          remediation:
-            type: object
-            description: the recommended remediation; only include if service_action=restart
-            properties:
-              service_action: 
-                type: string
-                description: a value of `restart` if the suggested remediation is to restart a service
-              service_name:
-                type: string
-                description: the name of the service
-              namespace:
-                type: string
-                description: namespace the service is running in
+- name: rca
+  type: ai.agent
+  inference-id: '{{ consts.rca_model }}'
+  agent-id: '{{ consts.rca_agent_id }}'
+  with:
+    conversation_id: '{{ variables.ai_conversation_id }}'
+    message: 'perform RCA on case id: {{ inputs.case_id }}'
+    schema:
+      title: RCA
+      type: object
+      additionalProperties: false
+      required: [rca]
+      properties:
+        rca:
+          type: string
+          description: the root cause analysis in markdown form
+        remediation:
+          type: object
+          description: the recommended remediation; only include if service_action=restart
+          properties:
+            service_action:
+              type: string
+              description: a value of `restart` if the suggested remediation is to restart a service
+            service_name:
+              type: string
+              description: the name of the service
+            namespace:
+              type: string
+              description: namespace the service is running in
 
-  - name: add_response_to_existing_case
-    type: cases.addComment
+- name: add_response_to_existing_case
+  type: cases.addComment
+  with:
+    case_id: '{{ inputs.case_id }}'
+    comment: '{{ steps.rca.output.structured_output.rca }}'
+  on-failure:
+    retry:
+      max-attempts: 2
+      delay: 1s
+
+- name: add_conversation_to_existing_case
+  type: cases.addComment
+  with:
+    case_id: '{{ inputs.case_id }}'
+    comment: 🔍 You can continue your investigation or take remediation action [here](/app/agent_builder/conversations/{{ steps.rca.output.conversation_id }}).
+  on-failure:
+    retry:
+      max-attempts: 2
+      delay: 1s
+
+- name: notify_team
+  type: slack
+  connector-id: com-example-mattermost
+  with:
+    message: 'PROBLEM DETECTED: {{ steps.fetch_case.output.case.title }}. [Investigation]({{ kibanaUrl }}/app/observability/cases/{{ inputs.case_id }}).'
+
+- name: if_remediation
+  type: if
+  condition: 'steps.rca.output.structured_output.remediation.service_action: restart'
+  steps:
+  - name: request_approval
+    type: waitForApproval
+    timeout: 24h
     with:
-      case_id: "{{ inputs.case_id }}"
-      comment: '{{ steps.rca.output.structured_output.rca }}'
+      message: Approve {{ steps.rca.output.structured_output.remediation.service_action }} for {{ steps.rca.output.structured_output.remediation.service_name }} in {{ steps.rca.output.structured_output.remediation.namespace }}?
+      approveLabel: Approve
+      rejectLabel: Decline
+      channels:
+        slack:
+          connector-id: com-example-mattermost
+
+  - name: call_remote
+    type: http
+    if: 'steps.request_approval.output.response.approved : true'
+    connector-id: com-example-kubernetes
+    with:
+      path: /service/{{steps.rca.output.structured_output.remediation.namespace}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.service_action}}
+      method: POST
+      headers:
+        Content-Type: application/json
+
+  - name: add_comment_to_existing_case
+    type: kibana.request
+    with:
+      method: POST
+      path: /api/cases/{{ inputs.case_id }}/comments
+      body:
+        type: user
+        owner: observability
+        comment: ⚡ Attempted `{{steps.rca.output.structured_output.remediation.service_action}}` of `{{steps.rca.output.structured_output.remediation.service_name}}` in `{{steps.rca.output.structured_output.remediation.namespace}}`
     on-failure:
-      retry:
-        max-attempts: 2
-        delay: 1s
-
-  - name: add_conversation_to_existing_case
-    type: cases.addComment
-    with:
-      case_id: "{{ inputs.case_id }}"
-      comment: 🔍 You can continue your investigation or take remediation action [here](/app/agent_builder/conversations/{{ steps.rca.output.conversation_id }}).
-    on-failure:
-      retry:
-        max-attempts: 2
-        delay: 1s
-
-  - name: notify_team
-    type: slack
-    connector-id: "com-example-mattermost"
-    with:
-      message: "PROBLEM DETECTED: {{ steps.rca.output.structured_output.title }}. [Investigation]({{ kibanaUrl }}/app/observability/cases/{{ inputs.case_id }})."
-
-  - name: if_remediation
-    type: if
-    condition: 'steps.rca.output.structured_output.remediation.service_action: restart'
-    steps:
-      - name: request_approval
-        type: waitForApproval
-        timeout: 24h
-        with:
-          message: "Approve {{ steps.rca.output.structured_output.remediation.service_action }} for {{ steps.rca.output.structured_output.remediation.service_name }} in {{ steps.rca.output.structured_output.remediation.namespace }}?"
-          approveLabel: Approve
-          rejectLabel: Decline
-          channels:
-            slack:
-              connector-id: "com-example-mattermost"
-
-      - name: call_remote
-        type: http
-        if: "steps.request_approval.output.response.approved : true"
-        connector-id: com-example-kubernetes
-        with:
-          path: /service/{{steps.rca.output.structured_output.remediation.namespace}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.service_action}}
-          method: POST
-          headers:
-            Content-Type: application/json
-
-      - name: add_comment_to_existing_case
-        type: kibana.request
-        with:
-          method: POST
-          path: /api/cases/{{ inputs.case_id }}/comments
-          body:
-            type: user
-            owner: observability
-            comment: ⚡ Attempted `{{steps.rca.output.structured_output.remediation.service_action}}` of `{{steps.rca.output.structured_output.remediation.service_name}}` in `{{steps.rca.output.structured_output.remediation.namespace}}`
-        on-failure:
-          continue: true
+      continue: true
