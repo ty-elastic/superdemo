@@ -473,8 +473,6 @@ fi
 if [ "$assets" = "true" ]; then
     printf "deploying assets...\n"
 
-    cd assets
-
     export JOB_ID=$(( $RANDOM ))
     #echo $JOB_ID
     export elasticsearch_kibana_endpoint=$elasticsearch_kibana_endpoint
@@ -492,6 +490,7 @@ if [ "$assets" = "true" ]; then
     envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < $PWD/utils/docs/docs.yaml | kubectl apply -f -
     kubectl wait -n infra --for=condition=complete job/docs-load --timeout=5m
 
+    cd assets
     envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password,$mm_webhook' < assets.yaml | kubectl apply -f -
     cd ..
 
