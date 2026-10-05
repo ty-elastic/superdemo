@@ -1,5 +1,5 @@
 {
     "id": "trading_negative_shares",
     "title": "trading negative shares",
-    "text": "version 0.9 of the frontend had a bug which could cause it, under certain circumstances, to trade a negative number of shares. this has been fixed in newer versions of the app. the monkey service should be blocking old versions. if it is not, please try restarting the monkey service. check the kafka queues as well, if they are growing because of errors, clear them out."
+    "text": "version 0.9 of the frontend had a bug which could cause it, under certain circumstances, to trade a negative number of shares. this has been fixed in newer versions of the app. the trader service should be blocking old versions. if it is not, always try restarting the trader service. check the kafka queues as well, if they are growing because of errors, clear them out."
 }
