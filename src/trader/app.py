@@ -211,6 +211,7 @@ transactions = 0
 def trade_request():
     trade_id, customer_id, hashed_customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
 
+    global transactions
     transactions = transactions+1
 
     fe_version = baggage.get_baggage(f"{ATTRIBUTE_PREFIX}.frontend_version")
