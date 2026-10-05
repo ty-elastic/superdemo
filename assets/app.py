@@ -324,8 +324,8 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                 if '_archive' in full_path:
                     continue
 
-                if not 'fis-automation-1' in full_path:
-                    continue
+                # if not 'fis-automation-1' in full_path:
+                #     continue
 
                 with open(full_path, 'r') as fileo:
                     #content = file.read()  # Read the entire content of the file
