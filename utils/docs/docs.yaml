@@ -30,6 +30,6 @@ spec:
             - "--page_start"
             - "50"    
             - "--page_stop"
-            - "100"   
+            - "75"   
       restartPolicy: OnFailure
 ---
