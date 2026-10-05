@@ -205,9 +205,20 @@ def trade_force():
 
     return trade (data_source=data_source, classification=classification, trade_id=trade_id, symbol=symbol, customer_id=customer_id, hashed_customer_id=hashed_customer_id, day_of_week=day_of_week, shares=shares, share_price=share_price, action=action, error_db=False, flags=flags)
 
+transactions = 0
+
 @app.post('/trade/request')
 def trade_request():
     trade_id, customer_id, hashed_customer_id, day_of_week, symbol, latency_amount, latency_action, error_model, error_db, error_db_service, skew_market_factor, data_source, classification, flags = decode_common_args()
+
+    transactions = transactions+1
+
+    fe_version = baggage.get_baggage(f"{ATTRIBUTE_PREFIX}.frontend_version")
+    if fe_version is not None:
+        #print(f"frontend_version: {fe_version}")
+        if (float(fe_version) < 1) and transactions < 100:
+            print(f"blocking frontend_version: {fe_version}")
+            return "version blocked"
     
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 
                                                    error=error_model, latency_amount=latency_amount, latency_action=latency_action, skew_market_factor=skew_market_factor)
