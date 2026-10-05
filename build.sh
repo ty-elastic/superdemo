@@ -489,6 +489,9 @@ if [ "$assets" = "true" ]; then
     echo $iis_endpoint
     echo "ap=$access_password"
 
+    envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < $PWD/utils/docs/docs.yaml | kubectl apply -f -
+    kubectl wait -n infra --for=condition=complete job/docs-load --timeout=5m
+
     envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password,$mm_webhook' < assets.yaml | kubectl apply -f -
     cd ..
 
@@ -506,8 +509,6 @@ if [ "$assets" = "true" ]; then
     source $PWD/assets/scripts/features_dep.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint
 
     source $PWD/utils/wiki.js/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
-
-    envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < $PWD/utils/docs/docs.yaml | kubectl apply -f -
 
     printf "deploying assets...SUCCESS\n"
 fi

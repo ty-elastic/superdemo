@@ -1,0 +1,206 @@
+version: "1"
+name: FIS atomic facts KI automation
+id: fis-automation-1
+description: >
+  Extracts up to three atomic facts (bold-term definitions and named frameworks) from each page of
+  the Foundations of Information Systems textbook (index fis) and writes one verified `fact`
+  Knowledge Indicator per fact into the fis AI index.
+enabled: true
+
+consts:
+  ai_index_id: fis
+  source_index: fis
+  page_field: page
+  body_field: body
+  corpus_filter: '| EVAL b = body::keyword | EVAL bold_terms = (LENGTH(b) - LENGTH(REPLACE(b, "\\*\\*", ""))) / 4 | WHERE bold_terms > 0 AND page != 82'
+  max_documents: 33
+  max_facts_per_page: 3
+  body_max_chars: 6000
+
+tags:
+  - fact-ki
+  - fis
+
+triggers:
+  - type: manual
+
+steps:
+  - name: discover_documents
+    type: elasticsearch.esql.query
+    with:
+      query: |
+        FROM {{ consts.source_index }} METADATA _id
+        {{ consts.corpus_filter }}
+        | EVAL body_text = SUBSTRING({{ consts.body_field }}::keyword, 1, {{ consts.body_max_chars }})
+        | SORT {{ consts.page_field }}
+        | KEEP _id, {{ consts.page_field }}, body_text
+        | LIMIT {{ consts.max_documents }}
+
+  - name: loop_documents
+    type: foreach
+    foreach: "{{ steps.discover_documents.output.values | json }}"
+    iteration-on-failure:
+      continue: true
+    steps:
+      # Column order comes from the KEEP above: _id, page, body_text.
+      - name: document_context
+        type: data.set
+        with:
+          doc_id: "{{ foreach.item[0] }}"
+          page: "${{ foreach.item[1] }}"
+          body: "{{ foreach.item[2] }}"
+
+      - name: extract_facts
+        type: ai.prompt
+        connector-id: .google-gemini-3.5-flash-chat_completion
+        on-failure:
+          retry:
+            max-attempts: 3
+            delay: "5s"
+            strategy: exponential
+            jitter: true
+        with:
+          systemPrompt: |
+            You extract atomic facts from textbook pages for a retrieval index. Ground every
+            statement in the page text you are given. Never add background knowledge, never
+            paraphrase a definition into something the page does not say, and never invent dates,
+            names or components.
+          prompt: |
+            The text below is page {{ steps.document_context.output.page }} of the textbook
+            "Foundations of Information Systems" (index {{ consts.source_index }}). The textbook
+            marks key terms in **bold**.
+
+            Page body (markdown, possibly truncated):
+            {{ steps.document_context.output.body }}
+
+            Extract at most {{ consts.max_facts_per_page }} atomic facts from this page. Prioritise,
+            in order:
+            1. Definitions of terms the page marks in **bold**.
+            2. Named frameworks or models the page describes (e.g. a framework named after its
+               author, with its components and year when the page states them).
+            Only extract a fact the page actually states. If the page defines fewer terms, return
+            fewer facts; return an empty list when the page states no definition or framework.
+            Each fact must be about a different term.
+
+            For each fact return:
+            - term: the term or framework name as the page writes it, without markdown.
+            - kind: "definition" for a term definition, "framework" for a named framework/model.
+            - definition: the definition or claim as stated on the page, faithful to its wording
+              (1-3 sentences). For a framework, name its components as listed.
+            - description_sentence: ONE sentence of the form "<term>: <concise definition>" that
+              names the term.
+            - source_quote: a short verbatim span (<= 300 characters) copied from the page that
+              supports the fact, without markdown asterisks.
+            - related_terms: other terms the page itself connects to this one (empty list if none).
+          schema:
+            type: object
+            properties:
+              facts:
+                type: array
+                maxItems: 3
+                items:
+                  type: object
+                  properties:
+                    term:
+                      type: string
+                    kind:
+                      type: string
+                      enum: ["definition", "framework"]
+                    definition:
+                      type: string
+                    description_sentence:
+                      type: string
+                    source_quote:
+                      type: string
+                    related_terms:
+                      type: array
+                      items:
+                        type: string
+                  required: ["term", "kind", "definition", "description_sentence", "source_quote", "related_terms"]
+            required: ["facts"]
+
+      - name: loop_facts
+        type: foreach
+        foreach: "{{ steps.extract_facts.output.content.facts | json }}"
+        iteration-on-failure:
+          continue: true
+        steps:
+          # Stable slug for ki_id: lowercase, runs of non-alphanumerics become '-', trimmed.
+          - name: term_slug
+            type: elasticsearch.esql.query
+            with:
+              query: |
+                ROW t = "{{ foreach.item.term | replace: '\\', '\\\\' | replace: '"', '\\"' }}"
+                | EVAL s = REPLACE(REPLACE(TO_LOWER(t), "[^a-z0-9]+", "-"), "^-+|-+$", "")
+                | KEEP s
+
+          - name: assemble_ki
+            type: data.set
+            with:
+              ki_id: "{{ consts.source_index }}-{{ steps.document_context.output.page }}-fact-{{ steps.term_slug.output.values[0][0] }}"
+              ki:
+                type: fact
+                title: "{{ foreach.item.term }}"
+                description: >-
+                  {{ foreach.item.description_sentence }} (Foundations of Information Systems,
+                  {{ consts.source_index }} page {{ steps.document_context.output.page }}, {{ foreach.item.kind }})
+                content: |
+                  # {{ foreach.item.term }}
+
+                  Kind: {{ foreach.item.kind }}
+                  Source: Foundations of Information Systems, {{ consts.source_index }} page {{ steps.document_context.output.page }} (document {{ steps.document_context.output.doc_id }})
+
+                  ## Definition (as stated in the text)
+                  {{ foreach.item.definition }}
+
+                  ## Source span
+                  > {{ foreach.item.source_quote }}
+
+                  ## Related terms
+                  {% if foreach.item.related_terms.size > 0 -%}
+                  {% for rt in foreach.item.related_terms -%}
+                  - {{ rt }}
+                  {% endfor %}
+                  {%- else -%}
+                  None stated on the page.
+                  {%- endif %}
+
+                  ## Access pattern
+                  Read the source page:
+                  `FROM {{ consts.source_index }} METADATA _id | WHERE {{ consts.page_field }} == {{ steps.document_context.output.page }} | KEEP {{ consts.page_field }}, {{ consts.body_field }} | LIMIT 1`
+                tags:
+                  - "{{ consts.source_index }}"
+                  - "{{ foreach.item.kind }}"
+                references:
+                  - uri: "index://{{ consts.source_index }}"
+                    relation: derived_from
+                  - uri: "doc://{{ consts.source_index }}/{{ steps.document_context.output.doc_id }}"
+                    relation: derived_from
+                attributes:
+                  esql: "FROM {{ consts.source_index }} METADATA _id | WHERE {{ consts.page_field }} == {{ steps.document_context.output.page }} | KEEP {{ consts.page_field }}, {{ consts.body_field }} | LIMIT 1"
+                  page: "${{ steps.document_context.output.page }}"
+                  term: "{{ foreach.item.term }}"
+                  kind: "{{ foreach.item.kind }}"
+                  related_terms: "${{ foreach.item.related_terms | default: nil }}"
+
+          - name: create_ki
+            type: context-engine.createKi
+            with:
+              ai_index_id: "{{ consts.ai_index_id }}"
+              ki_id: "{{ steps.assemble_ki.output.ki_id }}"
+              ki: "${{ steps.assemble_ki.output.ki }}"
+              verifiers:
+                - esql-valid-syntax
+                - esql-valid-runtime
+
+          - name: check_verification
+            type: if
+            condition: "steps.create_ki.output.verification.passed : false"
+            steps:
+              - name: log_verification_failure
+                type: console
+                with:
+                  message: |
+                    KI verification failed for page {{ steps.document_context.output.page }},
+                    term {{ foreach.item.term }}.
+                    Results: {{ steps.create_ki.output.verification.results | json }}

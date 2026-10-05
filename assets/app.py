@@ -189,6 +189,30 @@ def load_esql_data_sources(es_host, kibana_auth):
                                         json=df_source,
                                         headers={f"Authorization": kibana_auth, "Content-Type": "application/json"})
                     print(resp.json())
+
+
+def load_ai_indexes(kibana_server, kibana_auth):
+
+    directory_path = "ai_indexes"
+    target_extension = ".json"
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_course, full_path) == False: continue
+
+            if file.endswith(target_extension):
+                #full_path = os.path.join(root, file)
+                filename_no_ext = Path(file).stem
+                with open(full_path, 'r') as fileo:
+                    
+                    df_source = json5.load(fileo)
+                    print(filename_no_ext)
+                    resp = requests.post(f"{kibana_server}/api/context_engine/ai_index",
+                                        json=df_source,
+                                        headers={f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                    print(resp.json())
+
    
 def load_esql_data_sets(es_host, kibana_auth):
 
@@ -260,7 +284,7 @@ def load_field_definitions(kibana_server, kibana_auth):
 def delete_existing_workflow(kibana_server, kibana_auth, es_host, workflow_name):
     
     print("search workflows...")
-    resp = requests.get(f"{kibana_server}/api/workflows?size=50&page=1",
+    resp = requests.get(f"{kibana_server}/api/workflows?size=50&page=1&managed=all",
                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
     #print(resp.json())
     print("done")
@@ -300,6 +324,9 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                 if '_archive' in full_path:
                     continue
 
+                if not 'fis-automation-1' in full_path:
+                    continue
+
                 with open(full_path, 'r') as fileo:
                     #content = file.read()  # Read the entire content of the file
                     #parsed = yaml.load(content)
@@ -329,6 +356,11 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                     yaml = MyYAML()
                     yaml.width = float("inf") # Set the width attribute of the YAML instance
 
+                    id = None
+                    if 'id' in parsed:
+                        id = parsed['id']
+                        del parsed['id']
+
                     #yaml.dump(parsed)
                     out = yaml.dump(parsed)
                     body = {
@@ -338,13 +370,21 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                             }
                         ]
                     }
-                    #print(out)
+                    if id is not None:
+                        body['workflows'][0]['id'] = id
+                        
+
+                    #print(body)
                     
 
                     resp = requests.post(f"{kibana_server}/api/workflows",
                                         json=body,
                                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
                     print(resp.json())
+
+                    if 'ai_index' in full_path:
+                        print("HERE")
+                        run_workflow(kibana_server, kibana_auth, parsed['name'])
 
 def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=None, remote_password=None, mm_webhook=None):
 
@@ -1119,6 +1159,9 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
     elif action == 'load_aliases':
         load_aliases(es_host, auth)
         load_dataviews(kibana_host, auth)
+        print('done')
+    elif action == 'load_ai_indexes':
+        load_ai_indexes(kibana_host, auth)
         print('done')
     elif action == 'load_ml':
         load_ml(es_host, auth)

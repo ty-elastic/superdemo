@@ -6,6 +6,7 @@ WORKDIR /python-docker
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip pip3 install --root-user-action=ignore -r requirements.txt
 
+COPY ai_indexes .
 COPY profiles.yaml .
 COPY app.py .
 COPY workflows workflows

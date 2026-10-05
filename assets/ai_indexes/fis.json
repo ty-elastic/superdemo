@@ -1,0 +1,26 @@
+{
+    "id": "fis",
+    "description": "Foundations of Information Systems",
+    "dest": {
+        "type": "index",
+        "value": "ai-index-idx-fis"
+    },
+    "automations": [
+        {
+            "type": "workflow",
+            "value": "fis-automation-1"
+        }
+    ],
+    "sources": [
+        {
+            "type": "esql",
+            "value": "FROM fis"
+        }
+    ],
+    "traces": [
+        {
+            "type": "elastic_agent",
+            "value": "elastic-ai-agent"
+        }
+    ]
+}
