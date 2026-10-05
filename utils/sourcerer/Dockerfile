@@ -15,8 +15,11 @@ ENV UV_COMPILE_BYTECODE=1 \
 # Establish the working directory
 WORKDIR /app
 
-RUN uv tool install "git+https://github.com/elastic/sourcerer.git@v2.0.1"
+RUN uv tool install "git+https://github.com/elastic/sourcerer.git@v3.0.3"
+
+ARG BRANCH=main
 
 ADD config/sourcerer.yml sourcerer.yml
+RUN sed -i "s/main/$BRANCH/g" sourcerer.yml
 
 ENTRYPOINT /root/.local/bin/sourcerer

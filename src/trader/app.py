@@ -215,7 +215,7 @@ def trade_request():
 
     fe_version = baggage.get_baggage(f"{ATTRIBUTE_PREFIX}.frontend_version")
     if fe_version is not None:
-        #print(f"frontend_version: {fe_version}")
+        print(f"frontend_version: {fe_version}")
         if (float(fe_version) < 1) and transactions < 100:
             print(f"blocking frontend_version: {fe_version}")
             return "version blocked"
