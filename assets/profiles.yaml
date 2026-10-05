@@ -1,5 +1,7 @@
 o11y--course--field--elasticon-2026:
   agents:
+  ai_indexes:
+    - fis.json
   aliases:
     - logs-trader.json
     - metrics-trader.json
@@ -41,3 +43,5 @@ o11y--course--field--elasticon-2026:
   workflows:
     com-example-rca:
       - com-example-setup.yaml
+    ai_index:
+      - fis-automation-1.yaml
