@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infra
+  labels:
+    name: infra
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: docs-load
+  namespace: infra
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      containers:
+        - image: $REPO/docs:$COURSE
+          name: docs
+          imagePullPolicy: Always
+          args:
+            - "--es_host"
+            - "$elasticsearch_es_endpoint"
+            - "--es_apikey"
+            - "$elasticsearch_api_key"
+            - "--es_index"
+            - "fis"
+            - "--docs_import_path"
+            - "/docs"
+            - "--page_start"
+            - "50"    
+            - "--page_stop"
+            - "100"   
+      restartPolicy: OnFailure
+---

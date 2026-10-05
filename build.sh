@@ -222,6 +222,10 @@ if [ "$build_infra" = "true" ]; then
   cd ./utils/openmarkets
   ./build.sh -c $course
   cd ../..
+
+  cd ./utils/docs
+  ./build.sh -c $course
+  cd ../..
 fi
 
 if [ "$build_service" = "true" ]; then
@@ -502,6 +506,8 @@ if [ "$assets" = "true" ]; then
     source $PWD/assets/scripts/features_dep.sh -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -k $elasticsearch_otlp_endpoint
 
     source $PWD/utils/wiki.js/install.sh -c $course -h $elasticsearch_kibana_endpoint -i $elasticsearch_api_key -j $elasticsearch_es_endpoint -s $PWD
+
+    envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < $PWD/utils/docs/docs.yaml | kubectl apply -f -
 
     printf "deploying assets...SUCCESS\n"
 fi
