@@ -35,7 +35,6 @@ o11y--course--field--elasticon-2026:
     - logs-generic.otel-default:
       - ingest.json
   synthetics:
-    - iis.json
     - monkey_state.json
     - trade.json
   tools:
