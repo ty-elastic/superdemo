@@ -6,7 +6,6 @@ o11y--course--field--elasticon-2026:
     - metrics-trader.json
   connectors:
   dashboards:
-    - Cisco IOS Switch Health Monitoring.json
     - LiteLLM Observability.json
   data_views:
     - logs-trader.json
