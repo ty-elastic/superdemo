@@ -223,6 +223,10 @@ if [ "$build_infra" = "true" ]; then
   ./build.sh -c $course
   cd ../..
 
+  cd ./utils/mattermost
+  ./build.sh -c $course
+  cd ../..
+
   cd ./utils/docs
   ./build.sh -c $course
   cd ../..
@@ -465,7 +469,7 @@ fi
 if [ "$ramen" = "true"  ]; then
     printf "deploying mattermost...\n"
 
-    source $PWD/utils/mattermost/install.sh -s $PWD
+    envsubst '$COURSE,$REPO' < $PWD/utils/mattermost/mattermost.yaml | kubectl apply -f -
     
     printf "deploying mattermost...SUCCESS\n"
 fi

@@ -21,6 +21,11 @@ spec:
         service: mattermost
     spec:
       containers:
+        - name: mattermost-redirect
+          image: $REPO/mattermost-redirect:$COURSE
+          imagePullPolicy: Always
+          args: ["--mm_url", "http://127.0.0.1:8065"]
+
         - name: mattermost
           image: mattermost/mattermost-preview
           imagePullPolicy: Always
@@ -46,8 +51,6 @@ spec:
                     echo "success!"
                     ) &
       restartPolicy: Always
-
-
 ---
 apiVersion: v1
 kind: Service
@@ -62,30 +65,13 @@ spec:
     - name: mattermost
       port: 8065
       targetPort: 8065
+    - name: redirect
+      port: 8066
+      targetPort: 8000
   type: ClusterIP
   selector:
     app: trading
     service: mattermost
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: mattermost-auth
-  namespace: traefik
-spec:
-  headers:
-    customRequestHeaders:
-      X-NoOp: "noop"
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: mattermost-hooks
-  namespace: traefik
-spec:
-  headers:
-    customRequestHeaders:
-      X-NoOp: "noop"
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -97,14 +83,22 @@ spec:
     - mattermost
   routes:
     - kind: Rule
-      match: PathPrefix(`/hooks/`)
+      match: PathPrefix(`/_login`)
       priority: 100  # Force this to take precedence if needed
       services:
         - name: mattermost
-          port: 8065
+          port: 8066
       middlewares:
-        - name: mattermost-hooks
-          namespace: traefik    
+        - name: basic-auth-middleware
+          namespace: traefik
+
+    - kind: Rule
+      match: PathPrefix(`/_hooks`)
+      priority: 100  # Force this to take precedence if needed
+      services:
+        - name: mattermost
+          port: 8066
+
     - kind: Rule
       match: PathPrefix(`/`)
       priority: 10  # Force this to take precedence if needed
@@ -112,7 +106,5 @@ spec:
         - name: mattermost
           port: 8065
       middlewares:
-        # - name: basic-auth-middleware
-        #   namespace: traefik      
-        # - name: mattermost-auth
-        #   namespace: traefik
+        - name: basic-auth-middleware
+          namespace: traefik
