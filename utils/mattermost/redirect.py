@@ -151,7 +151,7 @@ class CustomHeaderHandler(BaseHTTPRequestHandler):
 
             self.send_response(http.HTTPStatus.FOUND) # equivalent to 302
             # 2. Provide the destination URL in the 'Location' header
-            self.send_header('Location', f"http://{host + self.redirect_path}")
+            self.send_header('Location', f"{self.redirect_path}")
             self.end_headers()
 
     def do_GET(self):
@@ -161,7 +161,7 @@ class CustomHeaderHandler(BaseHTTPRequestHandler):
 
             self.send_response(http.HTTPStatus.FOUND) # equivalent to 302
             # 2. Provide the destination URL in the 'Location' header
-            self.send_header('Location', f"http://{host + self.redirect_path}")
+            self.send_header('Location', f"{self.redirect_path}")
             self.end_headers()
 
     def do_POST(self):
