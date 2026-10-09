@@ -486,7 +486,7 @@ if [ "$assets" = "true" ]; then
     export namespaces=$namespaces
     export access_password=$access_password
     export iis_endpoint="http://$windows_host_ip"
-    export mm_webhook="http://$SERVICE_IP:9017/hooks/4815162342"
+    export mm_webhook="http://$SERVICE_IP:9017/_hooks/4815162342"
     echo $windows_host_ip
     echo $iis_endpoint
     echo "ap=$access_password"
