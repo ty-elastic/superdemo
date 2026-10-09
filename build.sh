@@ -487,6 +487,8 @@ if [ "$assets" = "true" ]; then
     export access_password=$access_password
     export iis_endpoint="http://$windows_host_ip"
     export mm_webhook="http://$SERVICE_IP:9017/_hooks/4815162342"
+    export openmarkets_url="http://$SERVICE_IP:9016/mcp"
+    export openmarkets_auth="Basic YWRtaW46Y2hhbmdlbWU="
     echo $windows_host_ip
     echo $iis_endpoint
     echo "ap=$access_password"
@@ -495,7 +497,7 @@ if [ "$assets" = "true" ]; then
     kubectl wait -n infra --for=condition=complete job/docs-load --timeout=5m
 
     cd assets
-    envsubst '$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password,$mm_webhook' < assets.yaml | kubectl apply -f -
+    envsubst '$openmarkets_url,$openmarkets_auth,$JOB_ID,$COURSE,$REPO,$iis_endpoint,$elasticsearch_kibana_endpoint,$elasticsearch_es_endpoint,$elasticsearch_api_key,$remote_endpoint,$namespaces,$access_password,$mm_webhook' < assets.yaml | kubectl apply -f -
     cd ..
 
     retry_command_lin check_assets $JOB_ID
