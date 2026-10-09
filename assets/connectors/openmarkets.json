@@ -1,0 +1,12 @@
+{
+  "name": "openmarkets",
+  "config": {
+    "serverUrl": "$SERVER_URL"
+  },
+  "secrets": {
+    "secretHeaders": {
+      "Authorization": "$SERVER_AUTH"
+    }
+  },
+  "connector_type_id": ".mcp"
+}

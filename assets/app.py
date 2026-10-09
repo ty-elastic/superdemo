@@ -29,6 +29,52 @@ class MyYAML(YAML):
 
 in_course= "base"
 
+config_path = "config.yaml"
+def substitute(body, path):
+    #print(path)
+    path = os.path.splitext(path)[0]
+    #print(path)
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+        #print(config)
+        parts = path.split("/")
+        state= config
+        #print(state)
+        for part in parts:
+           #print(f"state={state}")
+            #print(f"part={part}")
+            
+
+            if part not in state:
+                return [body]
+            else:
+                #print(type(state))
+                if isinstance(state, dict) and part in state:
+                    if 'substitutions' not in state[part]:
+                        state = state[part]
+                    else:
+                        out_bodies = [body]
+                        for key, value in state[part]['substitutions'].items():
+                            #print(type(value))
+                            if not isinstance(value, list):
+                                for index, _ in enumerate(out_bodies):
+                                    out_bodies[index] = out_bodies[index].replace(key, value)
+                            else:
+                                for index in range(len(out_bodies)):
+                                    for _ in range(len(value)-1):
+                                        out_bodies.append(out_bodies[index])
+                                        print("append")
+                                #print(len(out_bodies))
+
+                                for index, val in enumerate(value):
+                                    out_bodies[index] = out_bodies[index].replace(key, val)
+                        return out_bodies
+    return [body]
+
+# body = "{'ty': '$SERVER_URL'}"
+# bodies = substitute(body, "connectors/openmarkets")
+# print(bodies)
+
 def check_if_enabled(profile, path):
     #print(path)
     with open(f"profiles.yaml", 'r') as file:
@@ -308,7 +354,7 @@ def delete_existing_workflow(kibana_server, kibana_auth, es_host, workflow_name)
             print(e)        
                 
 
-def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
+def load_workflows(kibana_server, kibana_auth, es_host):
 
     directory_path = "workflows"
     target_extension = ".yaml"
@@ -386,7 +432,7 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                         print("HERE")
                         run_workflow(kibana_server, kibana_auth, parsed['name'])
 
-def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=None, remote_password=None, mm_webhook=None):
+def load_connectors(kibana_server, kibana_auth):
 
     directory_path = "connectors"
     target_extension = ".json"
@@ -397,21 +443,13 @@ def load_connectors(kibana_server, kibana_auth, remote_host = None, remote_user=
             if check_if_enabled(in_course, full_path) == False: continue
 
             if file.endswith(target_extension):
-                full_path = os.path.join(root, file)
                 filename_no_ext = Path(file).stem
 
                 with open(full_path, 'r') as fileo:
-                    connector = json.load(fileo)
+                    content = substitute(fileo.read(), full_path)
+                    connector = json.loads(content[0])
 
                     print(f"Connector: {filename_no_ext}")
-
-                    if mm_webhook is not None and 'webhookUrl' in connector['secrets']:
-                        connector['secrets']['webhookUrl'] = connector['secrets']['webhookUrl'].replace('$MM_WEBHOOK', mm_webhook)
-
-                    elif remote_host is not None and 'url' in connector['config']:
-                        connector['config']['url'] = connector['config']['url'].replace('$REMOTE_URL', remote_host)
-                        connector['secrets']['user'] = connector['secrets']['user'].replace('$REMOTE_USERNAME', remote_user)
-                        connector['secrets']['password'] = connector['secrets']['password'].replace('$REMOTE_PASSWORD', remote_password)
 
                     resp = requests.post(f"{kibana_server}/api/actions/connector/{filename_no_ext}",
                                         json=connector,
@@ -435,7 +473,7 @@ def delete_synthetic(kibana_server, kibana_auth, synthetic_name):
         except Exception as e:
             print(e)   
     
-def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
+def load_synthetics(kibana_server, kibana_auth):
 
     directory_path = "synthetics"
     target_extension = ".json"
@@ -446,50 +484,22 @@ def load_synthetics(kibana_server, kibana_auth, namespaces, iis_endpoint):
             if check_if_enabled(in_course, full_path) == False: continue
 
             if file.endswith(target_extension):
-                full_path = os.path.join(root, file)
 
                 with open(full_path, 'r') as fileo:
-                    content = fileo.read()
-                    if content.find('$NAMESPACE') != -1:
-                        print("multi-namespace")
-                        port=9000
-                        for namespace in namespaces:
-                            with open(full_path, 'r') as fileo:
-                                synthetic = json.load(fileo)
-                                print(f'namespace={namespace}')
-                                synthetic['name'] = synthetic['name'].replace('$NAMESPACE', namespace)
-                                port = port+1
-                                if 'inline_script' in synthetic:
-                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$NAMESPACE', namespace)
-                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$PORT', str(port))
 
-                                delete_synthetic(kibana_server, kibana_auth, synthetic['name'])
+                    contents = substitute(fileo.read(), full_path)
 
-                                #print(synthetic)
-                                resp = requests.post(f"{kibana_server}/api/synthetics/monitors",
-                                                    json=synthetic,
-                                                    headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-                                print(resp.json())
-                    else:
-                        print("one namespace")
-                        with open(full_path, 'r') as fileo:
-                            synthetic = json.load(fileo)
+                    for content in contents:
+                        synthetic = json.loads(content)
 
-                            if 'inline_script' in synthetic:
-                                if '$IIS_ENDPOINT' in synthetic['inline_script']:
-                                    if iis_endpoint is None:
-                                        print("iis_endpoint is None")
-                                        continue
-                                    print(f"iis_endpoint is {iis_endpoint}")
-                                    synthetic['inline_script'] = synthetic['inline_script'].replace('$IIS_ENDPOINT', iis_endpoint)
-   
-                            delete_synthetic(kibana_server, kibana_auth, synthetic['name'])
+                        delete_synthetic(kibana_server, kibana_auth, synthetic['name'])
 
-                            resp = requests.post(f"{kibana_server}/api/synthetics/monitors",
-                                                json=synthetic,
-                                                headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-                            print(resp.json())            
- 
+                        #print(synthetic)
+                        resp = requests.post(f"{kibana_server}/api/synthetics/monitors",
+                                            json=synthetic,
+                                            headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                        print(resp.json())
+         
 
 def load_esql_views(es_host, kibana_auth):
 
@@ -793,41 +803,36 @@ def delete_existing_slo(kibana_server, kibana_auth, slo_name):
             except Exception as e:
                 print(e)  
 
-def load_slos(kibana_server, kibana_auth, services):
+def load_slos(kibana_server, kibana_auth):
 
     directory_path = "slos"
     target_extension = ".json"
 
-    for service in services:
-        
-        for root, dirs, files in os.walk(directory_path):
-            for file in files:
+
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if check_if_enabled(in_course, full_path) == False: continue
+
+            if file.endswith(target_extension):
                 full_path = os.path.join(root, file)
-                if check_if_enabled(in_course, full_path) == False: continue
 
-                if file.endswith(target_extension):
-                    full_path = os.path.join(root, file)
+                if '_archive' in full_path:
+                    continue
 
-                    if '_archive' in full_path:
-                        continue
+                with open(full_path, 'r') as fileo:
+                    #content = file.read()
+                    slo = json.load(fileo)
 
-                    with open(full_path, 'r') as fileo:
-                        #content = file.read()
-                        slo = json.load(fileo)
+                    print(f"loading slo {slo['name']}")
 
+                    delete_existing_slo(kibana_server, kibana_auth, slo['name'])
 
-                        slo['name'] = slo['name'].replace('$SERVICE_NAME', service)
-                        slo['indicator']['params']['service'] = slo['indicator']['params']['service'].replace('$SERVICE_NAME', service)      
-
-                        print(f"loading slo {slo['name']}")
-
-                        delete_existing_slo(kibana_server, kibana_auth, slo['name'])
-
-                        #print(tool)
-                        resp = requests.post(f"{kibana_server}/api/observability/slos",
-                                            json=slo,
-                                            headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
-                        print(resp.json())  
+                    #print(tool)
+                    resp = requests.post(f"{kibana_server}/api/observability/slos",
+                                        json=slo,
+                                        headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
+                    print(resp.json())  
 
 
 def backup_agent_skills(kibana_server, kibana_auth):
@@ -1084,44 +1089,21 @@ def run_workflow(kibana_server, kibana_auth, workflow_name):
 
 @click.command()
 @click.option('--kibana_host', default="", help='address of kibana server')
-@click.option('--iis_endpoint', default=None, help='address of iis server')
 @click.option('--es_host', default="", help='address of elasticsearch server')
 @click.option('--es_apikey', default="", help='apikey for auth')
 @click.option('--es_authbasic', default="", help='basic for auth')
 @click.option('--connect_alerts', default=False, help='connect alerts to workflow')
-@click.option('--mm_webhook', default=None, help='remote host url')
-@click.option('--remote_host', default=None, help='remote host url')
-@click.option('--remote_user', default=None, help='remote host url')
-@click.option('--remote_password', default=None, help='remote host url')
-@click.option('--namespaces', default="trading-na,trading-emea", help='namespaces')
-@click.option('--services', default="trader,router,recorder-java,recorder-go", help='services')
 @click.option('--course', default="superdemo", help='course')
+@click.option('--config', default="", help='')
 @click.argument('action')
-def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, remote_host, remote_user, remote_password, namespaces, services, iis_endpoint, mm_webhook):
-    global in_course
+def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, action, config):
+    global in_course, config_path
     in_course = course
-
-    namespaces_split = namespaces.split(',')
-    print(namespaces_split)
-
-    services_split = services.split(',')
-    print(services_split)
-
-
-    # config = dotenv_values()
-    # for key, value in config.items():
-    #     print(f"{key}: {value}")
+    config_path = config
 
     print(kibana_host)
     print(es_host)
     print(es_apikey)
-
-    # if kibana_host == "":
-    #     kibana_host = config['elasticsearch_kibana_endpoint']
-    # if es_host == "":
-    #     es_host = config['elasticsearch_es_endpoint']
-    # if es_apikey == "" and es_authbasic == "":
-    #     es_apikey = config['elasticsearch_api_key']
 
     if es_authbasic != "":
         auth = f"Basic {es_authbasic}"
@@ -1142,7 +1124,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_new_knowledge(es_host, auth)
         print('done')
     elif action == 'load_synthetics':
-        load_synthetics(kibana_host, auth, namespaces_split, iis_endpoint)
+        load_synthetics(kibana_host, auth)
         print('done')
     elif action == 'backup_tools':
         backup_agent_tools(kibana_host, auth)
@@ -1170,7 +1152,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_skills(kibana_host, auth)
         print('done')
     elif action == 'load_slos':
-        load_slos(kibana_host, auth, services_split)
+        load_slos(kibana_host, auth)
         print('done')
     elif action == 'load_objects':
         load_objects(kibana_host, auth)
@@ -1195,17 +1177,17 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
 
     elif action == 'load':
         load_ilm(es_host, auth)
-        load_workflows(kibana_host, auth, es_host, remote_host)
+        load_workflows(kibana_host, auth, es_host)
         #load_new_knowledge(es_host, auth)
 
-        load_connectors(kibana_host, auth, remote_host, remote_user, remote_password, mm_webhook)
+        load_connectors(kibana_host, auth)
 
         load_agent_tools(kibana_host, auth)
         load_skills(kibana_host, auth)
         load_agents(kibana_host, auth)
 
         #run_workflow(kibana_host, auth, 'com-example-setup')
-        load_synthetics(kibana_host, auth, namespaces_split, iis_endpoint)
+        load_synthetics(kibana_host, auth)
         load_aliases(es_host, auth)
         load_dataviews(kibana_host, auth)
         load_ml(es_host, auth)
@@ -1213,7 +1195,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
 
         load_objects(kibana_host, auth)
         load_dashboards(kibana_host, auth)
-        load_slos(kibana_host, auth, services_split)
+        load_slos(kibana_host, auth)
         
         load_streams(kibana_host, auth)
         load_esql_views(es_host, auth)

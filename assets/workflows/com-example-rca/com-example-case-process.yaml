@@ -17,6 +17,7 @@ settings:
 consts:
   rca_model: .anthropic-claude-4.6-sonnet-chat_completion
   rca_agent_id: com-example-rca
+  kibana_url: "{{ kibanaUrl }}"
 steps:
 
 - name: fetch_case
@@ -89,7 +90,7 @@ steps:
   type: slack
   connector-id: com-example-mattermost
   with:
-    message: 'PROBLEM DETECTED: {{ steps.fetch_case.output.case.title }}. [Investigation]({{ kibanaUrl }}/app/observability/cases/{{ inputs.case_id }}).'
+    message: 'PROBLEM DETECTED: {{ steps.fetch_case.output.case.title }}. [Investigation]({{ consts.kibana_url }}/app/observability/cases/{{ inputs.case_id }}).'
 
 - name: if_remediation
   type: if

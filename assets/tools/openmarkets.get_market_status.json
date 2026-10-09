@@ -1,0 +1,27 @@
+{
+  "id": "openmarkets.get_market_status",
+  "type": "mcp",
+  "description": "Retrieve the current status of major market indices.\n\nReturns:\n\tdict: Market indices status data.",
+  "tags": [],
+  "configuration": {
+    "connector_id": "openmarkets",
+    "tool_name": "get_market_status"
+  },
+  "readonly": false,
+  "experimental": false,
+  "confirmation": {
+    "askUser": "never"
+  },
+  "schema": {
+    "type": "object",
+    "properties": {
+      "market": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "market"
+    ],
+    "additionalProperties": false
+  }
+}

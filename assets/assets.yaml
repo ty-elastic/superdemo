@@ -1,3 +1,41 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: assets-config
+data:
+  config.yaml: |-
+    connectors:
+      com-example-kubernetes:
+        substitutions:
+          $REMOTE_URL: $remote_endpoint
+          $REMOTE_USERNAME: admin
+          $REMOTE_PASSWORD: $access_password
+
+      com-example-mattermost:
+        substitutions:
+          $MM_WEBHOOK: $mm_webhook
+
+      openmarkets:
+        substitutions:
+          $SERVER_URL: $openmarkets_url
+          $BASIC_AUTH: $openmarkets_auth
+
+    synthetics:
+      iis:
+        substitutions:
+          $IIS_ENDPOINT: $iis_endpoint
+      monkey_state:
+        substitutions:  
+          $NAMESPACE:
+            - trading-na
+            - trading-emea
+      trade:
+        substitutions:  
+          $NAMESPACE:
+            - trading-na
+            - trading-emea
+---          
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -7,6 +45,7 @@ spec:
   template:
     spec:
       hostNetwork: true
+      restartPolicy: Never
       containers:
         - image: $REPO/assets:$COURSE
           name: assets
@@ -14,27 +53,27 @@ spec:
           command:
             - "python"
             - "/python-docker/app.py"
+
             - "--kibana_host"
             - "$elasticsearch_kibana_endpoint"
             - "--es_host"
             - "$elasticsearch_es_endpoint"    
             - "--es_apikey"
             - "$elasticsearch_api_key"    
-            - "--remote_host"
-            - "$remote_endpoint"
-            - "--remote_user"
-            - "admin"
-            - "--remote_password"
-            - "$access_password"
-            - "--mm_webhook"
-            - "$mm_webhook"
-            - "--iis_endpoint"
-            - "$iis_endpoint"
-            - "--namespaces"
-            - "$namespaces"
+
             - "--course"
             - "$COURSE"
-            - "load"
-      restartPolicy: Never
----
 
+            - "--config"
+            - "/etc/assets/config.yaml"
+
+            - "load"
+          volumeMounts:
+            - mountPath: /etc/assets/config.yaml
+              name: data
+              subPath: config.yaml
+              readOnly: true
+      volumes:
+        - name: data
+          configMap:
+            name: mysql-collector-config

@@ -1,0 +1,30 @@
+connectors:
+  com-example-kubernetes:
+    substitutions:
+      $REMOTE_URL: $remote_endpoint
+      $REMOTE_USERNAME: admin
+      $REMOTE_PASSWORD: $access_password
+
+  com-example-mattermost:
+    substitutions:
+      $MM_WEBHOOK: $mm_webhook
+
+  openmarkets:
+    substitutions:
+      $SERVER_URL: $openmarkets_url
+      $BASIC_AUTH: $openmarkets_auth
+
+synthetics:
+  iis:
+    substitutions:
+      $IIS_ENDPOINT: $iis_endpoint
+  monkey_state:
+    substitutions:  
+      $NAMESPACE:
+        - trading-na
+        - trading-emea
+  trade:
+    substitutions:  
+      $NAMESPACE:
+        - trading-na
+        - trading-emea
