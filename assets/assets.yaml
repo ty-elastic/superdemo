@@ -76,4 +76,4 @@ spec:
       volumes:
         - name: data
           configMap:
-            name: mysql-collector-config
+            name: assets-config
