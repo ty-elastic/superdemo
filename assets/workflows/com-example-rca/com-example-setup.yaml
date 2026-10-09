@@ -4,6 +4,7 @@ description: setup state for automated rca
 enabled: true
 tags:
 - com-example-rca
+- superdemo-autorun
 triggers:
 - type: manual
 steps:

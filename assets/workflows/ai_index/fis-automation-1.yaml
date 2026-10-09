@@ -20,6 +20,7 @@ consts:
 tags:
   - fact-ki
   - fis
+  - superdemo-autorun
 
 triggers:
   - type: manual

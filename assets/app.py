@@ -382,7 +382,7 @@ def load_workflows(kibana_server, kibana_auth, es_host, remote_host = None):
                                         headers={"origin": kibana_server,f"Authorization": kibana_auth, "kbn-xsrf": "true", "Content-Type": "application/json", "x-elastic-internal-origin": "Kibana"})
                     print(resp.json())
 
-                    if 'ai_index' in full_path:
+                    if 'tags' in parsed and 'superdemo-authrun' in parsed['tags']:
                         print("HERE")
                         run_workflow(kibana_server, kibana_auth, parsed['name'])
 
@@ -1204,7 +1204,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_skills(kibana_host, auth)
         load_agents(kibana_host, auth)
 
-        run_workflow(kibana_host, auth, 'com-example-setup')
+        #run_workflow(kibana_host, auth, 'com-example-setup')
         load_synthetics(kibana_host, auth, namespaces_split, iis_endpoint)
         load_aliases(es_host, auth)
         load_dataviews(kibana_host, auth)
