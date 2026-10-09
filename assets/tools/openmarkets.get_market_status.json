@@ -8,7 +8,6 @@
     "tool_name": "get_market_status"
   },
   "readonly": false,
-  "experimental": false,
   "confirmation": {
     "askUser": "never"
   },

@@ -488,10 +488,12 @@ if [ "$assets" = "true" ]; then
     export iis_endpoint="http://$windows_host_ip"
     export mm_webhook="http://$SERVICE_IP:9017/_hooks/4815162342"
     export openmarkets_url="http://$SERVICE_IP:9016/mcp"
-    export openmarkets_auth="Basic YWRtaW46Y2hhbmdlbWU="
+    
     echo $windows_host_ip
     echo $iis_endpoint
     echo "ap=$access_password"
+    export openmarkets_auth=$(printf "admin:$access_password" | base64)
+    echo "openmarkets_auth=$openmarkets_auth"
 
     envsubst '$COURSE,$REPO,$elasticsearch_es_endpoint,$elasticsearch_api_key' < $PWD/utils/docs/docs.yaml | kubectl apply -f -
     kubectl wait -n infra --for=condition=complete job/docs-load --timeout=5m

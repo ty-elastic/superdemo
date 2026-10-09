@@ -19,7 +19,7 @@ data:
       openmarkets:
         substitutions:
           $SERVER_URL: $openmarkets_url
-          $BASIC_AUTH: $openmarkets_auth
+          $BASIC_AUTH: "Basic $openmarkets_auth"
 
     synthetics:
       iis:

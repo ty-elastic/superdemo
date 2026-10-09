@@ -65,6 +65,6 @@ spec:
       services:
         - name: openmarkets
           port: 8080
-      middlewares:
-        - name: basic-auth-middleware
-          namespace: traefik
+      # middlewares:
+      #   - name: basic-auth-middleware
+      #     namespace: traefik
