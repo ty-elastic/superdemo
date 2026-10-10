@@ -1206,6 +1206,8 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_esql_data_sources(es_host, auth)
         load_esql_data_sets(es_host, auth)
 
+        load_ai_indexes(kibana_host, auth)
+
         print('done')
 
     elif action == 'backup':

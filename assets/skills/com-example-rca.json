@@ -7,7 +7,5 @@
     "tool_ids": [],
     "readonly": false,
     "experimental": false,
-    "x-add-to-agents": [
-
-    ]
+    "x-add-to-agents": []
 }
