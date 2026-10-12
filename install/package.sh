@@ -22,6 +22,9 @@ fi
 # synthetics, profiling
 ./build.sh -o false -t $FLEET_URL -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -p true -m true
 
+# ramen
+./build.sh -o false -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -2 true
+
 # assets
 if [[ -n "$WINDOWS_HOST_IP" ]]; then
     ./build.sh -o false -c $COURSE -d false -b false -s none -4 $WINDOWS_HOST_IP -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -w true -e $REMOTE_ENDPOINT -8 $ACCESS_PASSWORD
@@ -29,8 +32,6 @@ else
     ./build.sh -o false -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -w true -e $REMOTE_ENDPOINT -8 $ACCESS_PASSWORD
 fi
 
-# ramen
-./build.sh -o false -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -2 true
 
 # grafana
 ./build.sh -o false -c $COURSE -d false -b false -s none -j $ELASTICSEARCH_URL -h $KIBANA_URL -i $ELASTICSEARCH_APIKEY -k $INGEST_URL -g true
