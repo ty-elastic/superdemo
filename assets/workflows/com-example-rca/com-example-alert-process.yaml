@@ -6,7 +6,7 @@ tags:
 - com-example-rca
 consts:
   case_workflow_id: com-example-case-process
-  correlation_model: .anthropic-claude-4.6-sonnet-chat_completion
+  correlation_model: .anthropic-claude-5-sonnet-chat_completion
   rca_agent_id: com-example-rca
   cases_template: com-example-rca
 triggers:

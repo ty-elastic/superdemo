@@ -10,12 +10,12 @@ triggers:
     required: true
     type: string
 settings:
-  timeout: 20m
+  timeout: 6h
   concurrency:
     key: '{{ inputs.case_id }}'
     strategy: drop
 consts:
-  rca_model: .anthropic-claude-4.6-sonnet-chat_completion
+  rca_model: .anthropic-claude-5-sonnet-chat_completion
   rca_agent_id: com-example-rca
   kibana_url: "{{ kibanaUrl }}"
 steps:
@@ -98,7 +98,7 @@ steps:
   steps:
   - name: request_approval
     type: waitForApproval
-    timeout: 24h
+    timeout: 6h
     with:
       message: Approve {{ steps.rca.output.structured_output.remediation.service_action }} for {{ steps.rca.output.structured_output.remediation.service_name }} in {{ steps.rca.output.structured_output.remediation.namespace }}?
       approveLabel: Approve
