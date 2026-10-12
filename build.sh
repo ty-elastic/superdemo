@@ -462,6 +462,7 @@ if [ "$ramen" = "true"  ]; then
     printf "deploying openmarkets...\n"
 
     envsubst '$COURSE,$REPO' < $PWD/utils/openmarkets/openmarkets.yaml | kubectl apply -f -
+    retry_command_lin check_http http://openmarkets.infra.svc.cluster.local:8080/mcp
 
     printf "deploying openmarkets...SUCCESS\n"
 fi

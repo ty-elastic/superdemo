@@ -2,7 +2,7 @@
     "id": "com-example-knowledge",
     "name": "com-example-knowledge",
     "description": "Use this skill to search for company IT practices and conventions and for past incidents and issues",
-    "content": "I keep knowledge of company IT best practices and conventions, past incidents and issues in an index called `wiki`.",
+    "content": "* I keep knowledge of company IT best practices and conventions, past incidents and issues in an index called `wiki`.\n* Use the `get_market_status` tool to check if the an incident occurred while the market was open or closed to help assess business impact.\n* Use the `Sourcerer` agent to find relevant source code during an investigation. Always cite relevant source code in the analysis, if applicable.",
     "referenced_content": [],
     "tool_ids": [
     ],
