@@ -38,15 +38,66 @@ roleRef:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: profiling-collector-config
+  name: profiling-exporter-config
   namespace: opentelemetry-operator-system
 data:
-  config.yaml: |-
+  exporter.yaml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+
+    exporters:
+      elasticsearch/otel:
+        endpoints:
+          - ${ELASTIC_ENDPOINT} # Will be populated from environment variable
+        api_key: ${ELASTIC_API_KEY} # Will be populated from environment variable
+        mapping:
+          mode: otel
+        sending_queue:
+          enabled: true
+          sizer: bytes
+          queue_size: 50000000 # 50MB uncompressed
+          block_on_overflow: true
+          batch:
+            flush_timeout: 1s
+            min_size: 1_000_000 # 1MB uncompressed
+            max_size: 4_000_000 # 4MB uncompressed
+        timeout: 15s
+
+      debug:
+        verbosity: basic
+
+    service:
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8887
+      pipelines:
+        profiles:
+          receivers: [ otlp ]
+          exporters: [ debug, elasticsearch/otel ]
+        metrics:
+          receivers: [ otlp ]
+          exporters: [ debug, elasticsearch/otel ]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profiling-receiver-config
+  namespace: opentelemetry-operator-system
+data:
+  receiver.yaml: |-
     receivers:
       profiling: {}
 
-    connectors:
-      profilingmetrics: {}
+    # connectors:
+    #   profilingmetrics: {}
 
     processors:
       resource/environment:
@@ -93,8 +144,8 @@ data:
     exporters:
       debug:
         verbosity: basic
-      otlp/gateway:
-        endpoint: "http://opentelemetry-kube-stack-daemon-collector.opentelemetry-operator-system.svc.cluster.local:4317"
+      otlp/exporter:
+        endpoint: "http://127.0.0.1:4317"
         tls:
           insecure: true
 
@@ -106,10 +157,11 @@ data:
             - k8sattributes
             - resource/hostname
             - resource/environment
-          exporters: [ profilingmetrics ]
-        metrics:
-          receivers: [ profilingmetrics ]
-          exporters: [ debug, otlp/gateway ]
+          #exporters: [ profilingmetrics, otlp/exporter]
+          exporters: [ otlp/exporter]
+        # metrics:
+        #   receivers: [ profilingmetrics ]
+        #   exporters: [ debug, otlp/exporter ]
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -127,22 +179,41 @@ spec:
     spec:
       serviceAccountName: profiling-collector
       containers:
-        - name: collector
-          image: docker.elastic.co/elastic-agent/elastic-agent:$AGENT_VERSION
+        - name: exporter
+          image: otel/opentelemetry-collector-contrib:0.162.0
+          env:
+            - name: ELASTIC_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_endpoint
+            - name: ELASTIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_api_key
+          args:
+            - "--config=/etc/otelcol/exporter.yaml"
+            - "--feature-gates=service.profilesSupport"
+          volumeMounts:
+            - mountPath: /etc/otelcol/exporter.yaml
+              name: profiling-exporter-config
+              subPath: exporter.yaml
+              readOnly: true
+        - name: receiver
+          image: otel/opentelemetry-collector-ebpf-profiler:0.162.0
           env:
             - name: OTEL_K8S_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          command:
-            - "elastic-agent"
-            - "otel"
-            - "--config=/etc/otelcol/config.yaml"
+          args:
+            - "--config=/etc/otelcol/receiver.yaml"
             - "--feature-gates=service.profilesSupport"
           volumeMounts:
-            - mountPath: /etc/otelcol/config.yaml
-              name: data
-              subPath: config.yaml
+            - mountPath: /etc/otelcol/receiver.yaml
+              name: profiling-receiver-config
+              subPath: receiver.yaml
               readOnly: true
             - name: debugfs
               mountPath: /sys/kernel/debug
@@ -159,9 +230,12 @@ spec:
       hostPID: true
       restartPolicy: Always
       volumes:
-        - name: data
+        - name: profiling-receiver-config
           configMap:
-            name: profiling-collector-config
+            name: profiling-receiver-config
+        - name: profiling-exporter-config
+          configMap:
+            name: profiling-exporter-config
         - name: debugfs
           hostPath:
             path: /sys/kernel/debug
