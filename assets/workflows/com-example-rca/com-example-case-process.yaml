@@ -15,7 +15,6 @@ settings:
     key: '{{ inputs.case_id }}'
     strategy: drop
 consts:
-  rca_model: .anthropic-claude-5-sonnet-chat_completion
   rca_agent_id: com-example-rca
   kibana_url: "{{ kibanaUrl }}"
 steps:
@@ -38,7 +37,6 @@ steps:
 
 - name: rca
   type: ai.agent
-  inference-id: '{{ consts.rca_model }}'
   agent-id: '{{ consts.rca_agent_id }}'
   with:
     conversation_id: '{{ variables.ai_conversation_id }}'

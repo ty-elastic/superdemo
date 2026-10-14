@@ -6,7 +6,6 @@ tags:
 - com-example-rca
 consts:
   case_workflow_id: com-example-case-process
-  correlation_model: .anthropic-claude-5-sonnet-chat_completion
   rca_agent_id: com-example-rca
   cases_template: com-example-rca
 triggers:
@@ -23,7 +22,6 @@ steps:
     steps:
     - name: correlate
       type: ai.agent
-      inference-id: '{{ consts.correlation_model }}'
       create-conversation: true
       agent-id: '{{ consts.rca_agent_id }}'
       with:
@@ -67,9 +65,10 @@ steps:
           path: "/api/agent_builder/conversations"
           method: "POST"
           body:
-            "agent_id": "{{ consts.rca_agent_id }}"
-            "title": '{{ steps.correlate.output.structured_output.title }}'
-        
+            agent_id: "{{ consts.rca_agent_id }}"
+            title: '{{ steps.correlate.output.structured_output.title }}'
+            access_control:
+              access_mode: "public"
       - name: create_new_case
         type: cases.createCase
         connector-id: snowem
