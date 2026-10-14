@@ -1181,7 +1181,8 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         #load_new_knowledge(es_host, auth)
 
         load_connectors(kibana_host, auth)
-
+        load_ai_indexes(kibana_host, auth)
+        
         load_agent_tools(kibana_host, auth)
         load_skills(kibana_host, auth)
         load_agents(kibana_host, auth)
@@ -1206,7 +1207,7 @@ def main(course, kibana_host, es_host, es_apikey, es_authbasic, connect_alerts, 
         load_esql_data_sources(es_host, auth)
         load_esql_data_sets(es_host, auth)
 
-        load_ai_indexes(kibana_host, auth)
+
 
         print('done')
 
