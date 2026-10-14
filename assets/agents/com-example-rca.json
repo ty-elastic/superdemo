@@ -32,6 +32,9 @@
         "subagent_ids": [
             "_self",
             "sourcerer"
+        ],
+        "ai_indices": [
+          "fis"
         ]
     },
     "readonly": false
