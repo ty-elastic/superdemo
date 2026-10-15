@@ -65,7 +65,9 @@ output "logstashui_url" {
   value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9015"
 }
 
-
+output "mattermost_url" {
+  value = "http://${data.kubernetes_service_v1.traefik_ext.status[0].load_balancer[0].ingress[0].ip}:9017/_login"
+}
 
 output "elasticsearch_url" {
   value       = module.elastic.elasticsearch_url
