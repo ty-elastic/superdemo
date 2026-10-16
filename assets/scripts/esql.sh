@@ -3,9 +3,10 @@
 source $PWD/assets/scripts/retry.sh
 
 OPTIND=1
-while getopts "i:j:" opt
+while getopts "h:i:j:" opt
 do
    case "$opt" in
+      h ) elasticsearch_kibana_endpoint="$OPTARG" ;;
       i ) elasticsearch_api_key="$OPTARG" ;;
       j ) elasticsearch_es_endpoint="$OPTARG" ;;
    esac
