@@ -110,14 +110,14 @@ spec:
         example.com/org: "db_ops"
 
         io.opentelemetry.discovery.logs.mysql/enabled: "true"
-        io.opentelemetry.discovery.logs.mysql/config: |
-          operators:
-            - id: container-parser # Extract container's metadata
-              type: container
-            - id: es_index
-              type: add
-              field: attributes["elasticsearch.index"]
-              value: logs.otel
+        # io.opentelemetry.discovery.logs.mysql/config: |
+        #   operators:
+        #     - id: container-parser # Extract container's metadata
+        #       type: container
+        #     - id: es_index
+        #       type: add
+        #       field: attributes["elasticsearch.index"]
+        #       value: logs.otel
     spec:
       containers:
         - name: collector

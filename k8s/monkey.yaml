@@ -21,14 +21,14 @@ spec:
 
         instrumentation.opentelemetry.io/inject-python: "opentelemetry-operator-system/elastic-instrumentation"
         io.opentelemetry.discovery.logs/enabled: "true"
-        io.opentelemetry.discovery.logs/config: |
-          operators:
-            - id: container-parser # Extract container's metadata
-              type: container
-            - id: es_index
-              type: add
-              field: attributes["elasticsearch.index"]
-              value: logs.otel
+        # io.opentelemetry.discovery.logs/config: |
+        #   operators:
+        #     - id: container-parser # Extract container's metadata
+        #       type: container
+        #     - id: es_index
+        #       type: add
+        #       field: attributes["elasticsearch.index"]
+        #       value: logs.otel
         resource.opentelemetry.io/service.version: "$SERVICE_VERSION"
       labels:
         app: trading

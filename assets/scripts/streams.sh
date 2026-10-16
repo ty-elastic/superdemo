@@ -82,7 +82,7 @@ config_logsources() {
    printf "$FUNCNAME...SUCCESS\n"
    return 0
 }
-config_logsources
+#config_logsources
 
 config_streams_wired() {
    printf "$FUNCNAME...\n"
@@ -103,4 +103,4 @@ config_streams_wired() {
    printf "$FUNCNAME...SUCCESS\n"
    return 0
 }
-config_streams_wired
+#config_streams_wired

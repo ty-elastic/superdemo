@@ -16,7 +16,7 @@ steps:
   type: elasticsearch.esql.query
   with:
     query: |
-      FROM logs.otel
+      FROM logs*
       | WHERE service.name == "proxy"
       | WHERE @timestamp >= TO_DATETIME("{{ inputs.start_timestamp}}") AND @timestamp <= TO_DATETIME("{{ inputs.end_timestamp }}")
       | DISSECT body.text "%{client_ip} - - [%{timestamp}] \"%{request_method} %{request_path} HTTP/%{http_version}\" %{status_code} %{response_bytes} %{response_time} \"%{referrer}\" \"%{user_agent}\""
