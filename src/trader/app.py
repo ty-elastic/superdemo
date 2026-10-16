@@ -44,13 +44,13 @@ def init_otel():
     except:
         pass
 
-    if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
-        print("enable otel logging")
-        logs.get_logger_provider().add_log_record_processor(BaggageLogProcessor(ALLOW_ALL_BAGGAGE_KEYS))     
-        root_logger = logging.getLogger()
-        for handler in root_logger.handlers:
-            if isinstance(handler, logging.StreamHandler):
-                root_logger.removeHandler(handler)
+    # if 'OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED' in os.environ:
+    #     print("enable otel logging")
+    #     logs.get_logger_provider().add_log_record_processor(BaggageLogProcessor(ALLOW_ALL_BAGGAGE_KEYS))     
+    #     root_logger = logging.getLogger()
+    #     for handler in root_logger.handlers:
+    #         if isinstance(handler, logging.StreamHandler):
+    #             root_logger.removeHandler(handler)
 
     tracer = trace.get_tracer(__name__)
 
@@ -117,6 +117,7 @@ def decode_common_args():
         set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.classification", classification)
 
     flags = params.get('flags', None)
+    app.logger.info(f"flags: {flags}")
     # if flags is not None:
     #     set_attribute_and_baggage(f"{ATTRIBUTE_PREFIX}.flags", flags)
 
@@ -216,9 +217,9 @@ def trade_request():
 
     fe_version = baggage.get_baggage(f"{ATTRIBUTE_PREFIX}.frontend_version")
     if fe_version is not None:
-        print(f"frontend_version: {fe_version}")
+        #print(f"frontend_version: {fe_version}")
         if (float(fe_version) < 1) and transactions < 100:
-            print(f"blocking frontend_version: {fe_version}")
+            #print(f"blocking frontend_version: {fe_version}")
             return "version blocked"
     
     action, shares, share_price = run_model(trade_id=trade_id, customer_id=customer_id, day_of_week=day_of_week, symbol=symbol, 

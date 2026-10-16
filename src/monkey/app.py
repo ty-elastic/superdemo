@@ -288,7 +288,7 @@ def generate_trade_requests():
                 latency_action = latency_per_action_per_region[region]['action']
                 if latency_per_action_per_region[region]['oneshot'] and time.time() - latency_per_action_per_region[region]['start'] >= ERROR_TIMEOUT_S:
                     app.logger.info(f"latency_per_action_per_region[{region}] timeout")
-                    latency_region_delete(region)
+                    latency_region_delete()
             else:
                 latency_amount = 0
                 latency_action = None
@@ -297,7 +297,7 @@ def generate_trade_requests():
                 error_model = True if random.randint(0, 100) > (100-model_error_per_region[region]['amount']) else False
                 if model_error_per_region[region]['oneshot'] and time.time() - model_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
                     app.logger.info(f"db_error_per_region[{region}] timeout")
-                    err_model_region_delete(region)
+                    err_model_region_delete()
             else:
                 error_model = False
 
@@ -322,7 +322,7 @@ def generate_trade_requests():
                     error_db_service = None
                 if db_error_per_customer[customer_id]['oneshot'] and time.time() - db_error_per_customer[customer_id]['start'] >= ERROR_TIMEOUT_S:
                     app.logger.info(f"db_error_per_customer[{customer_id}] timeout")
-                    err_db_customer_delete(region)
+                    err_db_customer_delete(customer_id)
             elif region in db_error_per_region:
                 error_db = True if random.randint(0, 100) > (100-db_error_per_region[region]['amount']) else False
                 if 'service' in db_error_per_region[region]:
@@ -331,7 +331,7 @@ def generate_trade_requests():
                     error_db_service = None
                 if db_error_per_region[region]['oneshot'] and time.time() - db_error_per_region[region]['start'] >= ERROR_TIMEOUT_S:
                     app.logger.info(f"db_error_per_region[{region}] timeout")
-                    err_db_region_delete(region)
+                    err_db_region_delete()
             else:
                 error_db = False
                 error_db_service = None
