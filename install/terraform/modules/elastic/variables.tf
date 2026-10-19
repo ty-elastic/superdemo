@@ -24,6 +24,10 @@ variable "es_cluster_type" {
   default = "serverless"
 }
 
+variable "es_cloud_url" {
+  type = string
+  default = "https://api.elastic-cloud.com"
+}
 
 variable "elasticsearch_url" {
   description = "Elasticsearch URL for the o11y e2e serverless project, passed to the install container as ELASTICSEARCH_URL"

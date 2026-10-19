@@ -16,3 +16,8 @@ variable "cloud_apikey" {
   description = "Elastic cloud apikey for creating elastic cloud projects"
   type        = string
 }
+
+variable "cloud_url" {
+  type = string
+  default = "https://api.elastic-cloud.com"
+}

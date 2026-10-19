@@ -1,5 +1,6 @@
 provider "ec" {
   apikey = var.cloud_apikey
+  endpoint = var.cloud_url
 }
 
 resource "ec_deployment" "es_cluster" {

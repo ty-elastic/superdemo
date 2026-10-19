@@ -1,5 +1,6 @@
 provider "ec" {
   apikey = var.cloud_apikey
+  endpoint = var.cloud_url
 }
 
 # provider "http-full" {
@@ -47,7 +48,7 @@ data "http" "turn_on_o11y" {
   count = var.enable == true ? 1 : 0
   provider = http-full
 
-  url    = "https://cloud.elastic.co/api/v1/serverless/projects/observability/${ec_observability_project.es_cluster[0].id}"
+  url    = "${var.cloud_url}/api/v1/serverless/projects/observability/${ec_observability_project.es_cluster[0].id}"
   method = "PATCH"
 
   request_headers = {

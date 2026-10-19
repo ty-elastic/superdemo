@@ -25,3 +25,8 @@ variable "deployment_template_id" {
   type = string
   default = "gcp-cpu-optimized"
 }
+
+variable "cloud_url" {
+  type = string
+  default = "https://api.elastic-cloud.com"
+}

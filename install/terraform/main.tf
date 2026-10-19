@@ -62,6 +62,7 @@ module "elastic" {
   # Pass required variables into the module
   es_cluster_region = "${var.es_cluster_region}"
   es_cloud_apikey = "${var.es_cloud_apikey}"
+  es_cloud_url = "${var.es_cloud_url}"
   es_cluster_name = "${local.cluster_name}"
   es_cluster_hosted_version = "${var.es_cluster_hosted_version}"
   es_cluster_type = "${var.es_cluster_type}"

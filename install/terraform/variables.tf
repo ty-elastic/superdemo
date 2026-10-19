@@ -96,6 +96,11 @@ variable "es_cloud_apikey" {
   default     = ""
 }
 
+variable "es_cloud_url" {
+  type = string
+  default = "https://api.elastic-cloud.com"
+}
+
 variable "project_guid" {
   type = string
   default     = ""
