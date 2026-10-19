@@ -9,13 +9,7 @@ import Chat from './components/Chat'
 import TraderAppBar from './components/TraderAppBar'
 
 import './App.css';
-import { v4 as uuidv4 } from 'uuid';
-import axios from "axios";
 import { Route, NavLink, HashRouter, BrowserRouter, Routes } from "react-router-dom";
-
-// set sessionId on OTel baggage
-var sessionId = uuidv4();
-axios.defaults.headers.common['baggage'] = `com.example.client_session_id=${sessionId}`;
 
 function App() {
   return (
