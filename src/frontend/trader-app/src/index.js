@@ -18,6 +18,9 @@ startBrowserSdk({
   serviceName: serviceName,
   serviceVersion: serviceVersion,
   otlpEndpoint: otlpIngestUrl,
+  resourceAttributes: {
+    'com.example.client_session_id': sessionId
+  },
   exportConfig: {
       url: otlpIngestUrl
     }

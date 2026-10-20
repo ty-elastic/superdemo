@@ -36,7 +36,7 @@ data:
         # Map to capture the first value
         map $http_baggage $session_id {
             default "";
-            "~.*session\.id=([^,]+)" $1; # Captures 'session_id'
+            "~.*client_session_id=([^,]+)" $1; # Captures 'session_id'
         }
 
         map $http_x_forwarded_for $client_real_ip {
@@ -71,6 +71,7 @@ data:
     if ($request_method = 'OPTIONS') {
 
         add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Timing-Allow-Origin' '*';
 
         #
         # Om nom nom cookies
@@ -97,12 +98,14 @@ data:
     }
     if ($request_method = 'POST') {
         add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Timing-Allow-Origin' '*';
         add_header 'Access-Control-Allow-Credentials' 'true';
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
     }
     if ($request_method = 'GET') {
         add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Timing-Allow-Origin' '*';
         add_header 'Access-Control-Allow-Credentials' 'true';
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
@@ -143,7 +146,7 @@ data:
             otel_trace $otel_parent_sampled;
             otel_trace_context propagate;
             otel_span_name $uri;
-            otel_span_attr "session.id" $session_id;
+            otel_span_attr "com.example.client_session_id" $session_id;
 
             include cors.conf;
 
@@ -162,7 +165,7 @@ data:
             otel_trace $otel_parent_sampled;
             otel_trace_context propagate;
             otel_span_name $uri;
-            otel_span_attr "session.id" $session_id;
+            otel_span_attr "com.example.client_session_id" $session_id;
 
             otel_span_attr "kind" "client";
             otel_span_attr "type" "external";
@@ -207,7 +210,7 @@ data:
             otel_trace $otel_parent_sampled;
             otel_trace_context propagate;
             otel_span_name $uri;
-            otel_span_attr "session.id" $session_id;
+            otel_span_attr "com.example.client_session_id" $session_id;
 
             include cors.conf;
 
@@ -226,7 +229,7 @@ data:
             otel_trace $otel_parent_sampled;
             otel_trace_context propagate;
             otel_span_name $uri;
-            otel_span_attr "session.id" $session_id;
+            otel_span_attr "com.example.client_session_id" $session_id;
 
             otel_span_attr "kind" "client";
             otel_span_attr "type" "external";
