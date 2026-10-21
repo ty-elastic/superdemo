@@ -272,7 +272,7 @@
             "ignore_global_filters": false,
             "data_source": {
               "type": "esql",
-              "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Total LLM cost in USD` = SUM(SUM_OVER_TIME(TO_TDIGEST(gen_ai.client.token.cost)))"
+              "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Total LLM cost in USD` = SUM(SUM_OVER_TIME(TO_TDIGEST(gen_ai.usage.cost)))"
             },
             "styling": {
               "density": "default",
@@ -383,7 +383,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -403,7 +402,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -488,7 +486,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -508,7 +505,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -536,7 +532,6 @@
                   "visible": false
                 }
               },
-              "interpolation": "linear",
               "bars": {
                 "minimum_height": 1,
                 "data_labels": {
@@ -603,7 +598,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -623,7 +617,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -829,7 +822,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -849,7 +841,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -888,7 +879,7 @@
                 "ignore_global_filters": false,
                 "data_source": {
                   "type": "esql",
-                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `LLM Cost` = SUM(SUM_OVER_TIME(TO_TDIGEST(gen_ai.client.token.cost))) BY `Time Bucket` = TBUCKET(1 minute)\n| SORT `Time Bucket`"
+                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `LLM Cost` = SUM(SUM_OVER_TIME(TO_TDIGEST(gen_ai.usage.cost))) BY `Time Bucket` = TBUCKET(1 minute)\n| SORT `Time Bucket`"
                 },
                 "type": "line",
                 "y": [
@@ -934,7 +925,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -954,7 +944,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -982,7 +971,6 @@
                   "visible": false
                 }
               },
-              "interpolation": "linear",
               "bars": {
                 "minimum_height": 1,
                 "data_labels": {
@@ -1041,7 +1029,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1061,7 +1048,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1089,7 +1075,6 @@
                   "visible": false
                 }
               },
-              "interpolation": "linear",
               "bars": {
                 "minimum_height": 1,
                 "data_labels": {
@@ -1160,7 +1145,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1180,7 +1164,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1271,7 +1254,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1291,7 +1273,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1330,7 +1311,7 @@
                 "ignore_global_filters": false,
                 "data_source": {
                   "type": "esql",
-                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Average Time to First Token` = AVG(AVG_OVER_TIME(TO_TDIGEST(gen_ai.client.response.time_to_first_token))) BY `Time Bucket` = TBUCKET(75, ?_tstart, ?_tend)\n| SORT `Time Bucket`"
+                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Average Time to First Token` = AVG(AVG_OVER_TIME(TO_TDIGEST(gen_ai.server.time_to_first_token))) BY `Time Bucket` = TBUCKET(75, ?_tstart, ?_tend)\n| SORT `Time Bucket`"
                 },
                 "type": "line",
                 "y": [
@@ -1382,7 +1363,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1402,7 +1382,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1441,7 +1420,7 @@
                 "ignore_global_filters": false,
                 "data_source": {
                   "type": "esql",
-                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Average Time Per Output Token` = AVG(AVG_OVER_TIME(TO_TDIGEST(gen_ai.client.response.time_per_output_token))) BY `Time Bucket` = TBUCKET(1 minute)\n| SORT `Time Bucket`"
+                  "query": "TS metrics-generic.otel-default\n| WHERE service.name == \"litellm\"\n| STATS `Average Time Per Output Token` = AVG(AVG_OVER_TIME(TO_TDIGEST(gen_ai.server.time_per_output_token))) BY `Time Bucket` = TBUCKET(1 minute)\n| SORT `Time Bucket`"
                 },
                 "type": "line",
                 "y": [
@@ -1487,7 +1466,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1507,7 +1485,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1618,7 +1595,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1638,7 +1614,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1723,7 +1698,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1743,7 +1717,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1835,7 +1808,6 @@
             "axis": {
               "x": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {
@@ -1855,7 +1827,6 @@
               },
               "y": {
                 "title": {
-                  "text": "",
                   "visible": false
                 },
                 "ticks": {

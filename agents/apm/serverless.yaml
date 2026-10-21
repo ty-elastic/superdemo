@@ -330,7 +330,7 @@ collectors:
             - key: deployment.environment.name
               from_attribute: k8s.namespace.name
               action: upsert
-            - key: resource.attributes.cloud.region
+            - key: cloud.region
               from_attribute: k8s.namespace.name
               action: upsert
 
