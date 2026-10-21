@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app/target/processor-0.0.1-SNAPSHOT.jar /processor.jar
 
-ARG EDOT_VERSION=1.11.0
+ARG EDOT_VERSION=1.13.0
 RUN wget -O elastic-otel-javaagent.jar https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/$EDOT_VERSION/elastic-otel-javaagent-$EDOT_VERSION.jar 
 
 ENV BOOTSTRAP_SERVER=""
@@ -26,7 +26,6 @@ ENV OTEL_RESOURCE_ATTRIBUTES="service.version=1.0"
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-kube-stack-daemon-collector.opentelemetry-operator-system.svc.cluster.local:4318
 ENV OTEL_JAVA_EXPERIMENTAL_SPAN_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE=*
 ENV OTEL_JAVA_EXPERIMENTAL_LOG_ATTRIBUTES_COPY_FROM_BAGGAGE_INCLUDE=*
-ENV ELASTIC_OTEL_UNIVERSAL_PROFILING_INTEGRATION_ENABLED="true"
 
 EXPOSE 9003
 ENTRYPOINT java \
