@@ -6,7 +6,7 @@ WORKDIR /python-docker
 RUN --mount=type=cache,target=/root/.cache/pip pip3 install --root-user-action=ignore opentelemetry-processor-baggage
 
 COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip pip3 install --root-user-action=ignore -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip3 install --root-user-action=ignore --upgrade -r requirements.txt
 
 # RUN --mount=type=cache,target=/root/.cache/pip edot-bootstrap --action=install
 # RUN --mount=type=cache,target=/root/.cache/pip pip3 uninstall -y opentelemetry-instrumentation-click
