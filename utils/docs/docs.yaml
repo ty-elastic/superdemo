@@ -15,7 +15,7 @@ spec:
   template:
     spec:
       containers:
-        - image: $REPO/docs:$COURSE
+        - image: $REPO/es_pdf_import_docs:$COURSE
           name: docs
           imagePullPolicy: Always
           args:
