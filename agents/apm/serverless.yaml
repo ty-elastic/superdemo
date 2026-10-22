@@ -970,6 +970,9 @@ instrumentation:
     image: docker.elastic.co/observability/elastic-otel-node:1.19.0
   dotnet:
     image: docker.elastic.co/observability/elastic-otel-dotnet:1.6.0
+    env:
+      - name: OTEL_DOTNET_AUTO_PLUGINS
+        value: "Elastic.OpenTelemetry.AutoInstrumentationPlugin,Elastic.OpenTelemetry.AutoInstrumentation"
   python:
     image: docker.elastic.co/observability/elastic-otel-python:1.17.0
   go:
