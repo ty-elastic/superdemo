@@ -101,23 +101,31 @@ def add_deployment(namespace, name):
         namespace=namespace
     )
 
-@app.post('/service/<namespace>/<service>/<state>')
+@app.post('/service/<state>/<service>', defaults={"namespace": None})
+@app.post('/service/<state>/<service>/<namespace>')
 def change_service_status(namespace, service, state):
-    print("HERE", flush=True)
+    
+    if namespace is None:
+        namespaces_str = os.environ['DEFAULT_NAMESPACE']
+        namespaces = namespaces_str.split(',')
+    else:
+        namespaces = [namespace]
 
-    try:
-        if state == 'up':
-            ret = add_deployment(namespace, service)
-            return {'status': 'success'}, 200
-        elif state == 'down':
-            ret = delete_deployment(namespace, service)
-            return {'status': 'success'}, 200
-        elif state == 'restart':
-            print(service)
-            ret = restart_deployment(namespace, service)
-            return {'status': 'success'}, 200
-    except Exception as e:
-        return {'status': 'fail', "reason": e.reason}, e.status
+    for ns in namespaces:
+        print(f"ns={ns}", flush=True)
+        try:
+            if state == 'up':
+                ret = add_deployment(ns, service)
+                return {'status': 'success'}, 200
+            elif state == 'down':
+                ret = delete_deployment(ns, service)
+                return {'status': 'success'}, 200
+            elif state == 'restart':
+                print(service)
+                ret = restart_deployment(ns, service)
+                return {'status': 'success'}, 200
+        except Exception as e:
+            return {'status': 'fail', "reason": e.reason}, e.status
 
 # if __name__ == "__main__":
 #     init_k8s(incluster=False)

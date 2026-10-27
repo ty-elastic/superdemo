@@ -61,8 +61,8 @@ spec:
           image: $REPO/remote:$COURSE
           imagePullPolicy: Always
           env:
-            - name: NAMESPACE
-              value: "utils"
+            - name: DEFAULT_NAMESPACE
+              value: "trading-na,trading-emea"
       restartPolicy: Always
 ---
 apiVersion: v1

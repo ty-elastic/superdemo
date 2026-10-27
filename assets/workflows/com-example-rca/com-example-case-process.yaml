@@ -62,7 +62,7 @@ steps:
               description: the name of the service
             namespace:
               type: string
-              description: namespace the service is running in
+              description: namespace the service is running in (usually case.system_environment, if available)
 
 - name: add_response_to_existing_case
   type: cases.addComment
