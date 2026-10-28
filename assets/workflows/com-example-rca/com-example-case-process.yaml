@@ -110,7 +110,7 @@ steps:
     if: 'steps.request_approval.output.response.approved : true'
     connector-id: com-example-kubernetes
     with:
-      path: /service/{{steps.rca.output.structured_output.remediation.namespace}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.service_action}}
+      path: /service/{{steps.rca.output.structured_output.remediation.service_action}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.namespace}}
       method: POST
       headers:
         Content-Type: application/json
