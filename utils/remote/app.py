@@ -101,10 +101,10 @@ def add_deployment(namespace, name):
         namespace=namespace
     )
 
-@app.post('/service/<state>/<service>', defaults={"namespace": None})
-@app.post('/service/<state>/<service>/<namespace>')
-def change_service_status(namespace, service, state):
-    
+@app.post('/service/<state>/<service>')
+def change_service_status(service, state):
+
+    namespace = request.args.get('namespace', default=None, type=str) 
     if namespace is None:
         namespaces_str = os.environ['DEFAULT_NAMESPACE']
         namespaces = namespaces_str.split(',')

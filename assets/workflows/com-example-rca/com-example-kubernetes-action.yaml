@@ -36,7 +36,9 @@ steps:
     type: http
     connector-id: com-example-kubernetes
     with:
-      path: /service/{{inputs.service_action}}/{{inputs.service_name}}/{{inputs.namespace}}
+      path: /service/{{inputs.service_action}}/{{inputs.service_name}}
+      query:
+        namespace: "{{inputs.namespace}}"
       method: POST
       headers:
         Content-Type: application/json
