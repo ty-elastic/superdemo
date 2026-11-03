@@ -62,7 +62,7 @@ steps:
               description: the name of the service
             namespace:
               type: string
-              description: namespace the service is running in
+              description: namespace the service is running in (usually case.system_environment, if available)
 
 - name: add_response_to_existing_case
   type: cases.addComment
@@ -110,7 +110,9 @@ steps:
     if: 'steps.request_approval.output.response.approved : true'
     connector-id: com-example-kubernetes
     with:
-      path: /service/{{steps.rca.output.structured_output.remediation.namespace}}/{{steps.rca.output.structured_output.remediation.service_name}}/{{steps.rca.output.structured_output.remediation.service_action}}
+      path: /service/{{steps.rca.output.structured_output.remediation.service_action}}/{{steps.rca.output.structured_output.remediation.service_name}}
+      query:
+        namespace: "{{inputs.namespace}}"
       method: POST
       headers:
         Content-Type: application/json

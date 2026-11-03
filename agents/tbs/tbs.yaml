@@ -283,6 +283,11 @@ spec:
           env:
             - name: ELASTIC_AGENT_OTEL
               value: '"true"'
+            - name: ELASTIC_FLEET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_fleet_endpoint
             - name: ELASTIC_ENDPOINT
               valueFrom:
                 secretKeyRef:
@@ -351,6 +356,11 @@ spec:
           env:
             - name: ELASTIC_AGENT_OTEL
               value: '"true"'
+            - name: ELASTIC_FLEET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_fleet_endpoint
             - name: ELASTIC_ENDPOINT
               valueFrom:
                 secretKeyRef:

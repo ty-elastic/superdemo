@@ -23,6 +23,7 @@ steps:
     - name: correlate
       type: ai.agent
       create-conversation: true
+      public-conversation: true
       agent-id: '{{ consts.rca_agent_id }}'
       with:
         schema:

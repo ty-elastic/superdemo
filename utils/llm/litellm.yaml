@@ -65,7 +65,7 @@ spec:
         ports:
           - containerPort: 8090
       - name: litellm
-        image: ghcr.io/berriai/litellm:v1.102.1
+        image: ghcr.io/berriai/litellm:v1.106.2
         imagePullPolicy: Always
         args:
           - "--config"
@@ -80,6 +80,8 @@ spec:
           - name: DATABASE_URL
             value: "postgresql://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@127.0.0.1:5432/litellm"
           - name: LITELLM_OTEL_V2
+            value: "true"
+          - name: LITELLM_DANGEROUSLY_PERMIT_WEAK_OR_UNSET_MASTER_KEY
             value: "true"
           - name: LITELLM_OTEL_INTEGRATION_ENABLE_METRICS
             value: "true"

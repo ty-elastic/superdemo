@@ -13,7 +13,7 @@ do
    esac
 done
 
-export AGENT_VERSION=9.5.0
+export AGENT_VERSION=9.5.5
 
 ####################################################################### CREATE POLICY
 POLICY_NUM=0
