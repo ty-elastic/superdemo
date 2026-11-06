@@ -11,7 +11,7 @@ provider "ec" {
 resource "ec_observability_project" "es_cluster" {
   count = var.enable == true ? 1 : 0
 
-  name        = "${var.cluster_name}"
+  name        = "keep_${var.cluster_name}"
   region_id   = "gcp-${var.region}"
   alias = "${var.cluster_name}"
   metadata = {

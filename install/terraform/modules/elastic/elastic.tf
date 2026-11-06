@@ -7,7 +7,7 @@ module "es_serverless" {
   region = "${var.es_cluster_region}"
   cloud_apikey = var.es_cloud_apikey
   cloud_url = var.es_cloud_url
-  cluster_name = "keep_${var.es_cluster_name}"
+  cluster_name = "${var.es_cluster_name}"
   enable = var.es_cluster_type == "serverless" ? true : false
 }
 
@@ -18,7 +18,7 @@ module "es_hosted" {
   region = "${var.es_cluster_region}"
   cloud_apikey = var.es_cloud_apikey
   cloud_url = var.es_cloud_url
-  cluster_name = "keep_${var.es_cluster_name}"
+  cluster_name = "${var.es_cluster_name}"
   es_version = var.es_cluster_hosted_version
   enable = var.es_cluster_type == "hosted" ? true : false
 }

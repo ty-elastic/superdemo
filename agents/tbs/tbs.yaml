@@ -298,6 +298,11 @@ spec:
                 secretKeyRef:
                   name: elastic-secret-otel
                   key: elastic_api_key
+            - name: ELASTIC_FLEET_OPAMP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_fleet_opamp_api_key
             - name: K8S_POD_UID
               valueFrom:
                 fieldRef:
@@ -371,6 +376,11 @@ spec:
                 secretKeyRef:
                   name: elastic-secret-otel
                   key: elastic_api_key
+            - name: ELASTIC_FLEET_OPAMP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-secret-otel
+                  key: elastic_fleet_opamp_api_key
             - name: K8S_POD_UID
               valueFrom:
                 fieldRef:
