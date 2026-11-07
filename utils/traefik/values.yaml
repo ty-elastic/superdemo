@@ -4,7 +4,8 @@ ingressRoute:
     enabled: false # Enables the Traefik web UI dashboard
 
 service:
-  type: LoadBalancer
+  spec:
+    type: LoadBalancer
   annotations:
     # Optional: Force a regional static IP if you have pre-allocated one in GCP
     # ://google.com: "External" 
