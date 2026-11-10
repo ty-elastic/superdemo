@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -51,19 +52,24 @@ func NewLoadBalancer(lbCfg LBConfig, appCfg *Config) (*LoadBalancer, error) {
 		ReadTimeout:  60 * time.Second,
 		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  120 * time.Second,
+		// Track client connections for NewConnectionCount / ActiveConnectionCount.
+		ConnState: func(_ net.Conn, state http.ConnState) {
+			switch state {
+			case http.StateNew:
+				agg.ConnOpened()
+			case http.StateClosed, http.StateHijacked:
+				agg.ConnClosed()
+			}
+		},
 	}
 	return lb, nil
 }
 
 // handle is the HTTP handler for every inbound request. It:
-//  1. Tracks in-flight count.
-//  2. Selects a healthy backend via round-robin.
-//  3. Short-circuits with 503 if no backend is available.
-//  4. Delegates to the reverse proxy for normal proxying.
+//  1. Selects a healthy backend via round-robin.
+//  2. Short-circuits with 503 if no backend is available.
+//  3. Delegates to the reverse proxy for normal proxying.
 func (lb *LoadBalancer) handle(w http.ResponseWriter, r *http.Request) {
-	lb.agg.InFlightInc()
-	defer lb.agg.InFlightDec()
-
 	clientAddr, clientPort := ParseClientAddr(r.RemoteAddr)
 	traceID := GenerateTraceID()
 	proto := ParseProtoVersion(r.Proto)
