@@ -23,6 +23,7 @@ helm repo add requarks https://charts.js.wiki
 kubectl create namespace wiki
 helm install wiki \
     --namespace wiki \
+    --set ingress.enabled=false \
     --set postgresql.persistence.enabled=false \
     --set postgresql.image.repository=$repo/postgresql \
     --set postgresql.image.tag=$course \
